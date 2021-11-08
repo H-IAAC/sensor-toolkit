@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginTop="15sp"
+    android:layout_marginStart="5sp"
+    android:layout_marginEnd="5sp"
+    android:orientation="vertical"
+    android:background="@color/cardview_shadow_start_color">
+
+    <TextView
+        android:id="@+id/sensor_name"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal"
+        android:background="@color/cardview_shadow_start_color"/>
+
+    <Switch
+        android:id="@+id/sensor_switch"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
+
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="15sp"
+        android:orientation="horizontal">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="left"
+            android:layout_marginEnd="5sp"
+            android:text="@string/sensor_consumption"/>
+
+        <TextView
+            android:id="@+id/sensor_consumption"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="-|--|-"
+            android:gravity="left"/>
+
+        </LinearLayout>
+
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="5sp"
+        android:layout_marginBottom="5sp"
+        android:orientation="horizontal">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="left"
+            android:layout_marginEnd="5sp"
+            android:text="@string/sensor_values"/>
+
+        <TextView
+            android:id="@+id/sensor_values"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="-|--|-"
+            android:gravity="left"/>
+
+    </LinearLayout>
+
+</LinearLayout>
