@@ -11,9 +11,6 @@ import android.widget.TextView;
 
 import androidx.recyclerview.widget.RecyclerView;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -22,6 +19,7 @@ import br.org.eldorado.sensoragent.model.Accelerometer;
 import br.org.eldorado.sensoragent.model.AmbientTemperature;
 import br.org.eldorado.sensoragent.model.Gyroscope;
 import br.org.eldorado.sensoragent.model.Luminosity;
+import br.org.eldorado.sensoragent.model.MagneticField;
 import br.org.eldorado.sensoragent.model.Proximity;
 import br.org.eldorado.sensoragent.model.SensorBase;
 import br.org.eldorado.sensormanager.R;
@@ -45,7 +43,8 @@ public class SensorRecyclerViewAdapter  extends RecyclerView.Adapter<SensorRecyc
         this.mData = new ArrayList<SensorBase>(
                 Arrays.asList(
                         new Accelerometer(), new AmbientTemperature(),
-                        new Gyroscope(), new Luminosity(), new Proximity()));
+                        new Gyroscope(), new Luminosity(), new Proximity(),
+                        new MagneticField()));
     }
 
     @Override
@@ -70,7 +69,7 @@ public class SensorRecyclerViewAdapter  extends RecyclerView.Adapter<SensorRecyc
 
     public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener, SensorSDKListener {
         public TextView sensorName;
-        public TextView sensorconsumption;
+        public TextView sensorConsumption;
         public TextView sensorValues;
         public Switch sensorSwitch;
         public SensorBase sensor;
@@ -78,7 +77,7 @@ public class SensorRecyclerViewAdapter  extends RecyclerView.Adapter<SensorRecyc
         public ViewHolder(View itemView) {
             super(itemView);
             sensorName = (TextView) itemView.findViewById(R.id.sensor_name);
-            sensorconsumption = (TextView) itemView.findViewById(R.id.sensor_consumption);
+            sensorConsumption = (TextView) itemView.findViewById(R.id.sensor_consumption);
             sensorValues = (TextView) itemView.findViewById(R.id.sensor_values);
             sensorSwitch = (Switch) itemView.findViewById(R.id.sensor_switch);
             sensorSwitch.setOnClickListener(this);
@@ -112,7 +111,7 @@ public class SensorRecyclerViewAdapter  extends RecyclerView.Adapter<SensorRecyc
         public void onSensorChanged() {
             new Handler(Looper.getMainLooper()).post(new Runnable() {
                 public void run() {
-                    sensorconsumption.setText(sensor.getPower()+"");
+                    sensorConsumption.setText(sensor.getPower()+"");
                     sensorValues.setText(sensor.getValuesString());
                 }
             });

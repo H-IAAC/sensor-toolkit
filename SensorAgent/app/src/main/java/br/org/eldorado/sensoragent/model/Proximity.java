@@ -10,5 +10,7 @@ public class Proximity extends SensorBase {
         super(TAG, TYPE_PROXIMITY);
         sensor = sensorManager.getDefaultSensor(Sensor.TYPE_PROXIMITY);
         registerListener(sensor);
+        values = new float[1];
+        values[0] = 0;
     }
 }

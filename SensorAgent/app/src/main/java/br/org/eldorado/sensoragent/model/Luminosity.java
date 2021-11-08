@@ -10,5 +10,7 @@ public class Luminosity extends SensorBase {
         super(TAG, TYPE_LIGHT);
         sensor = sensorManager.getDefaultSensor(Sensor.TYPE_LIGHT);
         registerListener(sensor);
+        values = new float[1];
+        values[0] = 0;
     }
 }
