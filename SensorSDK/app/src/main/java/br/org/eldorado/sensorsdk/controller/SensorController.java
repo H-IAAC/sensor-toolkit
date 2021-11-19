@@ -13,7 +13,6 @@ import java.util.Map;
 import br.org.eldorado.sensoragent.ISensorAgentListener;
 import br.org.eldorado.sensoragent.model.ISensorAgent;
 import br.org.eldorado.sensorsdk.SensorSDKContext;
-import br.org.eldorado.sensoragent.model.Accelerometer;
 import br.org.eldorado.sensoragent.model.SensorBase;
 import br.org.eldorado.sensorsdk.util.Log;
 
@@ -171,10 +170,10 @@ public class SensorController {
         }
 
         @Override
-        public void onSensorStoped(int sensorType) throws RemoteException {
+        public void onSensorStopped(int sensorType) throws RemoteException {
             SensorBase sensor = sensorMap.get(sensorType);
             if (sensor != null && sensor.getListener() != null) {
-                sensor.getListener().onSensorStoped();
+                sensor.getListener().onSensorStopped();
             }
         }
     }

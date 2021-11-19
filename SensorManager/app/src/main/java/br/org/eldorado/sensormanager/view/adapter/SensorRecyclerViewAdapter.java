@@ -98,7 +98,7 @@ public class SensorRecyclerViewAdapter  extends RecyclerView.Adapter<SensorRecyc
         }
 
         @Override
-        public void onSensorStoped() {
+        public void onSensorStopped() {
             new Handler(Looper.getMainLooper()).post(new Runnable() {
                 public void run() {
                     sensorSwitch.setChecked(false);

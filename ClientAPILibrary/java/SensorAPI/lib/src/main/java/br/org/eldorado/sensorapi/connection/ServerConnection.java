@@ -139,7 +139,7 @@ public class ServerConnection {
 	}
 	
 	private void handleMessage(SensorAPICommand cmd) {
-        System.out.println("Handling msg: " + cmd.toString());
+        System.out.println("Handling msg: " + cmd.getJson());
         SensorBase sensor = sensors.get(cmd.getSensorType());
         if (sensor != null) {
 	        switch (cmd.getCommand()) {
@@ -160,13 +160,11 @@ public class ServerConnection {
 				case TYPE_GET_SENSOR_DATA:
 					if (cmd.getParameters().get(1) != null) {
 						JsonObject json = new Gson().fromJson(cmd.getParameters().get(1).toString(), JsonObject.class);
-						System.out.println("json " + json.toString());
 						sensor.setStarted(true);
 						sensor.setPower(json.get("power").getAsFloat());
 						sensor.setTimestamp(json.get("timestamp").getAsLong());
 						sensor.setValues(new Gson().fromJson(json.get("values").getAsJsonArray(), float[].class));
 						sensor.notify(CommandType.TYPE_GET_SENSOR_DATA);
-						System.out.println(sensor);
 					}
 					break;
 				default:

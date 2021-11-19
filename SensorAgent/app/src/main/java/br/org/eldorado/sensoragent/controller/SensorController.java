@@ -102,7 +102,7 @@ public class SensorController {
             if (LISTENER_SENSOR_STARTED == type) {
                 list.onSensorStarted(sensorType);
             } else if (LISTENER_SENSOR_STOPPED == type) {
-                list.onSensorStoped(sensorType);
+                list.onSensorStopped(sensorType);
             }
         }
         mListener.finishBroadcast();

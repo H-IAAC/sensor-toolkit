@@ -4,8 +4,6 @@ import android.hardware.Sensor;
 import android.os.Parcel;
 import android.os.Parcelable;
 
-import androidx.annotation.NonNull;
-
 import br.org.eldorado.sensorsdk.controller.SensorController;
 import br.org.eldorado.sensorsdk.listener.SensorSDKListener;
 import br.org.eldorado.sensorsdk.util.Log;
@@ -82,7 +80,7 @@ public class SensorBase implements Parcelable {
         if (s == null || s.getValuesArray() == null) {
             log.i("Sensor not started");
             isStarted = false;
-            listener.onSensorStoped();
+            listener.onSensorStopped();
             return;
         }
         this.timestamp = s.getTimestamp();
@@ -119,7 +117,7 @@ public class SensorBase implements Parcelable {
 
     public void stopSensor() {
         controller.stopSensor(this);
-        listener.onSensorStoped();
+        listener.onSensorStopped();
     }
 
     @Override
