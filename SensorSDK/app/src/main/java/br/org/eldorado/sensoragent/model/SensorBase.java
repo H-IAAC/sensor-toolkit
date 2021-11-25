@@ -27,12 +27,14 @@ public class SensorBase implements Parcelable {
     private SensorController controller;
     private SensorSDKListener listener;
     private boolean isStarted;
+    private int frequency;
 
     /* TODO limitar funcoes se listener estiver null */
 
     public SensorBase(String sensorClass, int type) {
         this.log = new Log(sensorClass);
         this.listener = null;
+        this.frequency = 5;
         this.name = sensorClass;
         this.type = type;
         this.values = new float[1];
@@ -44,6 +46,14 @@ public class SensorBase implements Parcelable {
     public void registerListener(SensorSDKListener l) {
         this.listener = l;
         this.controller.getInformation(this);
+    }
+
+    public void setFrequency(int f) {
+        this.frequency = f;
+    }
+
+    public int getFrequency() {
+        return frequency;
     }
 
     public SensorSDKListener getListener() {

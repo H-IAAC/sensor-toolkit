@@ -142,7 +142,7 @@ public class SensorController {
                     while (sensor.isStarted()) {
                         try {
                             getInformation(sensor);
-                            Thread.sleep(500);
+                            Thread.sleep(1000/sensor.getFrequency());
                         } catch (InterruptedException e) {
                             sensor.setIsStarted(false);
                             e.printStackTrace();
