@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">Sensor Manager</string>
+    <string name="sensor_consumption">consumption (mAh):</string>
+    <string name="sensor_values">Values:</string>
+</resources>

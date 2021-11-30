@@ -1,0 +1,1 @@
+This is the JAVA API to connect to Android devices and collect sensor's data.
