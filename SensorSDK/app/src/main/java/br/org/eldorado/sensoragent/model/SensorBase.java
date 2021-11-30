@@ -16,6 +16,7 @@ public class SensorBase implements Parcelable {
     public static final int TYPE_LUMINOSITY = Sensor.TYPE_LIGHT;
     public static final int TYPE_PROXIMITY = Sensor.TYPE_PROXIMITY;
     public static final int TYPE_MAGNETIC_FIELD = Sensor.TYPE_MAGNETIC_FIELD;
+    public static final int TYPE_GRAVITY = Sensor.TYPE_GRAVITY;
 
 
     private long timestamp;
@@ -90,7 +91,7 @@ public class SensorBase implements Parcelable {
         if (s == null || s.getValuesArray() == null) {
             log.i("Sensor not started");
             isStarted = false;
-            listener.onSensorStopped();
+            listener.onSensorStopped(this);
             return;
         }
         this.timestamp = s.getTimestamp();
@@ -99,10 +100,10 @@ public class SensorBase implements Parcelable {
         log.i("Update information " + toString());
         if (!isStarted) {
             //isStarted = true;
-            listener.onSensorStarted();
+            listener.onSensorStarted(this);
             controller.startGettingInformationThread(this);
         } else {
-            this.listener.onSensorChanged();
+            this.listener.onSensorChanged(this);
         }
     }
 
@@ -127,7 +128,7 @@ public class SensorBase implements Parcelable {
 
     public void stopSensor() {
         controller.stopSensor(this);
-        listener.onSensorStopped();
+        listener.onSensorStopped(this);
     }
 
     @Override

@@ -162,7 +162,7 @@ public class SensorController {
                 try {
                     Thread.sleep(1000);
                     startGettingInformationThread(sensor);
-                    sensor.getListener().onSensorStarted();
+                    sensor.getListener().onSensorStarted(sensor);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
@@ -173,7 +173,7 @@ public class SensorController {
         public void onSensorStopped(int sensorType) throws RemoteException {
             SensorBase sensor = sensorMap.get(sensorType);
             if (sensor != null && sensor.getListener() != null) {
-                sensor.getListener().onSensorStopped();
+                sensor.getListener().onSensorStopped(sensor);
             }
         }
     }

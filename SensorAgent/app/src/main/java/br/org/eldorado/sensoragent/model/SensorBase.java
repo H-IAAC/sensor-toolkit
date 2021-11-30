@@ -24,6 +24,7 @@ public class SensorBase implements SensorEventListener, Parcelable {
     public static final int TYPE_LIGHT = Sensor.TYPE_LIGHT;
     public static final int TYPE_PROXIMITY = Sensor.TYPE_PROXIMITY;
     public static final int TYPE_MAGNETIC_FIELD = Sensor.TYPE_MAGNETIC_FIELD;
+    public static final int TYPE_GRAVITY = Sensor.TYPE_GRAVITY;
 
     protected SensorManager sensorManager;
     protected long timestamp;
@@ -40,9 +41,7 @@ public class SensorBase implements SensorEventListener, Parcelable {
 
     public SensorBase(Parcel in) {
         timestamp = in.readLong();
-        log.i("SensorBase - " + (values == null ? "null" : values[0]));
         in.readFloatArray(values);
-        log.i("SensorBase2 - " + (values == null ? "null" : values[0]));
         power = in.readFloat();
     }
 
@@ -72,7 +71,7 @@ public class SensorBase implements SensorEventListener, Parcelable {
 
     public void registerListener(Sensor sensor) {
         log.i("Starting sensor");
-        sensorManager.registerListener(this, sensor, SensorManager.SENSOR_DELAY_GAME);
+        sensorManager.registerListener(this, sensor, SensorManager.SENSOR_DELAY_FASTEST);
     }
 
     public void unregisterListener() {
