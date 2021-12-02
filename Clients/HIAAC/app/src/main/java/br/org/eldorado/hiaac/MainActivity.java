@@ -1,76 +1,76 @@
 package br.org.eldorado.hiaac;
 
+import android.content.Intent;
 import android.os.Bundle;
-
-import com.google.android.material.snackbar.Snackbar;
-
-import androidx.appcompat.app.AppCompatActivity;
-
-import android.view.View;
-
-import androidx.navigation.NavController;
-import androidx.navigation.Navigation;
-import androidx.navigation.ui.AppBarConfiguration;
-import androidx.navigation.ui.NavigationUI;
-
-import br.org.eldorado.hiaac.databinding.ActivityMainBinding;
-
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.Observer;
+import androidx.lifecycle.ViewModelProvider;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
+
+import java.util.List;
+
+import br.org.eldorado.hiaac.data.LabelConfigViewModel;
+import br.org.eldorado.hiaac.view.adapter.LabelRecyclerViewAdapter;
 
 public class MainActivity extends AppCompatActivity {
+    public static final int NEW_LABEL_CONFIG_ACTIVITY = 1;
+    public static final int UPDATE_LABEL_CONFIG_ACTIVITY = 2;
+    public static final String LABEL_CONFIG_ACTIVITY_TYPE = "label_config_type";
+    public static final String LABEL_CONFIG_ACTIVITY_ID = "label_config_id";
 
-    private AppBarConfiguration appBarConfiguration;
-    private ActivityMainBinding binding;
+    private FloatingActionButton mAddButton;
+    private LabelConfigViewModel mLabelConfigViewModel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
 
-        binding = ActivityMainBinding.inflate(getLayoutInflater());
-        setContentView(binding.getRoot());
-
-        setSupportActionBar(binding.toolbar);
-
-        NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_content_main);
-        appBarConfiguration = new AppBarConfiguration.Builder(navController.getGraph()).build();
-        NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
-
-        binding.fab.setOnClickListener(new View.OnClickListener() {
+        RecyclerView recyclerView = (RecyclerView) findViewById(R.id.label_recycle_view);
+        LabelRecyclerViewAdapter adapter = new LabelRecyclerViewAdapter(this);
+        recyclerView.setAdapter(adapter);
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        mLabelConfigViewModel = ViewModelProvider.AndroidViewModelFactory
+                .getInstance(getApplication()).create(LabelConfigViewModel.class);
+        mLabelConfigViewModel.getAllLabels().observe(this, new Observer<List<String>>() {
             @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
+            public void onChanged(List<String> strings) {
+                adapter.setLabelConfigs(strings);
+            }
+        });
+
+        mAddButton = findViewById(R.id.add_new_label);
+        mAddButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(getApplicationContext(), LabelOptionsActivity.class);
+                intent.putExtra(LABEL_CONFIG_ACTIVITY_TYPE, NEW_LABEL_CONFIG_ACTIVITY);
+                startActivity(intent);
             }
         });
     }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_main, menu);
         return true;
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
-        //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
             return true;
         }
 
         return super.onOptionsItemSelected(item);
-    }
-
-    @Override
-    public boolean onSupportNavigateUp() {
-        NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_content_main);
-        return NavigationUI.navigateUp(navController, appBarConfiguration)
-                || super.onSupportNavigateUp();
     }
 }

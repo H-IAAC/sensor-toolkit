@@ -9,4 +9,10 @@
 
     <string name="hello_first_fragment">Hello first fragment</string>
     <string name="hello_second_fragment">Hello second fragment. Arg: %1$s</string>
+    <string name="label">Label</string>
+    <string name="start">Start</string>
+    <string name="stop">Stop</string>
+    <string name="edit">Edit</string>
+    <string name="label_title">Label title</string>
+    <string name="delete_label">Delete label</string>
 </resources>
