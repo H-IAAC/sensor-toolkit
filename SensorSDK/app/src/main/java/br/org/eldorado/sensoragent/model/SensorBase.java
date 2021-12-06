@@ -35,7 +35,7 @@ public class SensorBase implements Parcelable {
     public SensorBase(String sensorClass, int type) {
         this.log = new Log(sensorClass);
         this.listener = null;
-        this.frequency = 5;
+        this.frequency = 1;
         this.name = sensorClass;
         this.type = type;
         this.values = new float[1];
