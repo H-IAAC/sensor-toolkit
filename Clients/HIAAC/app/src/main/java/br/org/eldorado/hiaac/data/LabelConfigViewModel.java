@@ -9,7 +9,7 @@ import java.util.List;
 
 public class LabelConfigViewModel extends AndroidViewModel {
     private LabelConfigRepository mRepository;
-    private LiveData<List<String>> mAllLabels;
+    private LiveData<List<LabelConfig>> mAllLabels;
 
     public LabelConfigViewModel(Application application) {
         super(application);
@@ -17,7 +17,7 @@ public class LabelConfigViewModel extends AndroidViewModel {
         mAllLabels = mRepository.getAllLabels();
     }
 
-    public LiveData<List<String>> getAllLabels() {
+    public LiveData<List<LabelConfig>> getAllLabels() {
         return mAllLabels;
     }
 

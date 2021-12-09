@@ -74,7 +74,7 @@ public class ExecutionController {
     }
 
     private void setExecutionTimer(DataTrack dataTrack) {
-        new CountDownTimer(10000, 1000) {
+        new CountDownTimer(dataTrack.getStopTime() * 1000, 1000) {
 
             @Override
             public void onTick(long millisUntilFinished) {
