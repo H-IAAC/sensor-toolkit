@@ -4,6 +4,9 @@ import static br.org.eldorado.hiaac.MainActivity.LABEL_CONFIG_ACTIVITY_ID;
 import static br.org.eldorado.hiaac.MainActivity.LABEL_CONFIG_ACTIVITY_TYPE;
 import static br.org.eldorado.hiaac.MainActivity.UPDATE_LABEL_CONFIG_ACTIVITY;
 
+import android.app.AlertDialog;
+import android.app.Dialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
@@ -13,9 +16,12 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.DialogFragment;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 
@@ -98,14 +104,29 @@ public class LabelOptionsActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()) {
             case R.id.delete_label_button:
-                if (mCurrentConfig != null) {
-                    mLabelConfigViewModel.deleteConfig(mCurrentConfig);
-                    Intent intent = new Intent(getApplicationContext(), MainActivity.class);
-                    startActivity(intent);
-                }
+                DeleteDialogFragment deleteDialogFragment = new DeleteDialogFragment(
+                        new DeleteDialogListener() {
+                            @Override
+                            public void onConfirmClick() {
+                                Toast.makeText(getApplicationContext(),
+                                        R.string.configuration_deleted, Toast.LENGTH_LONG).show();
+                                deleteCurrentConfig();
+                            }
+                        }
+                );
+                deleteDialogFragment.show(getSupportFragmentManager().beginTransaction(),
+                        DeleteDialogFragment.class.toString());
                 return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    private void deleteCurrentConfig() {
+        if (mCurrentConfig != null) {
+            mLabelConfigViewModel.deleteConfig(mCurrentConfig);
+            Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+            startActivity(intent);
+        }
     }
 
     private void updateFields() {
@@ -139,5 +160,33 @@ public class LabelOptionsActivity extends AppCompatActivity {
         }
         Intent intent = new Intent(getApplicationContext(), MainActivity.class);
         startActivity(intent);
+    }
+
+    public static class DeleteDialogFragment extends DialogFragment {
+        private DeleteDialogListener mListener;
+
+        public DeleteDialogFragment(DeleteDialogListener listener) {
+            this.mListener = listener;
+        }
+
+        @NonNull
+        @Override
+        public Dialog onCreateDialog(@Nullable Bundle savedInstanceState) {
+            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+            builder.setMessage(R.string.delete_config_confirmation)
+                    .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            mListener.onConfirmClick();
+                        }
+                    })
+                    .setNegativeButton(R.string.no, null);
+
+            return builder.create();
+        }
+    }
+
+    public interface DeleteDialogListener {
+        void onConfirmClick();
     }
 }
