@@ -10,7 +10,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.IBinder;
-import android.os.RemoteException;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -24,18 +23,14 @@ import java.util.List;
 
 import br.org.eldorado.hiaac.LabelOptionsActivity;
 import br.org.eldorado.hiaac.R;
-import br.org.eldorado.hiaac.controller.ExecutionController;
 import br.org.eldorado.hiaac.data.LabelConfig;
 import br.org.eldorado.hiaac.layout.AnimatedLinearLayout;
 import br.org.eldorado.hiaac.model.DataTrack;
 import br.org.eldorado.hiaac.service.ExecutionService;
-import br.org.eldorado.hiaac.service.listener.ExecutionServiceListener;
 import br.org.eldorado.hiaac.service.listener.ExecutionServiceListenerAdapter;
 import br.org.eldorado.hiaac.util.Log;
 import br.org.eldorado.hiaac.util.Tools;
 import br.org.eldorado.sensoragent.model.Accelerometer;
-import br.org.eldorado.sensoragent.model.Gyroscope;
-import br.org.eldorado.sensoragent.model.ISensorAgent;
 
 public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecyclerViewAdapter.ViewHolder> {
     private static final String TAG = "LabelRecyclerViewAdapter";

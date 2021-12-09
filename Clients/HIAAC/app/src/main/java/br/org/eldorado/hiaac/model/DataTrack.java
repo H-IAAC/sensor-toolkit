@@ -1,14 +1,9 @@
 package br.org.eldorado.hiaac.model;
 
-import android.provider.ContactsContract;
-
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 
-import java.io.ObjectStreamException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.TreeSet;
 
 import br.org.eldorado.sensoragent.model.SensorBase;
 

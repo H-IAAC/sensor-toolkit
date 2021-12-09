@@ -1,11 +1,6 @@
 package br.org.eldorado.hiaac.controller;
 
 import android.os.CountDownTimer;
-import android.os.Handler;
-import android.os.Looper;
-
-import java.util.Timer;
-import java.util.TimerTask;
 
 import br.org.eldorado.hiaac.model.DataTrack;
 import br.org.eldorado.hiaac.service.ExecutionService;

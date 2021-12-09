@@ -8,8 +8,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Binder;
 import android.os.IBinder;
-import android.os.RemoteCallbackList;
-import android.provider.ContactsContract;
 
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
@@ -18,7 +16,6 @@ import br.org.eldorado.hiaac.R;
 import br.org.eldorado.hiaac.controller.ExecutionController;
 import br.org.eldorado.hiaac.model.DataTrack;
 import br.org.eldorado.hiaac.service.listener.ExecutionServiceListener;
-import br.org.eldorado.hiaac.service.listener.ExecutionServiceListenerAdapter;
 import br.org.eldorado.hiaac.util.Log;
 
 public class ExecutionService extends Service {
@@ -36,15 +33,9 @@ public class ExecutionService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        log = new Log(TAG);
         initService();
         return super.onStartCommand(intent, flags, startId);
-    }
-
-    public void onCreate() {
-        log = new Log(TAG);
-        /*log.i("onCreate");
-        super.onCreate();
-        initService();*/
     }
 
     private void initService() {
