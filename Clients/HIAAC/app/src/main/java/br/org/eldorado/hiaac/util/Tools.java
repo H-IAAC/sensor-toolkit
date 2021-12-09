@@ -7,6 +7,8 @@ import android.util.TypedValue;
 import android.view.View;
 import android.view.animation.AccelerateDecelerateInterpolator;
 
+import java.util.ArrayList;
+
 public class Tools {
     public enum pixelType {
         px,
@@ -59,5 +61,18 @@ public class Tools {
 
     public static int spToPx(float sp, Context context) {
         return (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, sp, context.getResources().getDisplayMetrics());
+    }
+
+    public static ArrayList<String> createTimeFormatedList(int[] values) {
+        ArrayList<String> list = new ArrayList<>();
+        for (int v : values) {
+            int hours = v / 3600;
+            int minutes = (v % 3600) / 60;
+            int seconds = v % 60;
+            String timeFormat = String.format("%02d:%02d:%02d", hours, minutes, seconds);
+            list.add(timeFormat);
+        }
+
+        return list;
     }
 }

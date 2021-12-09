@@ -1,6 +1,7 @@
 package br.org.eldorado.hiaac.data;
 
 import androidx.annotation.NonNull;
+import androidx.room.ColumnInfo;
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;
 
@@ -10,7 +11,12 @@ public class LabelConfig {
     @PrimaryKey
     public String label;
 
-    public LabelConfig(@NonNull String label) {
+    @NonNull
+    @ColumnInfo(name = "stop-time")
+    public int stopTime;
+
+    public LabelConfig(@NonNull String label, int stopTime) {
         this.label = label;
+        this.stopTime = stopTime;
     }
 }

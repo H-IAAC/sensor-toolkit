@@ -16,6 +16,7 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.List;
 
+import br.org.eldorado.hiaac.data.LabelConfig;
 import br.org.eldorado.hiaac.data.LabelConfigViewModel;
 import br.org.eldorado.hiaac.view.adapter.LabelRecyclerViewAdapter;
 
@@ -39,10 +40,10 @@ public class MainActivity extends AppCompatActivity {
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         mLabelConfigViewModel = ViewModelProvider.AndroidViewModelFactory
                 .getInstance(getApplication()).create(LabelConfigViewModel.class);
-        mLabelConfigViewModel.getAllLabels().observe(this, new Observer<List<String>>() {
+        mLabelConfigViewModel.getAllLabels().observe(this, new Observer<List<LabelConfig>>() {
             @Override
-            public void onChanged(List<String> strings) {
-                adapter.setLabelConfigs(strings);
+            public void onChanged(List<LabelConfig> labels) {
+                adapter.setLabelConfigs(labels);
             }
         });
 
