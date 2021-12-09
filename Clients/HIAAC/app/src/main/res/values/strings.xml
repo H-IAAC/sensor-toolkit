@@ -20,4 +20,5 @@
     <string name="yes">Yes</string>
     <string name="no">No</string>
     <string name="configuration_deleted">Configuration deleted</string>
+    <string name="label_title_empty">Label tile is empty</string>
 </resources>

@@ -47,7 +47,6 @@ public class LabelOptionsActivity extends AppCompatActivity {
     private boolean mIsUpdating;
 
     private EditText mLabelTile;
-    private Button mSaveButton;
     private Spinner mStopTimeSpinner;
 
     @Override
@@ -55,7 +54,6 @@ public class LabelOptionsActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_label_options);
         mLabelTile = findViewById(R.id.edit_label_name);
-        mSaveButton = findViewById(R.id.save_label_button);
         mStopTimeSpinner = findViewById(R.id.stops_at_spinner);
         mLabelConfigViewModel = ViewModelProvider.AndroidViewModelFactory
                 .getInstance(getApplication()).create(LabelConfigViewModel.class);
@@ -83,20 +81,16 @@ public class LabelOptionsActivity extends AppCompatActivity {
             default:
                 mIsUpdating = false;
         }
-
-        mSaveButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                onSaveButtonClick();
-            }
-        });
     }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_label_options, menu);
+
         if (mIsUpdating) {
-            getMenuInflater().inflate(R.menu.menu_label_options, menu);
+            menu.getItem(0).setVisible(true);
         }
+
         return true;
     }
 
@@ -116,6 +110,9 @@ public class LabelOptionsActivity extends AppCompatActivity {
                 );
                 deleteDialogFragment.show(getSupportFragmentManager().beginTransaction(),
                         DeleteDialogFragment.class.toString());
+                return true;
+            case R.id.save_label_button:
+                onSaveButtonClick();
                 return true;
         }
         return super.onOptionsItemSelected(item);
@@ -144,7 +141,13 @@ public class LabelOptionsActivity extends AppCompatActivity {
     }
 
     private void onSaveButtonClick() {
-        String label = mLabelTile.getText().toString();
+        String label = mLabelTile.getText().toString().trim();
+        if (label.isEmpty()) {
+            Toast.makeText(getApplicationContext(),
+                    R.string.label_title_empty, Toast.LENGTH_LONG).show();
+            return;
+        }
+
         int spinnerPosition = mStopTimeSpinner.getSelectedItemPosition();
         int stopTime = stopTimeOptions[spinnerPosition];
         LabelConfig newConfig = new LabelConfig(label, stopTime);
