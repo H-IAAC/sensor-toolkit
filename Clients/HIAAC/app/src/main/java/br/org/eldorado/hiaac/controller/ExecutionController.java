@@ -6,6 +6,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import br.org.eldorado.hiaac.model.DataTrack;
+import br.org.eldorado.hiaac.service.ExecutionService;
 import br.org.eldorado.hiaac.service.listener.ExecutionServiceListener;
 import br.org.eldorado.hiaac.util.Log;
 import br.org.eldorado.sensoragent.model.SensorBase;
@@ -22,6 +23,7 @@ public class ExecutionController {
     private Log log;
     private boolean isRunning;
     private ExecutionServiceListener listener;
+    private ExecutionService service;
 
     public static ExecutionController getInstance() {
         if (inst == null) {
@@ -36,7 +38,7 @@ public class ExecutionController {
             this.listener = listener;
             try {
                 for (SensorBase sensor : dataTrack.getSensorList()) {
-                    sensor.registerListener(new MySensorListener());
+                    sensor.registerListener(new MySensorListener(dataTrack));
                     sensor.startSensor();
                 }
                 setExecutionTimer(dataTrack);
@@ -47,6 +49,10 @@ public class ExecutionController {
         }
     }
 
+    public void setService(ExecutionService svr) {
+        this.service = svr;
+    }
+
     public void stopExecution(DataTrack dataTrack) {
         if (isRunning) {
             isRunning = false;
@@ -54,6 +60,11 @@ public class ExecutionController {
                 sensor.stopSensor();
             }
             listener.onStopped();
+            dataTrack = null;
+            if (service != null) {
+                service.stopForeground(true);
+                service = null;
+            }
         }
     }
 
@@ -67,7 +78,7 @@ public class ExecutionController {
 
             @Override
             public void onTick(long millisUntilFinished) {
-                listener.onRunning(millisUntilFinished);
+                fireExecutionListener(TYPE_TICK, millisUntilFinished);
             }
 
             @Override
@@ -75,14 +86,6 @@ public class ExecutionController {
                 stopExecution(dataTrack);
             }
         }.start();
-
-        /*Timer timer = new Timer();
-        timer.schedule(new TimerTask() {
-            @Override
-            public void run() {
-                stopExecution(dataTrack);
-            }
-        }, 1000*10); */// TODO get time from dataTrack
     }
 
     private void fireExecutionListener(int type, long remainingTime){
@@ -102,6 +105,12 @@ public class ExecutionController {
     }
 
     private class MySensorListener implements SensorSDKListener {
+
+        private DataTrack dataTrack;
+
+        public MySensorListener(DataTrack data) {
+            this.dataTrack = data;
+        }
 
         @Override
         public void onSensorStarted(SensorBase sensor) {}

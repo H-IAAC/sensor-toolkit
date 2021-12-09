@@ -50,7 +50,6 @@ public class ExecutionService extends Service {
                 .setPriority(NotificationManager.IMPORTANCE_LOW)
                 .setCategory(NotificationCompat.CATEGORY_SERVICE)
                 .build();
-
         startForeground(9667, notification);
     }
 
@@ -72,14 +71,13 @@ public class ExecutionService extends Service {
 
     public void startExecution(DataTrack dataTrack, ExecutionServiceListener l) {
         this.dataTrack = dataTrack;
+        ExecutionController.getInstance().setService(this);
         ExecutionController.getInstance().startExecution(dataTrack, l);
     }
 
     public void stopExecution() {
         if (dataTrack != null) {
             ExecutionController.getInstance().stopExecution(dataTrack);
-            this.dataTrack = null;
-            stopSelf();
         }
     }
 }
