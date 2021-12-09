@@ -10,9 +10,15 @@ public class DataTrack {
 
     private List<SensorBase> sensorList;
     private String label;
+    private int stopTime;
 
-    public DataTrack() {
+    public DataTrack(int stopTime) {
         sensorList = new ArrayList<SensorBase>();
+        this.stopTime = stopTime;
+    }
+
+    public int getStopTime() {
+        return stopTime;
     }
 
     public String getLabel() {

@@ -24,6 +24,7 @@ import java.util.List;
 import br.org.eldorado.hiaac.LabelOptionsActivity;
 import br.org.eldorado.hiaac.R;
 import br.org.eldorado.hiaac.controller.ExecutionController;
+import br.org.eldorado.hiaac.data.LabelConfig;
 import br.org.eldorado.hiaac.layout.AnimatedLinearLayout;
 import br.org.eldorado.hiaac.model.DataTrack;
 import br.org.eldorado.hiaac.service.ExecutionService;
@@ -36,7 +37,7 @@ import br.org.eldorado.sensoragent.model.ISensorAgent;
 public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecyclerViewAdapter.ViewHolder> {
     private static final String TAG = "LabelRecyclerViewAdapter";
     private final LayoutInflater mInflater;
-    private List<String> labelConfigs;
+    private List<LabelConfig> labelConfigs;
     private Context mContext;
     private ExecutionService execService;
     private Log log;
@@ -47,7 +48,7 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
         log = new Log(TAG);
     }
 
-    public void setLabelConfigs(List<String> labels) {
+    public void setLabelConfigs(List<LabelConfig> labels) {
         this.labelConfigs = labels;
         notifyDataSetChanged();
     }
@@ -61,7 +62,7 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
 
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
-        String labelTitle = labelConfigs.get(position);
+        String labelTitle = labelConfigs.get(position).label;
         holder.getLabelTitle().setText(labelTitle);
         holder.getLabelTitle().setOnClickListener(new View.OnClickListener() {
             @Override
@@ -110,7 +111,7 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
                             ExecutionService.MyBinder binder = (ExecutionService.MyBinder) service;
                             execService = binder.getServer();
 
-                            DataTrack dt = new DataTrack();
+                            DataTrack dt = new DataTrack(labelConfigs.get(position).stopTime);
                             dt.addSensor(new Accelerometer());
                             dt.addSensor(new Gyroscope());
                             execService.startExecution(dt, new ExecutionServiceListener() {

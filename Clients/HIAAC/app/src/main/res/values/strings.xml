@@ -15,4 +15,5 @@
     <string name="edit">Edit</string>
     <string name="label_title">Label title</string>
     <string name="delete_label">Delete label</string>
+    <string name="stops_at">Stops at:</string>
 </resources>
