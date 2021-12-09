@@ -66,13 +66,16 @@ public class Tools {
     public static ArrayList<String> createTimeFormatedList(int[] values) {
         ArrayList<String> list = new ArrayList<>();
         for (int v : values) {
-            int hours = v / 3600;
-            int minutes = (v % 3600) / 60;
-            int seconds = v % 60;
-            String timeFormat = String.format("%02d:%02d:%02d", hours, minutes, seconds);
-            list.add(timeFormat);
+            list.add(getFormatedTime(v));
         }
 
         return list;
+    }
+
+    public static String getFormatedTime(int v) {
+        int hours = v / 3600;
+        int minutes = (v % 3600) / 60;
+        int seconds = v % 60;
+        return String.format("%02d:%02d:%02d", hours, minutes, seconds);
     }
 }

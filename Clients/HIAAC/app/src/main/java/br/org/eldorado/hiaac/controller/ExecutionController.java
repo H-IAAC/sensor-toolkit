@@ -1,6 +1,8 @@
 package br.org.eldorado.hiaac.controller;
 
 import android.os.CountDownTimer;
+import android.os.Handler;
+import android.os.Looper;
 
 import java.util.Timer;
 import java.util.TimerTask;
@@ -24,6 +26,7 @@ public class ExecutionController {
     private boolean isRunning;
     private ExecutionServiceListener listener;
     private ExecutionService service;
+    private CountDownTimer timer;
 
     public static ExecutionController getInstance() {
         if (inst == null) {
@@ -32,20 +35,27 @@ public class ExecutionController {
         return inst;
     }
 
-    public void startExecution(DataTrack dataTrack, ExecutionServiceListener listener) {
-        if (!isRunning) {
-            isRunning = true;
-            this.listener = listener;
-            try {
+    public boolean isRunning() {
+        return isRunning;
+    }
+
+    public void setListener(ExecutionServiceListener lst) {
+        this.listener = lst;
+    }
+
+    public void startExecution(DataTrack dataTrack) {
+        try {
+            if (!isRunning) {
                 for (SensorBase sensor : dataTrack.getSensorList()) {
-                    sensor.registerListener(new MySensorListener(dataTrack));
                     sensor.startSensor();
+                    sensor.registerListener(new MySensorListener(dataTrack));
                 }
                 setExecutionTimer(dataTrack);
+                isRunning = true;
                 listener.onStarted();
-            } catch (Exception e) {
-                e.printStackTrace();
             }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -53,16 +63,17 @@ public class ExecutionController {
         this.service = svr;
     }
 
-    public void stopExecution(DataTrack dataTrack) {
+    public void stopExecution(final DataTrack dataTrack) {
         if (isRunning) {
             isRunning = false;
+            timer.cancel();
             for (SensorBase sensor : dataTrack.getSensorList()) {
                 sensor.stopSensor();
             }
             listener.onStopped();
-            dataTrack = null;
             if (service != null) {
                 service.stopForeground(true);
+                service.stopSelf();
                 service = null;
             }
         }
@@ -74,18 +85,20 @@ public class ExecutionController {
     }
 
     private void setExecutionTimer(DataTrack dataTrack) {
-        new CountDownTimer(dataTrack.getStopTime() * 1000, 1000) {
+        if (!isRunning) {
+            timer = new CountDownTimer(dataTrack.getStopTime() * 1000, 1000) {
 
-            @Override
-            public void onTick(long millisUntilFinished) {
-                fireExecutionListener(TYPE_TICK, millisUntilFinished);
-            }
+                @Override
+                public void onTick(long millisUntilFinished) {
+                    fireExecutionListener(TYPE_TICK, millisUntilFinished);
+                }
 
-            @Override
-            public void onFinish() {
-                stopExecution(dataTrack);
-            }
-        }.start();
+                @Override
+                public void onFinish() {
+                    stopExecution(dataTrack);
+                }
+            }.start();
+        }
     }
 
     private void fireExecutionListener(int type, long remainingTime){
@@ -113,10 +126,14 @@ public class ExecutionController {
         }
 
         @Override
-        public void onSensorStarted(SensorBase sensor) {}
+        public void onSensorStarted(SensorBase sensor) {
+            log.d("Sensor STARTED");
+        }
 
         @Override
-        public void onSensorStopped(SensorBase sensor) {}
+        public void onSensorStopped(SensorBase sensor) {
+            log.d("Sensor STOPED");
+        }
 
         @Override
         public void onSensorChanged(SensorBase sensor) {

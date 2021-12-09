@@ -1,8 +1,11 @@
 package br.org.eldorado.hiaac.service.listener;
 
+import br.org.eldorado.hiaac.model.DataTrack;
+
 public interface ExecutionServiceListener {
 
-    public void onRunning(long remainingTime);
-    public void onStopped();
-    public void onStarted();
+    DataTrack getDataTrack();
+    void onRunning(long remainingTime);
+    void onStopped();
+    void onStarted();
 }

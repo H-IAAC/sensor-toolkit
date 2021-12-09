@@ -4,6 +4,7 @@ import static br.org.eldorado.hiaac.MainActivity.LABEL_CONFIG_ACTIVITY_ID;
 import static br.org.eldorado.hiaac.MainActivity.LABEL_CONFIG_ACTIVITY_TYPE;
 import static br.org.eldorado.hiaac.MainActivity.UPDATE_LABEL_CONFIG_ACTIVITY;
 
+import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -29,7 +30,9 @@ import br.org.eldorado.hiaac.layout.AnimatedLinearLayout;
 import br.org.eldorado.hiaac.model.DataTrack;
 import br.org.eldorado.hiaac.service.ExecutionService;
 import br.org.eldorado.hiaac.service.listener.ExecutionServiceListener;
+import br.org.eldorado.hiaac.service.listener.ExecutionServiceListenerAdapter;
 import br.org.eldorado.hiaac.util.Log;
+import br.org.eldorado.hiaac.util.Tools;
 import br.org.eldorado.sensoragent.model.Accelerometer;
 import br.org.eldorado.sensoragent.model.Gyroscope;
 import br.org.eldorado.sensoragent.model.ISensorAgent;
@@ -40,6 +43,7 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
     private List<LabelConfig> labelConfigs;
     private Context mContext;
     private ExecutionService execService;
+    private ServiceConnection svc;
     private Log log;
 
     public LabelRecyclerViewAdapter(Context context) {
@@ -60,9 +64,9 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
         return new ViewHolder(view);
     }
 
-    @Override
+
     public void onBindViewHolder(ViewHolder holder, int position) {
-        String labelTitle = labelConfigs.get(position).label;
+        String labelTitle = labelConfigs.get(holder.getAdapterPosition()).label;
         holder.getLabelTitle().setText(labelTitle);
         holder.getLabelTitle().setOnClickListener(new View.OnClickListener() {
             @Override
@@ -76,6 +80,8 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
                 }
             }
         });
+        holder.getLabelTimer().setText(
+                Tools.getFormatedTime(labelConfigs.get(holder.getAdapterPosition()).stopTime).substring(3));
 
         Button editButton = holder.getEditButton();
         editButton.setOnClickListener(new View.OnClickListener() {
@@ -103,54 +109,111 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
         startButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                ServiceConnection svc = new ServiceConnection() {
-                    @Override
-                    public void onServiceConnected(ComponentName name, IBinder service) {
-                        try {
-                            log.d("Connected");
-                            ExecutionService.MyBinder binder = (ExecutionService.MyBinder) service;
-                            execService = binder.getServer();
+                startExecution(holder);
+            }
+        });
+        checkExecution(holder);
+    }
 
-                            DataTrack dt = new DataTrack(labelConfigs.get(position).stopTime);
-                            dt.addSensor(new Accelerometer());
-                            dt.addSensor(new Gyroscope());
-                            execService.startExecution(dt, new ExecutionServiceListener() {
+    private void startExecution(ViewHolder holder) {
+        svc = new ServiceConnection() {
+            @Override
+            public void onServiceConnected(ComponentName name, IBinder service) {
+                try {
+                    log.d("Connected");
+                    ExecutionService.MyBinder binder = (ExecutionService.MyBinder) service;
+                    execService = binder.getServer();
+
+                    DataTrack dt = new DataTrack();
+                    dt.setStopTime(labelConfigs.get(holder.getAdapterPosition()).stopTime);
+                    dt.setLabel(labelConfigs.get(holder.getAdapterPosition()).label);
+                    dt.addSensor(new Accelerometer());
+
+                    execService.startExecution(new ExecutionServiceListenerAdapter(dt) {
+                        @Override
+                        public void onRunning(long remainingTime) {
+                            // update clock ui
+                            ((Activity)mContext).runOnUiThread(new Runnable() {
                                 @Override
-                                public void onRunning(long remainingTime) {
-                                    // update clock ui
+                                public void run() {
+                                    String labelTimer = Tools.getFormatedTime((int)remainingTime/1000);
+                                    holder.getLabelTimer().setText(labelTimer.substring(3));
                                 }
+                            });
+                        }
 
+                        @Override
+                        public void onStopped() {
+                            // Enable buttons
+                            ((Activity)mContext).runOnUiThread(new Runnable() {
                                 @Override
-                                public void onStopped() {
-                                    // Enable buttons
+                                public void run() {
                                     holder.getEditButton().setEnabled(true);
                                     holder.getStartButton().setEnabled(true);
                                     holder.getStopButton().setEnabled(false);
+                                    holder.getLabelTimer().setText(
+                                            Tools.getFormatedTime(labelConfigs.get(holder.getAdapterPosition()).stopTime).substring(3));
                                 }
+                            });
+                        }
 
+                        @Override
+                        public void onStarted() {
+                            // Disable buttons
+                            ((Activity)mContext).runOnUiThread(new Runnable() {
                                 @Override
-                                public void onStarted() {
-                                    // Disable buttons
+                                public void run() {
                                     holder.getEditButton().setEnabled(false);
                                     holder.getStartButton().setEnabled(false);
                                     holder.getStopButton().setEnabled(true);
                                 }
                             });
-                        } catch (Exception e) {
-                            e.printStackTrace();
                         }
-                    }
-
-                    @Override
-                    public void onServiceDisconnected(ComponentName name) {
-                    }
-                };
-
-                Intent execServiceIntent = new Intent(mContext, ExecutionService.class);
-                mContext.startForegroundService(execServiceIntent);
-                mContext.bindService(execServiceIntent, svc, Context.BIND_AUTO_CREATE);
+                    });
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
-        });
+
+            @Override
+            public void onServiceDisconnected(ComponentName name) {}
+        };
+
+        Intent execServiceIntent = new Intent(mContext, ExecutionService.class);
+        mContext.startForegroundService(execServiceIntent);
+        mContext.bindService(execServiceIntent, svc, Context.BIND_AUTO_CREATE);
+    }
+
+    private void checkExecution(ViewHolder holder) {
+        svc = new ServiceConnection() {
+            @Override
+            public void onServiceConnected(ComponentName name, IBinder service) {
+                try {
+                    log.d("checking");
+                    ExecutionService.MyBinder binder = (ExecutionService.MyBinder) service;
+                    execService = binder.getServer();
+                    DataTrack dt = new DataTrack();
+                    dt.setStopTime(labelConfigs.get(holder.getAdapterPosition()).stopTime);
+                    dt.setLabel(labelConfigs.get(holder.getAdapterPosition()).label);
+                    dt.addSensor(new Accelerometer());
+                    if (dt.equals(execService.isRunning())) {
+                        holder.getEditButton().setEnabled(false);
+                        holder.getStartButton().setEnabled(false);
+                        holder.getStopButton().setEnabled(true);
+                        startExecution(holder);
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+
+            @Override
+            public void onServiceDisconnected(ComponentName name) {}
+        };
+
+        Intent execServiceIntent = new Intent(mContext, ExecutionService.class);
+        mContext.startForegroundService(execServiceIntent);
+        mContext.bindService(execServiceIntent, svc, Context.BIND_AUTO_CREATE);
     }
 
     @Override
@@ -165,6 +228,7 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
         private boolean isOpened;
 
         private TextView labelTitle;
+        private TextView labelTimer;
         private AnimatedLinearLayout buttonContainer;
         private Button startButton;
         private Button stopButton;
@@ -174,6 +238,7 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
             super(itemView);
             isOpened = false;
             labelTitle = (TextView) itemView.findViewById(R.id.label_title);
+            labelTimer = (TextView) itemView.findViewById(R.id.label_timer);
             buttonContainer = (AnimatedLinearLayout) itemView.findViewById(R.id.label_button_container);
             startButton = (Button) itemView.findViewById(R.id.start_sampling_button);
             stopButton = (Button) itemView.findViewById(R.id.stop_sampling_button);
@@ -186,6 +251,10 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
 
         public TextView getLabelTitle() {
             return labelTitle;
+        }
+
+        public TextView getLabelTimer() {
+            return labelTimer;
         }
 
         public AnimatedLinearLayout getButtonContainer() {

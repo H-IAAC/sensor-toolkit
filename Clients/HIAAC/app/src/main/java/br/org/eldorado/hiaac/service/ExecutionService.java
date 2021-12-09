@@ -18,6 +18,7 @@ import br.org.eldorado.hiaac.R;
 import br.org.eldorado.hiaac.controller.ExecutionController;
 import br.org.eldorado.hiaac.model.DataTrack;
 import br.org.eldorado.hiaac.service.listener.ExecutionServiceListener;
+import br.org.eldorado.hiaac.service.listener.ExecutionServiceListenerAdapter;
 import br.org.eldorado.hiaac.util.Log;
 
 public class ExecutionService extends Service {
@@ -34,11 +35,16 @@ public class ExecutionService extends Service {
     }
 
     @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        initService();
+        return super.onStartCommand(intent, flags, startId);
+    }
+
     public void onCreate() {
         log = new Log(TAG);
-        log.i("onCreate");
+        /*log.i("onCreate");
         super.onCreate();
-        initService();
+        initService();*/
     }
 
     private void initService() {
@@ -69,10 +75,19 @@ public class ExecutionService extends Service {
         return mBinder;
     }
 
-    public void startExecution(DataTrack dataTrack, ExecutionServiceListener l) {
-        this.dataTrack = dataTrack;
-        ExecutionController.getInstance().setService(this);
-        ExecutionController.getInstance().startExecution(dataTrack, l);
+    public DataTrack isRunning() {
+        return dataTrack;
+    }
+
+    public void startExecution(ExecutionServiceListener l) {
+        ExecutionController ctrl = ExecutionController.getInstance();
+        log.d("startExecution: " + (l.getDataTrack().equals(this.dataTrack)));
+        if (!ctrl.isRunning() || l.getDataTrack().equals(this.dataTrack)) {
+            this.dataTrack = l.getDataTrack();
+            ctrl.setService(this);
+            ctrl.setListener(l);
+            ctrl.startExecution(dataTrack);
+        }
     }
 
     public void stopExecution() {
