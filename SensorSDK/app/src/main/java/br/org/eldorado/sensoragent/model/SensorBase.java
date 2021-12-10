@@ -18,6 +18,9 @@ public class SensorBase implements Parcelable {
     public static final int TYPE_MAGNETIC_FIELD = Sensor.TYPE_MAGNETIC_FIELD;
     public static final int TYPE_GRAVITY = Sensor.TYPE_GRAVITY;
 
+    private static final int ON_STARTED = 0;
+    private static final int ON_STOPPED = 1;
+    private static final int ON_CHANGED = 2;
 
     private long timestamp;
     private String name;
@@ -30,7 +33,7 @@ public class SensorBase implements Parcelable {
     private boolean isStarted;
     private int frequency;
 
-    /* TODO limitar funcoes se listener estiver null */
+
 
     public SensorBase(String sensorClass, int type) {
         this.log = new Log(sensorClass);
@@ -91,7 +94,7 @@ public class SensorBase implements Parcelable {
         if (s == null || s.getValuesArray() == null) {
             log.i("Sensor not started");
             isStarted = false;
-            listener.onSensorStopped(this);
+            fireListener(ON_STOPPED);
             return;
         }
         this.timestamp = s.getTimestamp();
@@ -100,10 +103,10 @@ public class SensorBase implements Parcelable {
         log.i("Update information " + toString());
         if (!isStarted) {
             //isStarted = true;
-            listener.onSensorStarted(this);
+            fireListener(ON_STARTED);
             controller.startGettingInformationThread(this);
         } else {
-            this.listener.onSensorChanged(this);
+            fireListener(ON_CHANGED);
         }
     }
 
@@ -128,7 +131,23 @@ public class SensorBase implements Parcelable {
 
     public void stopSensor() {
         controller.stopSensor(this);
-        listener.onSensorStopped(this);
+        fireListener(ON_STOPPED);
+    }
+
+    private void fireListener(int type) {
+        if (listener != null) {
+            switch (type) {
+                case ON_STARTED:
+                    listener.onSensorStarted(this);
+                    break;
+                case ON_STOPPED:
+                    listener.onSensorStopped(this);
+                    break;
+                case ON_CHANGED:
+                    listener.onSensorChanged(this);
+                    break;
+            }
+        }
     }
 
     @Override

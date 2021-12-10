@@ -1,8 +1,9 @@
 package br.org.eldorado.hiaac.model;
 
+import androidx.annotation.NonNull;
+
 import java.util.ArrayList;
 import java.util.List;
-import java.util.TreeSet;
 
 import br.org.eldorado.sensoragent.model.SensorBase;
 
@@ -12,9 +13,16 @@ public class DataTrack {
     private String label;
     private int stopTime;
 
-    public DataTrack(int stopTime) {
+    public DataTrack() {
         sensorList = new ArrayList<SensorBase>();
-        this.stopTime = stopTime;
+    }
+
+    public void setStopTime(int stp) {
+        this.stopTime = stp;
+    }
+
+    public void setLabel(String lbl) {
+        this.label = lbl;
     }
 
     public int getStopTime() {
@@ -31,5 +39,22 @@ public class DataTrack {
 
     public List<SensorBase> getSensorList() {
         return sensorList;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof DataTrack) {
+            DataTrack dt = (DataTrack) obj;
+            if (dt.getLabel().equals(getLabel())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @NonNull
+    @Override
+    public String toString() {
+        return getLabel() + " " + getStopTime();
     }
 }

@@ -8,8 +8,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Binder;
 import android.os.IBinder;
-import android.os.RemoteCallbackList;
-import android.provider.ContactsContract;
 
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
@@ -34,11 +32,10 @@ public class ExecutionService extends Service {
     }
 
     @Override
-    public void onCreate() {
+    public int onStartCommand(Intent intent, int flags, int startId) {
         log = new Log(TAG);
-        log.i("onCreate");
-        super.onCreate();
         initService();
+        return super.onStartCommand(intent, flags, startId);
     }
 
     private void initService() {
@@ -50,7 +47,6 @@ public class ExecutionService extends Service {
                 .setPriority(NotificationManager.IMPORTANCE_LOW)
                 .setCategory(NotificationCompat.CATEGORY_SERVICE)
                 .build();
-
         startForeground(9667, notification);
     }
 
@@ -70,16 +66,24 @@ public class ExecutionService extends Service {
         return mBinder;
     }
 
-    public void startExecution(DataTrack dataTrack, ExecutionServiceListener l) {
-        this.dataTrack = dataTrack;
-        ExecutionController.getInstance().startExecution(dataTrack, l);
+    public DataTrack isRunning() {
+        return dataTrack;
+    }
+
+    public void startExecution(ExecutionServiceListener l) {
+        ExecutionController ctrl = ExecutionController.getInstance();
+        log.d("startExecution: " + (l.getDataTrack().equals(this.dataTrack)));
+        if (!ctrl.isRunning() || l.getDataTrack().equals(this.dataTrack)) {
+            this.dataTrack = l.getDataTrack();
+            ctrl.setService(this);
+            ctrl.setListener(l);
+            ctrl.startExecution(dataTrack);
+        }
     }
 
     public void stopExecution() {
         if (dataTrack != null) {
             ExecutionController.getInstance().stopExecution(dataTrack);
-            this.dataTrack = null;
-            stopSelf();
         }
     }
 }

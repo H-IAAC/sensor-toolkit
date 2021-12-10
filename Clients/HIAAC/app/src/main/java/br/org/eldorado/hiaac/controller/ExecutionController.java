@@ -2,10 +2,8 @@ package br.org.eldorado.hiaac.controller;
 
 import android.os.CountDownTimer;
 
-import java.util.Timer;
-import java.util.TimerTask;
-
 import br.org.eldorado.hiaac.model.DataTrack;
+import br.org.eldorado.hiaac.service.ExecutionService;
 import br.org.eldorado.hiaac.service.listener.ExecutionServiceListener;
 import br.org.eldorado.hiaac.util.Log;
 import br.org.eldorado.sensoragent.model.SensorBase;
@@ -22,6 +20,8 @@ public class ExecutionController {
     private Log log;
     private boolean isRunning;
     private ExecutionServiceListener listener;
+    private ExecutionService service;
+    private CountDownTimer timer;
 
     public static ExecutionController getInstance() {
         if (inst == null) {
@@ -30,30 +30,47 @@ public class ExecutionController {
         return inst;
     }
 
-    public void startExecution(DataTrack dataTrack, ExecutionServiceListener listener) {
-        if (!isRunning) {
-            isRunning = true;
-            this.listener = listener;
-            try {
+    public boolean isRunning() {
+        return isRunning;
+    }
+
+    public void setListener(ExecutionServiceListener lst) {
+        this.listener = lst;
+    }
+
+    public void startExecution(DataTrack dataTrack) {
+        try {
+            if (!isRunning) {
                 for (SensorBase sensor : dataTrack.getSensorList()) {
-                    sensor.registerListener(new MySensorListener());
                     sensor.startSensor();
+                    sensor.registerListener(new MySensorListener(dataTrack));
                 }
                 setExecutionTimer(dataTrack);
+                isRunning = true;
                 listener.onStarted();
-            } catch (Exception e) {
-                e.printStackTrace();
             }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
-    public void stopExecution(DataTrack dataTrack) {
+    public void setService(ExecutionService svr) {
+        this.service = svr;
+    }
+
+    public void stopExecution(final DataTrack dataTrack) {
         if (isRunning) {
             isRunning = false;
+            timer.cancel();
             for (SensorBase sensor : dataTrack.getSensorList()) {
                 sensor.stopSensor();
             }
             listener.onStopped();
+            if (service != null) {
+                service.stopForeground(true);
+                service.stopSelf();
+                service = null;
+            }
         }
     }
 
@@ -63,26 +80,20 @@ public class ExecutionController {
     }
 
     private void setExecutionTimer(DataTrack dataTrack) {
-        new CountDownTimer(dataTrack.getStopTime() * 1000, 1000) {
+        if (!isRunning) {
+            timer = new CountDownTimer(dataTrack.getStopTime() * 1000, 1000) {
 
-            @Override
-            public void onTick(long millisUntilFinished) {
-                listener.onRunning(millisUntilFinished);
-            }
+                @Override
+                public void onTick(long millisUntilFinished) {
+                    fireExecutionListener(TYPE_TICK, millisUntilFinished);
+                }
 
-            @Override
-            public void onFinish() {
-                stopExecution(dataTrack);
-            }
-        }.start();
-
-        /*Timer timer = new Timer();
-        timer.schedule(new TimerTask() {
-            @Override
-            public void run() {
-                stopExecution(dataTrack);
-            }
-        }, 1000*10); */// TODO get time from dataTrack
+                @Override
+                public void onFinish() {
+                    stopExecution(dataTrack);
+                }
+            }.start();
+        }
     }
 
     private void fireExecutionListener(int type, long remainingTime){
@@ -103,11 +114,21 @@ public class ExecutionController {
 
     private class MySensorListener implements SensorSDKListener {
 
-        @Override
-        public void onSensorStarted(SensorBase sensor) {}
+        private DataTrack dataTrack;
+
+        public MySensorListener(DataTrack data) {
+            this.dataTrack = data;
+        }
 
         @Override
-        public void onSensorStopped(SensorBase sensor) {}
+        public void onSensorStarted(SensorBase sensor) {
+            log.d("Sensor STARTED");
+        }
+
+        @Override
+        public void onSensorStopped(SensorBase sensor) {
+            log.d("Sensor STOPED");
+        }
 
         @Override
         public void onSensorChanged(SensorBase sensor) {
