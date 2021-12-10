@@ -61,7 +61,8 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
 
 
     public void onBindViewHolder(ViewHolder holder, int position) {
-        String labelTitle = labelConfigs.get(holder.getAdapterPosition()).label;
+        LabelConfig labelConfig = labelConfigs.get(holder.getAdapterPosition());
+        String labelTitle = labelConfig.label;
         holder.getLabelTitle().setText(labelTitle);
         holder.getLabelTitle().setOnClickListener(new View.OnClickListener() {
             @Override
@@ -232,12 +233,12 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
             isOpened = false;
-            labelTitle = (TextView) itemView.findViewById(R.id.label_title);
-            labelTimer = (TextView) itemView.findViewById(R.id.label_timer);
-            buttonContainer = (AnimatedLinearLayout) itemView.findViewById(R.id.label_button_container);
-            startButton = (Button) itemView.findViewById(R.id.start_sampling_button);
-            stopButton = (Button) itemView.findViewById(R.id.stop_sampling_button);
-            editButton = (Button) itemView.findViewById(R.id.edit_sampling_button);
+            labelTitle = itemView.findViewById(R.id.label_title);
+            labelTimer = itemView.findViewById(R.id.label_timer);
+            buttonContainer = itemView.findViewById(R.id.label_button_container);
+            startButton = itemView.findViewById(R.id.start_sampling_button);
+            stopButton = itemView.findViewById(R.id.stop_sampling_button);
+            editButton = itemView.findViewById(R.id.edit_sampling_button);
         }
 
         public void setOpened(boolean opened) {
