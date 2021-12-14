@@ -20,22 +20,24 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.List;
+import java.util.Map;
 
 import br.org.eldorado.hiaac.LabelOptionsActivity;
 import br.org.eldorado.hiaac.R;
 import br.org.eldorado.hiaac.data.LabelConfig;
+import br.org.eldorado.hiaac.data.SensorFrequency;
 import br.org.eldorado.hiaac.layout.AnimatedLinearLayout;
 import br.org.eldorado.hiaac.model.DataTrack;
 import br.org.eldorado.hiaac.service.ExecutionService;
 import br.org.eldorado.hiaac.service.listener.ExecutionServiceListenerAdapter;
 import br.org.eldorado.hiaac.util.Log;
 import br.org.eldorado.hiaac.util.Tools;
-import br.org.eldorado.sensoragent.model.Accelerometer;
 
 public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecyclerViewAdapter.ViewHolder> {
     private static final String TAG = "LabelRecyclerViewAdapter";
     private final LayoutInflater mInflater;
     private List<LabelConfig> labelConfigs;
+    private Map<String, List<SensorFrequency>> sensorFrequencyMap;
     private Context mContext;
     private ExecutionService execService;
     private ServiceConnection svc;
@@ -52,6 +54,10 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
         notifyDataSetChanged();
     }
 
+    public void setSensorFrequencyMap(Map<String, List<SensorFrequency>> sensorFrequencyMap) {
+        this.sensorFrequencyMap = sensorFrequencyMap;
+    }
+
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -61,7 +67,8 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
 
 
     public void onBindViewHolder(ViewHolder holder, int position) {
-        String labelTitle = labelConfigs.get(holder.getAdapterPosition()).label;
+        LabelConfig labelConfig = labelConfigs.get(holder.getAdapterPosition());
+        String labelTitle = labelConfig.label;
         holder.getLabelTitle().setText(labelTitle);
         holder.getLabelTitle().setOnClickListener(new View.OnClickListener() {
             @Override
@@ -120,9 +127,12 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
                     execService = binder.getServer();
 
                     DataTrack dt = new DataTrack();
-                    dt.setStopTime(labelConfigs.get(holder.getAdapterPosition()).stopTime);
-                    dt.setLabel(labelConfigs.get(holder.getAdapterPosition()).label);
-                    dt.addSensor(new Accelerometer());
+                    String label = labelConfigs.get(holder.getAdapterPosition()).label;
+                    int stopTime = labelConfigs.get(holder.getAdapterPosition()).stopTime;
+
+                    dt.setStopTime(stopTime);
+                    dt.setLabel(label);
+                    dt.addSensorList(sensorFrequencyMap.get(label));
 
                     execService.startExecution(new ExecutionServiceListenerAdapter(dt) {
                         @Override
@@ -188,9 +198,12 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
                     ExecutionService.MyBinder binder = (ExecutionService.MyBinder) service;
                     execService = binder.getServer();
                     DataTrack dt = new DataTrack();
-                    dt.setStopTime(labelConfigs.get(holder.getAdapterPosition()).stopTime);
-                    dt.setLabel(labelConfigs.get(holder.getAdapterPosition()).label);
-                    dt.addSensor(new Accelerometer());
+                    String label = labelConfigs.get(holder.getAdapterPosition()).label;
+                    int stopTime = labelConfigs.get(holder.getAdapterPosition()).stopTime;
+
+                    dt.setStopTime(stopTime);
+                    dt.setLabel(label);
+                    dt.addSensorList(sensorFrequencyMap.get(label));
                     if (dt.equals(execService.isRunning())) {
                         holder.getEditButton().setEnabled(false);
                         holder.getStartButton().setEnabled(false);
@@ -232,12 +245,12 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
             isOpened = false;
-            labelTitle = (TextView) itemView.findViewById(R.id.label_title);
-            labelTimer = (TextView) itemView.findViewById(R.id.label_timer);
-            buttonContainer = (AnimatedLinearLayout) itemView.findViewById(R.id.label_button_container);
-            startButton = (Button) itemView.findViewById(R.id.start_sampling_button);
-            stopButton = (Button) itemView.findViewById(R.id.stop_sampling_button);
-            editButton = (Button) itemView.findViewById(R.id.edit_sampling_button);
+            labelTitle = itemView.findViewById(R.id.label_title);
+            labelTimer = itemView.findViewById(R.id.label_timer);
+            buttonContainer = itemView.findViewById(R.id.label_button_container);
+            startButton = itemView.findViewById(R.id.start_sampling_button);
+            stopButton = itemView.findViewById(R.id.stop_sampling_button);
+            editButton = itemView.findViewById(R.id.edit_sampling_button);
         }
 
         public void setOpened(boolean opened) {

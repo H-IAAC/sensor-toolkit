@@ -78,4 +78,13 @@ public class Tools {
         int seconds = v % 60;
         return String.format("%02d:%02d:%02d", hours, minutes, seconds);
     }
+
+    public static ArrayList<String> createHertzList(int[] values) {
+        ArrayList<String> list = new ArrayList<>();
+        for (int v : values) {
+            list.add(v + " Hz");
+        }
+
+        return list;
+    }
 }

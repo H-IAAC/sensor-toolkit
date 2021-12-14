@@ -4,7 +4,7 @@ import android.hardware.Sensor;
 
 public class Gyroscope extends SensorBase {
 
-    private static final String TAG = "Gyroscope";
+    public static final String TAG = "Gyroscope";
 
     public Gyroscope() {
         super(TAG, SensorBase.TYPE_GYROSCOPE);
