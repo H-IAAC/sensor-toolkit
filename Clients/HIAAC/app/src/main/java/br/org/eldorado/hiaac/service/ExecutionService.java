@@ -84,6 +84,7 @@ public class ExecutionService extends Service {
     public void stopExecution() {
         if (dataTrack != null) {
             ExecutionController.getInstance().stopExecution(dataTrack);
+            dataTrack = null;
         }
     }
 }

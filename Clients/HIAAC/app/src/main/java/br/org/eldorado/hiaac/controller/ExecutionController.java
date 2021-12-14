@@ -42,8 +42,8 @@ public class ExecutionController {
         try {
             if (!isRunning) {
                 for (SensorBase sensor : dataTrack.getSensorList()) {
-                    sensor.startSensor();
                     sensor.registerListener(new MySensorListener(dataTrack));
+                    sensor.startSensor();
                 }
                 setExecutionTimer(dataTrack);
                 isRunning = true;
@@ -133,7 +133,7 @@ public class ExecutionController {
         @Override
         public void onSensorChanged(SensorBase sensor) {
             /* TODO Saves data to database */
-            log.d(sensor.toString());
+            log.d(dataTrack.getLabel() + " - " + sensor.toString());
         }
     }
 }

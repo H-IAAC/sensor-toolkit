@@ -100,9 +100,9 @@ public class SensorController {
     };
 
     public void addSensor(SensorBase sensor) {
-        if (!sensorMap.containsKey(sensor.getType())) {
+        //if (!sensorMap.containsKey(sensor.getType())) {
             sensorMap.put(sensor.getType(), sensor);
-        }
+        //}
     }
 
     public void startSensor(SensorBase sensor) {
