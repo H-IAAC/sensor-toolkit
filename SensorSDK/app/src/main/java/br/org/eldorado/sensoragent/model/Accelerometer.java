@@ -5,7 +5,7 @@ import android.hardware.Sensor;
 import br.org.eldorado.sensorsdk.listener.SensorSDKListener;
 
 public class Accelerometer extends SensorBase {
-    private static final String TAG = "Accelerometer";
+    public static final String TAG = "Accelerometer";
 
     public Accelerometer() {
         super(TAG, SensorBase.TYPE_ACCELEROMETER);

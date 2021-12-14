@@ -1,7 +1,7 @@
 package br.org.eldorado.sensoragent.model;
 
 public class MagneticField extends SensorBase {
-    private static final String TAG = "MagneticField";
+    public static final String TAG = "MagneticField";
 
     public MagneticField() {
         super(TAG, SensorBase.TYPE_MAGNETIC_FIELD);

@@ -15,9 +15,12 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import br.org.eldorado.hiaac.data.LabelConfig;
 import br.org.eldorado.hiaac.data.LabelConfigViewModel;
+import br.org.eldorado.hiaac.data.SensorFrequency;
 import br.org.eldorado.hiaac.view.adapter.LabelRecyclerViewAdapter;
 
 public class MainActivity extends AppCompatActivity {
@@ -44,6 +47,15 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onChanged(List<LabelConfig> labels) {
                 adapter.setLabelConfigs(labels);
+            }
+        });
+
+        mLabelConfigViewModel.getAllSensorFrequencies().observe(this, new Observer<List<SensorFrequency>>() {
+            @Override
+            public void onChanged(List<SensorFrequency> sensorFrequencies) {
+                Map<String, List<SensorFrequency>> sensorFrequencyMap = sensorFrequencies.stream()
+                        .collect(Collectors.groupingBy(SensorFrequency::getLabel_id));
+                adapter.setSensorFrequencyMap(sensorFrequencyMap);
             }
         });
 

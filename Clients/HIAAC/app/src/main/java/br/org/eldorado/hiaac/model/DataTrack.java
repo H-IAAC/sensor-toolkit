@@ -5,16 +5,16 @@ import androidx.annotation.NonNull;
 import java.util.ArrayList;
 import java.util.List;
 
-import br.org.eldorado.sensoragent.model.SensorBase;
+import br.org.eldorado.hiaac.data.SensorFrequency;
 
 public class DataTrack {
 
-    private List<SensorBase> sensorList;
+    private List<SensorFrequency> sensorList;
     private String label;
     private int stopTime;
 
     public DataTrack() {
-        sensorList = new ArrayList<SensorBase>();
+        sensorList = new ArrayList<SensorFrequency>();
     }
 
     public void setStopTime(int stp) {
@@ -33,11 +33,11 @@ public class DataTrack {
         return label;
     }
 
-    public void addSensor(SensorBase sensor) {
-        sensorList.add(sensor);
+    public void addSensorList(List<SensorFrequency> sensorList) {
+        this.sensorList = sensorList;
     }
 
-    public List<SensorBase> getSensorList() {
+    public List<SensorFrequency> getSensorList() {
         return sensorList;
     }
 
