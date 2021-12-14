@@ -157,6 +157,9 @@ public class LabelOptionsActivity extends AppCompatActivity {
     private void deleteCurrentConfig() {
         if (mCurrentConfig != null) {
             mLabelConfigViewModel.deleteConfig(mCurrentConfig);
+            if (mSensorFrequencies != null) {
+                mLabelConfigViewModel.deleteAllSensorFrequencies(mSensorFrequencies);
+            }
             Intent intent = new Intent(getApplicationContext(), MainActivity.class);
             startActivity(intent);
         }

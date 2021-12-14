@@ -10,15 +10,21 @@ import java.util.List;
 public class LabelConfigViewModel extends AndroidViewModel {
     private LabelConfigRepository mRepository;
     private LiveData<List<LabelConfig>> mAllLabels;
+    private LiveData<List<SensorFrequency>> mAllSensorFrequencies;
 
     public LabelConfigViewModel(Application application) {
         super(application);
         mRepository = new LabelConfigRepository(application);
         mAllLabels = mRepository.getAllLabels();
+        mAllSensorFrequencies = mRepository.getAllSensorFrequencies();
     }
 
     public LiveData<List<LabelConfig>> getAllLabels() {
         return mAllLabels;
+    }
+
+    public LiveData<List<SensorFrequency>> getAllSensorFrequencies() {
+        return mAllSensorFrequencies;
     }
 
     public LiveData<LabelConfig> getLabelConfigById(String id) {

@@ -20,22 +20,24 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.List;
+import java.util.Map;
 
 import br.org.eldorado.hiaac.LabelOptionsActivity;
 import br.org.eldorado.hiaac.R;
 import br.org.eldorado.hiaac.data.LabelConfig;
+import br.org.eldorado.hiaac.data.SensorFrequency;
 import br.org.eldorado.hiaac.layout.AnimatedLinearLayout;
 import br.org.eldorado.hiaac.model.DataTrack;
 import br.org.eldorado.hiaac.service.ExecutionService;
 import br.org.eldorado.hiaac.service.listener.ExecutionServiceListenerAdapter;
 import br.org.eldorado.hiaac.util.Log;
 import br.org.eldorado.hiaac.util.Tools;
-import br.org.eldorado.sensoragent.model.Accelerometer;
 
 public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecyclerViewAdapter.ViewHolder> {
     private static final String TAG = "LabelRecyclerViewAdapter";
     private final LayoutInflater mInflater;
     private List<LabelConfig> labelConfigs;
+    private Map<String, List<SensorFrequency>> sensorFrequencyMap;
     private Context mContext;
     private ExecutionService execService;
     private ServiceConnection svc;
@@ -50,6 +52,10 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
     public void setLabelConfigs(List<LabelConfig> labels) {
         this.labelConfigs = labels;
         notifyDataSetChanged();
+    }
+
+    public void setSensorFrequencyMap(Map<String, List<SensorFrequency>> sensorFrequencyMap) {
+        this.sensorFrequencyMap = sensorFrequencyMap;
     }
 
     @NonNull
@@ -121,9 +127,12 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
                     execService = binder.getServer();
 
                     DataTrack dt = new DataTrack();
-                    dt.setStopTime(labelConfigs.get(holder.getAdapterPosition()).stopTime);
-                    dt.setLabel(labelConfigs.get(holder.getAdapterPosition()).label);
-                    dt.addSensor(new Accelerometer());
+                    String label = labelConfigs.get(holder.getAdapterPosition()).label;
+                    int stopTime = labelConfigs.get(holder.getAdapterPosition()).stopTime;
+
+                    dt.setStopTime(stopTime);
+                    dt.setLabel(label);
+                    dt.addSensorList(sensorFrequencyMap.get(label));
 
                     execService.startExecution(new ExecutionServiceListenerAdapter(dt) {
                         @Override
@@ -189,9 +198,12 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
                     ExecutionService.MyBinder binder = (ExecutionService.MyBinder) service;
                     execService = binder.getServer();
                     DataTrack dt = new DataTrack();
-                    dt.setStopTime(labelConfigs.get(holder.getAdapterPosition()).stopTime);
-                    dt.setLabel(labelConfigs.get(holder.getAdapterPosition()).label);
-                    dt.addSensor(new Accelerometer());
+                    String label = labelConfigs.get(holder.getAdapterPosition()).label;
+                    int stopTime = labelConfigs.get(holder.getAdapterPosition()).stopTime;
+
+                    dt.setStopTime(stopTime);
+                    dt.setLabel(label);
+                    dt.addSensorList(sensorFrequencyMap.get(label));
                     if (dt.equals(execService.isRunning())) {
                         holder.getEditButton().setEnabled(false);
                         holder.getStartButton().setEnabled(false);

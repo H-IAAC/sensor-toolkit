@@ -30,6 +30,10 @@ public class LabelConfigRepository {
         return mLabelConfigDao.getAllSensorsFromLabel(label);
     }
 
+    LiveData<List<SensorFrequency>> getAllSensorFrequencies() {
+        return mLabelConfigDao.getAllSensorFrequencies();
+    }
+
     public void insertNewConfig(LabelConfig config) {
         new LabelConfigAsyncTask(mLabelConfigDao, (labelConfig -> {
             mLabelConfigDao.insert(labelConfig);

@@ -2,6 +2,7 @@ package br.org.eldorado.hiaac.controller;
 
 import android.os.CountDownTimer;
 
+import br.org.eldorado.hiaac.data.SensorFrequency;
 import br.org.eldorado.hiaac.model.DataTrack;
 import br.org.eldorado.hiaac.service.ExecutionService;
 import br.org.eldorado.hiaac.service.listener.ExecutionServiceListener;
@@ -41,9 +42,10 @@ public class ExecutionController {
     public void startExecution(DataTrack dataTrack) {
         try {
             if (!isRunning) {
-                for (SensorBase sensor : dataTrack.getSensorList()) {
-                    sensor.startSensor();
-                    sensor.registerListener(new MySensorListener(dataTrack));
+                for (SensorFrequency sensorFrequency : dataTrack.getSensorList()) {
+                    sensorFrequency.sensor.setFrequency(sensorFrequency.frequency);
+                    sensorFrequency.sensor.startSensor();
+                    sensorFrequency.sensor.registerListener(new MySensorListener(dataTrack));
                 }
                 setExecutionTimer(dataTrack);
                 isRunning = true;
@@ -62,8 +64,8 @@ public class ExecutionController {
         if (isRunning) {
             isRunning = false;
             timer.cancel();
-            for (SensorBase sensor : dataTrack.getSensorList()) {
-                sensor.stopSensor();
+            for (SensorFrequency sensorFrequency : dataTrack.getSensorList()) {
+                sensorFrequency.sensor.stopSensor();
             }
             listener.onStopped();
             if (service != null) {

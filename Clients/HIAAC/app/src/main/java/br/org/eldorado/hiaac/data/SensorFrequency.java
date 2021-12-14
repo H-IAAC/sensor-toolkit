@@ -8,8 +8,8 @@ import br.org.eldorado.sensoragent.model.SensorBase;
 
 @Entity
 public class SensorFrequency {
-    public SensorFrequency(@NonNull String label, @NonNull SensorBase sensor, int frequency) {
-        this.label = label;
+    public SensorFrequency(@NonNull String label_id, @NonNull SensorBase sensor, int frequency) {
+        this.label_id = label_id;
         this.sensor = sensor;
         this.frequency = frequency;
     }
@@ -18,11 +18,16 @@ public class SensorFrequency {
     public int id;
 
     @NonNull
-    public String label;
+    public String label_id;
 
     @NonNull
     public SensorBase sensor;
 
     @NonNull
     public int frequency;
+
+    @NonNull
+    public String getLabel_id() {
+        return label_id;
+    }
 }

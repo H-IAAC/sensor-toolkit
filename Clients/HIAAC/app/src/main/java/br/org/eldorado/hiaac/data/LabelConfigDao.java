@@ -27,7 +27,7 @@ public interface LabelConfigDao {
     @Delete
     void delete(LabelConfig labelConfig);
 
-    @Query("SELECT * FROM sensorfrequency WHERE label=:label")
+    @Query("SELECT * FROM sensorfrequency WHERE label_id=:label")
     LiveData<List<SensorFrequency>> getAllSensorsFromLabel(String label);
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
@@ -35,4 +35,7 @@ public interface LabelConfigDao {
 
     @Delete
     void deleteAllSensorFrequencies(List<SensorFrequency> sensorFrequencies);
+
+    @Query("SELECT * FROM sensorfrequency")
+    LiveData<List<SensorFrequency>> getAllSensorFrequencies();
 }
