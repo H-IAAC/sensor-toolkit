@@ -1,5 +1,6 @@
 package br.org.eldorado.hiaac.service;
 
+import android.app.Application;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;

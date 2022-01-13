@@ -64,6 +64,23 @@ public class LabelConfigRepository {
             return null;})).execute(frequencies);
     }
 
+    public void insertLabeledData(LabeledData data) {
+        new LabeledDataAsyncTask(mLabelConfigDao, (labeledData -> {
+            mLabelConfigDao.insertLabeledData(labeledData);
+            return null;})).execute(data);
+    }
+
+    List<LabeledData> getLabeledData(String label) {
+        return mLabelConfigDao.getLabeledData(label);
+    }
+
+    void deleteLabeledData(LabeledData label) {
+        new LabeledDataAsyncTask(mLabelConfigDao, (labeledData -> {
+            mLabelConfigDao.deleteLabeledData(label.getLabel());
+            return null;})).execute(label);
+        //mLabelConfigDao.deleteLabeledData(label);
+    }
+
     private static class LabelConfigAsyncTask extends AsyncTask<LabelConfig, Void, Void> {
 
         private LabelConfigDao mAsyncTaskDao;
@@ -93,6 +110,23 @@ public class LabelConfigRepository {
 
         @Override
         protected Void doInBackground(List<SensorFrequency>... lists) {
+            mFunction.apply(lists[0]);
+            return null;
+        }
+    }
+
+    private static class LabeledDataAsyncTask extends AsyncTask<LabeledData, Void, Void> {
+
+        private LabelConfigDao mAsyncTaskDao;
+        private Function<LabeledData, Void> mFunction;
+
+        public LabeledDataAsyncTask(LabelConfigDao dao, Function<LabeledData, Void> function) {
+            this.mAsyncTaskDao = dao;
+            this.mFunction = function;
+        }
+
+        @Override
+        protected Void doInBackground(LabeledData... lists) {
             mFunction.apply(lists[0]);
             return null;
         }

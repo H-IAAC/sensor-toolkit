@@ -9,6 +9,7 @@ public class Accelerometer extends SensorBase {
 
     public Accelerometer() {
         super(TAG, SensorBase.TYPE_ACCELEROMETER);
+        values = new float[3];
     }
 
     public String getValuesString() {

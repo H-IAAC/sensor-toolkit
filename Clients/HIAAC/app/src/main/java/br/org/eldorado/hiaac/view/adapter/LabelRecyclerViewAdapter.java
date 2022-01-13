@@ -5,6 +5,8 @@ import static br.org.eldorado.hiaac.MainActivity.LABEL_CONFIG_ACTIVITY_TYPE;
 import static br.org.eldorado.hiaac.MainActivity.UPDATE_LABEL_CONFIG_ACTIVITY;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -14,6 +16,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -26,6 +30,8 @@ import br.org.eldorado.hiaac.LabelOptionsActivity;
 import br.org.eldorado.hiaac.R;
 import br.org.eldorado.hiaac.data.LabelConfig;
 import br.org.eldorado.hiaac.data.SensorFrequency;
+import br.org.eldorado.hiaac.firebase.FirebaseListener;
+import br.org.eldorado.hiaac.firebase.FirebaseUploadController;
 import br.org.eldorado.hiaac.layout.AnimatedLinearLayout;
 import br.org.eldorado.hiaac.model.DataTrack;
 import br.org.eldorado.hiaac.service.ExecutionService;
@@ -96,6 +102,14 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
             }
         });
 
+        ImageView shareButton = holder.getShareButton();
+        shareButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                sendData(holder);
+            }
+        });
+
         Button stopButton = holder.getStopButton();
         stopButton.setEnabled(false);
         stopButton.setOnClickListener(new View.OnClickListener() {
@@ -115,6 +129,34 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
             }
         });
         checkExecution(holder);
+    }
+
+    private void sendData(ViewHolder holder) {
+        final ProgressDialog dialog = ProgressDialog.show(mContext, "Upload CSV File", "Creating CSV", true);
+        FirebaseUploadController firebase = new FirebaseUploadController(mContext);
+        firebase.registerListener(new FirebaseListener() {
+
+            @Override
+            public void onProgress(String message) {
+                dialog.setMessage(message);
+            }
+
+            @Override
+            public void onCompleted(String message) {
+                ((Activity)mContext).runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        dialog.cancel();
+                        AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
+                        builder.setTitle(message);
+                        builder.setIcon(R.drawable.ic_baseline_success);
+                        AlertDialog dl = builder.create();
+                        dl.show();
+                    }
+                });
+            }
+        });
+        firebase.uploadCSVFile(labelConfigs.get(holder.getAdapterPosition()).label);
     }
 
     private void startExecution(ViewHolder holder) {
@@ -184,6 +226,7 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
             public void onServiceDisconnected(ComponentName name) {}
         };
 
+        holder.getStartButton().setEnabled(false);
         Intent execServiceIntent = new Intent(mContext, ExecutionService.class);
         mContext.startForegroundService(execServiceIntent);
         mContext.bindService(execServiceIntent, svc, Context.BIND_AUTO_CREATE);
@@ -241,6 +284,7 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
         private Button startButton;
         private Button stopButton;
         private Button editButton;
+        private ImageView shareButton;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -251,6 +295,7 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
             startButton = itemView.findViewById(R.id.start_sampling_button);
             stopButton = itemView.findViewById(R.id.stop_sampling_button);
             editButton = itemView.findViewById(R.id.edit_sampling_button);
+            shareButton = itemView.findViewById(R.id.share_sampling_button);
         }
 
         public void setOpened(boolean opened) {
@@ -279,6 +324,10 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
 
         public Button getEditButton() {
             return editButton;
+        }
+
+        public ImageView getShareButton() {
+            return shareButton;
         }
     }
 }

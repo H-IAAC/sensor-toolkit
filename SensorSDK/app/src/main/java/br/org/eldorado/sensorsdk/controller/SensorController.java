@@ -108,6 +108,7 @@ public class SensorController {
     public void startSensor(SensorBase sensor) {
         try {
             log.i("Starting sensor " + sensor.getName());
+            addSensor(sensor);
             sensorAgent.startSensor(sensor.getType());
         } catch (RemoteException e) {
             e.printStackTrace();
@@ -138,7 +139,7 @@ public class SensorController {
             new Thread(new Runnable() {
                 @Override
                 public void run() {
-                    log.i("Starting getting information thread for " + sensor.getName() + " isSatrted: " + sensor.isStarted());
+                    log.i("Starting getting information thread for " + sensor.getName() + " isSatrted: " + sensor.isStarted() + " Frequency: " + sensor.getFrequency());
                     while (sensor.isStarted()) {
                         try {
                             getInformation(sensor);
@@ -158,6 +159,7 @@ public class SensorController {
         @Override
         public void onSensorStarted(int sensorType) throws RemoteException {
             SensorBase sensor = sensorMap.get(sensorType);
+            log.d("onSensorStarted " + sensor.getListener());
             if (sensor != null && sensor.getListener() != null) {
                 try {
                     Thread.sleep(1000);

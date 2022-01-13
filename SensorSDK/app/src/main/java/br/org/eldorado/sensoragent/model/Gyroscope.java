@@ -8,6 +8,7 @@ public class Gyroscope extends SensorBase {
 
     public Gyroscope() {
         super(TAG, SensorBase.TYPE_GYROSCOPE);
+        values = new float[3];
 
     }
 

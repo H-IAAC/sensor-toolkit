@@ -54,4 +54,16 @@ public class LabelConfigViewModel extends AndroidViewModel {
     public void deleteAllSensorFrequencies(List<SensorFrequency> sensorFrequencies) {
         mRepository.deleteAllSensorFrequencies(sensorFrequencies);
     }
+
+    public void insertLabeledData(LabeledData labeledData) {
+        mRepository.insertLabeledData(labeledData);
+    }
+
+    public List<LabeledData> getLabeledData(String label) {
+        return mRepository.getLabeledData(label);
+    }
+
+    public void deleteLabeledData(LabeledData label) {
+        mRepository.deleteLabeledData(label);
+    }
 }

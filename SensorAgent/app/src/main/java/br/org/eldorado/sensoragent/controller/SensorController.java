@@ -95,7 +95,7 @@ public class SensorController {
         }
     }
 
-    private void notifyAndroidClients(int type, int sensorType) throws RemoteException {
+    private synchronized void notifyAndroidClients(int type, int sensorType) throws RemoteException {
         mListener.beginBroadcast();
         for(int i=0; i < mListener.getRegisteredCallbackCount(); i++){
             ISensorAgentListener list = mListener.getBroadcastItem(i);

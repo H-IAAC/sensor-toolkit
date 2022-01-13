@@ -5,6 +5,7 @@ public class MagneticField extends SensorBase {
 
     public MagneticField() {
         super(TAG, SensorBase.TYPE_MAGNETIC_FIELD);
+        values = new float[3];
     }
 
     public String getValuesString() {
