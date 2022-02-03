@@ -3,6 +3,12 @@
     xmlns:tools="http://schemas.android.com/tools"
     tools:context="br.org.eldorado.hiaac.MainActivity">
     <item
+        android:id="@+id/action_plot"
+        android:orderInCategory="100"
+        android:title="Representation"
+        app:showAsAction="never" />
+
+    <item
         android:id="@+id/action_settings"
         android:orderInCategory="100"
         android:title="@string/action_settings"

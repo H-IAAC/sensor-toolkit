@@ -87,7 +87,7 @@ public class FirebaseUploadController {
                 } catch (Exception e) {
                     e.printStackTrace();
                 }*/
-                File csvFile = createCSVFile(labeledData);
+                File csvFile = createCSVFile(labeledData, labelName);
                 Uri file = Uri.fromFile(csvFile);
                 fireListener(ON_PROGRESS, mContext.getString(R.string.starting_upload_file));
 
@@ -104,7 +104,7 @@ public class FirebaseUploadController {
                     @Override
                     public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
                         log.d("onSuccess ");
-                        csvFile.delete();
+//                        csvFile.delete();
                         dbView.deleteLabeledData(labeledData.get(0));
                         fireListener(SUCCESS, null);
                     }
@@ -120,11 +120,12 @@ public class FirebaseUploadController {
         }).start();
     }
 
-    private File createCSVFile(List<LabeledData> data) {
+    private File createCSVFile(List<LabeledData> data, String labelName) {
         DateFormat df = new SimpleDateFormat("yyyyMMdd.HHmm");
         File csvFile = new File(
                 mContext.getFilesDir().getAbsolutePath() +
                         File.separator +
+                        labelName + "_" +
                         df.format(new Date(System.currentTimeMillis())) +
                         ".csv");
         try {

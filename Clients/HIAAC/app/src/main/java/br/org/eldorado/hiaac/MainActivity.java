@@ -12,6 +12,8 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.chaquo.python.Python;
+import com.chaquo.python.android.AndroidPlatform;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.List;
@@ -68,6 +70,10 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(intent);
             }
         });
+
+        if (!Python.isStarted()) {
+            Python.start(new AndroidPlatform(this));
+        }
     }
 
     @Override
@@ -79,6 +85,13 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
+
+        if (id == R.id.action_plot) {
+            Intent intent = new Intent(getApplicationContext(), PlotsNavigationActivity.class);
+            startActivity(intent);
+
+            return true;
+        }
 
         if (id == R.id.action_settings) {
             return true;

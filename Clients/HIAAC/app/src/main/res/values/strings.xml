@@ -25,4 +25,8 @@
     <string name="no">No</string>
     <string name="configuration_deleted">Configuration deleted</string>
     <string name="label_title_empty">Label tile is empty</string>
+    <string name="plot">Plot</string>
+    <string name="title_activity_plots_navigation">PlotsNavigationActivity</string>
+    <string name="create">Create</string>
+    <string name="plots">Plots</string>
 </resources>
