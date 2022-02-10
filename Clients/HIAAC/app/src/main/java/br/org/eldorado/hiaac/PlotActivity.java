@@ -14,6 +14,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
+import android.webkit.WebView;
 import android.widget.ImageView;
 
 import com.chaquo.python.PyException;
@@ -21,10 +22,15 @@ import com.chaquo.python.PyObject;
 import com.chaquo.python.Python;
 import com.chaquo.python.android.AndroidPlatform;
 
+import java.io.File;
 import java.util.List;
 
 public class PlotActivity extends AppCompatActivity {
-    private ImageView imageView;
+    public static final String HTML_FILE = "plot.html";
+    private static final String TAG = "PlotActivity";
+
+    private WebView webView;
+    private String filePath;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,28 +48,33 @@ public class PlotActivity extends AppCompatActivity {
         String plotType = extras.getString(PLOT_TYPE);
         String[] args = extras.getStringArray(SELECTED_FILES);
 
-        imageView = findViewById(R.id.plot_image);
+        webView = findViewById(R.id.plot_web_view);
+        filePath = this.getDataDir().getAbsolutePath() + File.separator + HTML_FILE;
+        Log.d(TAG, "Filepath: " + filePath);
         final ProgressDialog dialog = ProgressDialog.show(this, "Plot", "Ploting image...", true);
-        new PyExecuteAsyncTask(dialog, imageView, plotType).execute(args);
+        new PyExecuteAsyncTask(dialog, webView, plotType).execute(args);
     }
 
-    private class PyExecuteAsyncTask extends AsyncTask<String, Void, Bitmap> {
+    private class PyExecuteAsyncTask extends AsyncTask<String, Void, Boolean> {
         private ProgressDialog dialog;
-        private ImageView imageView;
+        private WebView webView;
         private String plotType;
 
-        public PyExecuteAsyncTask(ProgressDialog dialog, ImageView imageView, String plotType) {
+        public PyExecuteAsyncTask(ProgressDialog dialog, WebView webView, String plotType) {
             this.dialog = dialog;
-            this.imageView = imageView;
+            this.webView = webView;
             this.plotType = plotType;
         }
 
         @Override
-        protected void onPostExecute(Bitmap bitmap) {
-            super.onPostExecute(bitmap);
+        protected void onPostExecute(Boolean success) {
+            super.onPostExecute(success);
             this.dialog.cancel();
-            if (bitmap != null) {
-                imageView.setImageBitmap(bitmap);
+            if (success) {
+                webView.loadUrl(filePath);
+                webView.getSettings().setJavaScriptEnabled(true);
+                webView.getSettings().setAllowContentAccess(true);
+                webView.getSettings().setAllowFileAccess(true);
 
                 View focus = getCurrentFocus();
                 if (focus != null) {
@@ -74,18 +85,17 @@ public class PlotActivity extends AppCompatActivity {
         }
 
         @Override
-        protected Bitmap doInBackground(String... args) {
+        protected Boolean doInBackground(String... args) {
             try {
                 Python py = Python.getInstance();
                 PyObject module = py.getModule("plot");
 
-                byte[] bytes = module.callAttr(plotType, args).toJava(byte[].class);
-                Bitmap bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
-                return bitmap;
+                module.callAttr(plotType, args);
+                return true;
             } catch (PyException e) {
-                Log.e("PlotActivity", e.toString());
+                Log.e(TAG, e.toString());
             }
-            return null;
+            return false;
         }
     }
 }
