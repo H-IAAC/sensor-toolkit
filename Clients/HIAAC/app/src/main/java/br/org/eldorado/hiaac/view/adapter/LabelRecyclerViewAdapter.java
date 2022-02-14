@@ -1,5 +1,6 @@
 package br.org.eldorado.hiaac.view.adapter;
 
+import static android.content.Context.MEDIA_SESSION_SERVICE;
 import static br.org.eldorado.hiaac.MainActivity.LABEL_CONFIG_ACTIVITY_ID;
 import static br.org.eldorado.hiaac.MainActivity.LABEL_CONFIG_ACTIVITY_TYPE;
 import static br.org.eldorado.hiaac.MainActivity.UPDATE_LABEL_CONFIG_ACTIVITY;
@@ -9,9 +10,12 @@ import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.os.CountDownTimer;
 import android.os.IBinder;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -21,8 +25,12 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -75,6 +83,20 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
     public void onBindViewHolder(ViewHolder holder, int position) {
         LabelConfig labelConfig = labelConfigs.get(holder.getAdapterPosition());
         String labelTitle = labelConfig.label;
+
+        RecyclerView csvList = holder.getCsvRecyclerView();
+        File directory = new File(
+                mContext.getFilesDir().getAbsolutePath() +
+                        File.separator +
+                        labelTitle);
+        List<File> filesList = new ArrayList<File>();
+        if (directory.exists()) {
+            filesList = Arrays.asList(directory.listFiles());
+        }
+        final int filesSize = filesList.size();
+        csvList.setAdapter(new CSVFilesRecyclerAdapter(mContext, filesList));
+        csvList.setLayoutManager(new LinearLayoutManager(mContext));
+
         holder.getLabelTitle().setText(labelTitle);
         holder.getLabelTitle().setOnClickListener(new View.OnClickListener() {
             @Override
@@ -83,7 +105,11 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
                     holder.getButtonContainer().close();
                     holder.setOpened(false);
                 } else {
-                    holder.getButtonContainer().expand(60);
+                    if (filesSize > 0) {
+                        holder.getButtonContainer().expand(300);
+                    } else {
+                        holder.getButtonContainer().expand(60);
+                    }
                     holder.setOpened(true);
                 }
             }
@@ -128,37 +154,73 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
                 startExecution(holder);
             }
         });
+
         checkExecution(holder);
     }
 
     private void sendData(ViewHolder holder) {
-        final ProgressDialog dialog = ProgressDialog.show(mContext, "Upload CSV File", "Creating CSV", true);
+        final ProgressDialog dialog = ProgressDialog.show(mContext, "Export to CSV File", "Creating CSV", true);
         FirebaseUploadController firebase = new FirebaseUploadController(mContext);
         firebase.registerListener(new FirebaseListener() {
 
             @Override
             public void onProgress(String message) {
-                dialog.setMessage(message);
+                ((Activity)mContext).runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (message.equals(mContext.getString(R.string.share_with_firebase))) {
+
+                            AlertDialog.Builder aDialogBuilder = new AlertDialog.Builder(mContext);
+                            AlertDialog aDialog = aDialogBuilder.create();
+                            aDialog.setTitle(mContext.getString(R.string.share_with_firebase_title));
+                            aDialog.setMessage(message);
+
+                            aDialog.setButton(DialogInterface.BUTTON_NEGATIVE, mContext.getString(R.string.no), new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialogInt, int which) {
+                                    aDialog.dismiss();
+                                    onSendDataCompleted(mContext.getString(R.string.success), dialog);
+                                }
+                            });
+                            aDialog.setButton(DialogInterface.BUTTON_POSITIVE, mContext.getString(R.string.yes), new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialogInt, int which) {
+                                    aDialog.dismiss();
+                                    firebase.uploadCSVFile(labelConfigs.get(holder.getAdapterPosition()).label);
+                                }
+                            });
+                            aDialog.show();
+
+                        } else {
+                            dialog.setMessage(message);
+                        }
+                    }
+                });
             }
 
             @Override
             public void onCompleted(String message) {
-                ((Activity)mContext).runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        dialog.cancel();
-                        AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
-                        builder.setTitle(message);
-                        builder.setIcon(R.drawable.ic_baseline_success);
-                        AlertDialog dl = builder.create();
-                        dl.show();
-                    }
-                });
+                onSendDataCompleted(message, dialog);
             }
         });
-        firebase.uploadCSVFile(labelConfigs.get(holder.getAdapterPosition()).label);
+        firebase.exportToCSV(labelConfigs.get(holder.getAdapterPosition()).label);
     }
 
+    private void onSendDataCompleted(String message, ProgressDialog dialog) {
+        ((Activity)mContext).runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                dialog.cancel();
+                AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
+                builder.setTitle(message);
+                builder.setIcon(R.drawable.ic_baseline_success);
+                AlertDialog dl = builder.create();
+                dl.show();
+            }
+        });
+    }
+
+    AlertDialog dialog;
     private void startExecution(ViewHolder holder) {
         svc = new ServiceConnection() {
             @Override
@@ -227,9 +289,37 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
         };
 
         holder.getStartButton().setEnabled(false);
-        Intent execServiceIntent = new Intent(mContext, ExecutionService.class);
-        mContext.startForegroundService(execServiceIntent);
-        mContext.bindService(execServiceIntent, svc, Context.BIND_AUTO_CREATE);
+
+
+        AlertDialog.Builder timer = new AlertDialog.Builder(mContext);
+        //timer.setTitle();
+        dialog = timer.create();
+        dialog.setTitle(mContext.getString(R.string.experiment_timer_title));
+        dialog.setMessage("\t 10");
+        dialog.setCancelable(false);
+        CountDownTimer countDown = new CountDownTimer(9000, 1000) {
+            @Override
+            public void onTick(long timeRemaining) {
+                ((Activity)mContext).runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        dialog.setMessage("\t" + timeRemaining/1000);
+                    }
+                });
+            }
+            @Override
+            public void onFinish() {
+                dialog.dismiss();
+                Intent execServiceIntent = new Intent(mContext, ExecutionService.class);
+                mContext.startForegroundService(execServiceIntent);
+                mContext.bindService(execServiceIntent, svc, Context.BIND_AUTO_CREATE);
+            }
+        };
+        dialog.show();
+        TextView messageView = (TextView)dialog.findViewById(android.R.id.message);
+        messageView.setGravity(Gravity.CENTER);
+        messageView.setTextSize(30);
+        countDown.start();
     }
 
     private void checkExecution(ViewHolder holder) {
@@ -285,6 +375,7 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
         private Button stopButton;
         private Button editButton;
         private ImageView shareButton;
+        private RecyclerView csvRecyclerView;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -296,6 +387,7 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
             stopButton = itemView.findViewById(R.id.stop_sampling_button);
             editButton = itemView.findViewById(R.id.edit_sampling_button);
             shareButton = itemView.findViewById(R.id.share_sampling_button);
+            csvRecyclerView = itemView.findViewById(R.id.csvfiles_reclyclerView);
         }
 
         public void setOpened(boolean opened) {
@@ -308,6 +400,10 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
 
         public TextView getLabelTimer() {
             return labelTimer;
+        }
+
+        public RecyclerView getCsvRecyclerView() {
+            return csvRecyclerView;
         }
 
         public AnimatedLinearLayout getButtonContainer() {

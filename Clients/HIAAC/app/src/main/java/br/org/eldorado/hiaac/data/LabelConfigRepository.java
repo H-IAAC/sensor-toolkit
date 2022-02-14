@@ -9,6 +9,10 @@ import java.util.List;
 import java.util.function.Function;
 
 public class LabelConfigRepository {
+
+    public static final int TYPE_FIREBASE = 0;
+    public static final int TYPE_CSV = 1;
+
     private LabelConfigDao mLabelConfigDao;
     private LiveData<List<LabelConfig>> mAllLabels;
 
@@ -70,8 +74,17 @@ public class LabelConfigRepository {
             return null;})).execute(data);
     }
 
-    List<LabeledData> getLabeledData(String label) {
-        return mLabelConfigDao.getLabeledData(label);
+    public List<LabeledData> getLabeledData(String label, int type) {
+        if (type == TYPE_FIREBASE) {
+            return mLabelConfigDao.getLabeledData(label);
+        } else {
+            return mLabelConfigDao.getLabeledDataCsv(label);
+        }
+    }
+
+
+    public void updateLabeledData( List<LabeledData> dt) {
+        mLabelConfigDao.updateLabeledData(dt);
     }
 
     void deleteLabeledData(LabeledData label) {

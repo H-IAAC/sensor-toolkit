@@ -33,6 +33,9 @@ public class LabeledData {
     @ColumnInfo(name = "sensor-values")
     private String sensorValues;
 
+    @ColumnInfo(name = "data-used")
+    private int isDataUsed;
+
     private SensorBase sensor;
 
     public LabeledData(String label, SensorBase sensor) {
@@ -43,6 +46,7 @@ public class LabeledData {
         this.frequency = sensor.getFrequency();
         this.sensorValues = sensor.getValuesString();
         this.power = sensor.getPower();
+        this.isDataUsed = 0;
     }
 
     public int getId() {
@@ -102,15 +106,26 @@ public class LabeledData {
     }
 
     public String[] getCSVFormattedString() {
-        return new String[]{label, sensorName, sensorValues.replaceAll("\n", ", "), String.valueOf(power), String.valueOf(frequency), String.valueOf(timestamp)};
+        String[] values = sensorValues.split(",");
+        return new String[]{label, sensorName, String.valueOf(power), String.valueOf(frequency), String.valueOf(timestamp),
+                            values[0], values.length > 1 ? values[1] : "-",
+                            values.length > 2 ? values[2] : "-"};
     }
 
     public String[] getCSVHeaders() {
-        return new String[]{"Label", "Sensor Name", "Sensor Values", "Power Consumption (mAh)", "Sensor Frequency (Hz)",
-                            "Timestamp"};
+        return new String[]{"Label", "Sensor Name", "Power Consumption (mAh)", "Sensor Frequency (Hz)",
+                            "Timestamp", "Value 1", "Value 2", "Value 3"};
     }
 
     public SensorBase getSensor() {
         return sensor;
+    }
+
+    public int getIsDataUsed() {
+        return isDataUsed;
+    }
+
+    public void setIsDataUsed(int isDataUsed) {
+        this.isDataUsed = isDataUsed;
     }
 }

@@ -29,6 +29,7 @@ import java.util.Locale;
 
 import br.org.eldorado.hiaac.R;
 import br.org.eldorado.hiaac.controller.ExecutionController;
+import br.org.eldorado.hiaac.data.LabelConfigRepository;
 import br.org.eldorado.hiaac.data.LabelConfigViewModel;
 import br.org.eldorado.hiaac.data.LabeledData;
 import br.org.eldorado.hiaac.model.DataTrack;
@@ -41,6 +42,8 @@ public class FirebaseUploadController {
     private static final int SUCCESS = 0;
     private static final int ERROR = 1;
     private static final int ON_PROGRESS = 2;
+    private static final int TYPE_FIREBASE = 3;
+    private static final int TYPE_CSV = 4;
 
     private Context mContext;
     private FirebaseListener listener;
@@ -63,7 +66,7 @@ public class FirebaseUploadController {
             public void run() {
                 /* Create the CSV file if there are data for that and upload to firebase
                  *  If the upload is successful, delete the data from database */
-                List<LabeledData> labeledData = dbView.getLabeledData(labelName);
+                List<LabeledData> labeledData = dbView.getLabeledData(labelName, LabelConfigRepository.TYPE_FIREBASE);
                 if (labeledData == null || labeledData.size() == 0) {
                     fireListener(ERROR, "No data");
                     return;
@@ -72,21 +75,9 @@ public class FirebaseUploadController {
                 fireListener(ON_PROGRESS, mContext.getString(R.string.creating_csv_file));
 
                 FirebaseStorage storage = FirebaseStorage.getInstance();
+                storage.setMaxUploadRetryTimeMillis(2000);
                 StorageReference csvRef = storage.getReference().child(labelName+ File.separator + "csv");
 
-
-                /*File f = new File(mContext.getFilesDir().getAbsolutePath()+File.separator+"newfile.txt");
-                try {
-                    OutputStreamWriter o = new OutputStreamWriter(new FileOutputStream(f));
-                    o.write("testando essa bagaca\n".toCharArray());
-                    o.write("testando essa bagaca\n".toCharArray());
-                    o.write("testando essa bagaca\n".toCharArray());
-                    o.write("testando essa bagaca\n".toCharArray());
-                    o.write("testando essa bagaca\n".toCharArray());
-                    o.close();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }*/
                 File csvFile = createCSVFile(labeledData);
                 Uri file = Uri.fromFile(csvFile);
                 fireListener(ON_PROGRESS, mContext.getString(R.string.starting_upload_file));
@@ -120,11 +111,38 @@ public class FirebaseUploadController {
         }).start();
     }
 
+    public void exportToCSV(String label) {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                List<LabeledData> labeledData = dbView.getLabeledData(label, LabelConfigRepository.TYPE_CSV);
+                if (labeledData == null || labeledData.size() == 0) {
+                    fireListener(ERROR, "No data");
+                    return;
+                }
+                fireListener(ON_PROGRESS, mContext.getString(R.string.creating_csv_file));
+                File csvFile = createCSVFile(labeledData);
+                fireListener(ON_PROGRESS, mContext.getString(R.string.share_with_firebase));
+            }
+        }).start();
+    }
+
     private File createCSVFile(List<LabeledData> data) {
         DateFormat df = new SimpleDateFormat("yyyyMMdd.HHmm");
+        File directory = new File(
+                mContext.getFilesDir().getAbsolutePath() +
+                File.separator +
+                data.get(0).getLabel());
+        if (!directory.exists()) {
+            directory.mkdir();
+        }
+
         File csvFile = new File(
                 mContext.getFilesDir().getAbsolutePath() +
                         File.separator +
+                        data.get(0).getLabel() +
+                        File.separator +
+                        data.get(0).getLabel() + "_" +
                         df.format(new Date(System.currentTimeMillis())) +
                         ".csv");
         try {
@@ -134,13 +152,19 @@ public class FirebaseUploadController {
             writer.writeNext(data.get(0).getCSVHeaders());
             for (LabeledData dt : data) {
                 writer.writeNext(dt.getCSVFormattedString());
+                dt.setIsDataUsed(1);
             }
             writer.close();
             Locale.setDefault(l);
+            dbView.updateLabeledData(data);
         } catch (Exception e) {
             e.printStackTrace();
         }
         return csvFile;
+    }
+
+    private void getLabeledData() {
+
     }
 
     private void fireListener(int type, String msg) {

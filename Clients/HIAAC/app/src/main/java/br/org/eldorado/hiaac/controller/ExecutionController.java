@@ -1,9 +1,16 @@
 package br.org.eldorado.hiaac.controller;
 
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.content.Context;
+import android.content.Intent;
+import android.graphics.Color;
 import android.os.CountDownTimer;
 
+import androidx.core.app.NotificationCompat;
 import androidx.lifecycle.ViewModelProvider;
 
+import br.org.eldorado.hiaac.R;
 import br.org.eldorado.hiaac.data.LabelConfigViewModel;
 import br.org.eldorado.hiaac.data.LabeledData;
 import br.org.eldorado.hiaac.data.SensorFrequency;
