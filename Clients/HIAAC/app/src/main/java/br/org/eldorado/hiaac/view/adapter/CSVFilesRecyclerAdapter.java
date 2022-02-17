@@ -39,6 +39,12 @@ public class CSVFilesRecyclerAdapter extends RecyclerView.Adapter<CSVFilesRecycl
         log = new Log(TAG);
     }
 
+    public void updateFileList(List<File> list) {
+        this.csvFileList.clear();
+        this.csvFileList.addAll(list);
+        notifyDataSetChanged();
+    }
+
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -75,6 +81,15 @@ public class CSVFilesRecyclerAdapter extends RecyclerView.Adapter<CSVFilesRecycl
                 }
             }
         });
+
+        holder.getDeleteBtn().setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                csvFileList.remove(holder.getAdapterPosition());
+                csvFile.delete();
+                notifyItemRemoved(holder.getAdapterPosition());
+            }
+        });
     }
 
     @Override
@@ -85,12 +100,14 @@ public class CSVFilesRecyclerAdapter extends RecyclerView.Adapter<CSVFilesRecycl
     public class ViewHolder extends RecyclerView.ViewHolder {
 
         private ImageView fileImg;
+        private ImageView deleteImg;
         private TextView fileName;
         private CardView csvFile;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
             fileImg = (ImageView) itemView.findViewById(R.id.csv_file_img);
+            deleteImg = (ImageView) itemView.findViewById(R.id.delete_csv_file);
             fileName = (TextView) itemView.findViewById(R.id.csv_file_txt);
             csvFile = (CardView) itemView.findViewById(R.id.csv_file_pnel);
         }
@@ -101,6 +118,10 @@ public class CSVFilesRecyclerAdapter extends RecyclerView.Adapter<CSVFilesRecycl
 
         public TextView getFileNameTxt() {
             return fileName;
+        }
+
+        public ImageView getDeleteBtn() {
+            return deleteImg;
         }
     }
 }

@@ -4,6 +4,7 @@
     <string name="next">Next</string>
     <string name="previous">Previous</string>
 
+    <string name="csv_files">Created CSV Files</string>
     <string name="creating_csv_file">Creating CSV File . . .</string>
     <string name="starting_upload_file">Starting Upload . . .</string>
     <string name="share_with_firebase">Would you like to send data to Firebase Server?</string>

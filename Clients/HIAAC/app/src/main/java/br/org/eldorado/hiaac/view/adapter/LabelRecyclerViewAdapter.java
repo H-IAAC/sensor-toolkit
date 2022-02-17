@@ -17,6 +17,7 @@ import android.os.CountDownTimer;
 import android.os.IBinder;
 import android.view.Gravity;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -81,18 +82,12 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
 
 
     public void onBindViewHolder(ViewHolder holder, int position) {
+        log.d("CSVFilesRecyclerAdapter");
         LabelConfig labelConfig = labelConfigs.get(holder.getAdapterPosition());
         String labelTitle = labelConfig.label;
 
         RecyclerView csvList = holder.getCsvRecyclerView();
-        File directory = new File(
-                mContext.getFilesDir().getAbsolutePath() +
-                        File.separator +
-                        labelTitle);
-        List<File> filesList = new ArrayList<File>();
-        if (directory.exists()) {
-            filesList = Arrays.asList(directory.listFiles());
-        }
+        List<File> filesList = getCsvFiles(labelConfig.label);
         final int filesSize = filesList.size();
         csvList.setAdapter(new CSVFilesRecyclerAdapter(mContext, filesList));
         csvList.setLayoutManager(new LinearLayoutManager(mContext));
@@ -105,11 +100,7 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
                     holder.getButtonContainer().close();
                     holder.setOpened(false);
                 } else {
-                    if (filesSize > 0) {
-                        holder.getButtonContainer().expand(300);
-                    } else {
-                        holder.getButtonContainer().expand(60);
-                    }
+                    resizeLabelPanel(holder);
                     holder.setOpened(true);
                 }
             }
@@ -158,6 +149,26 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
         checkExecution(holder);
     }
 
+    private void resizeLabelPanel(ViewHolder holder) {
+        if (((CSVFilesRecyclerAdapter)holder.getCsvRecyclerView().getAdapter()).getItemCount() > 0) {
+            holder.getButtonContainer().expand(300);
+        } else {
+            holder.getButtonContainer().expand(60);
+        }
+    }
+
+    private List<File> getCsvFiles(String label) {
+        File directory = new File(
+                mContext.getFilesDir().getAbsolutePath() +
+                        File.separator +
+                        label);
+        List<File> filesList = new ArrayList<File>();
+        if (directory.exists()) {
+            filesList = new ArrayList<>(Arrays.asList(directory.listFiles()));
+        }
+        return filesList;
+    }
+
     private void sendData(ViewHolder holder) {
         final ProgressDialog dialog = ProgressDialog.show(mContext, "Export to CSV File", "Creating CSV", true);
         FirebaseUploadController firebase = new FirebaseUploadController(mContext);
@@ -179,6 +190,8 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
                                 @Override
                                 public void onClick(DialogInterface dialogInt, int which) {
                                     aDialog.dismiss();
+                                    ((CSVFilesRecyclerAdapter)holder.getCsvRecyclerView().getAdapter()).updateFileList(getCsvFiles(labelConfigs.get(holder.getAdapterPosition()).label));
+                                    resizeLabelPanel(holder);
                                     onSendDataCompleted(mContext.getString(R.string.success), dialog);
                                 }
                             });
@@ -186,6 +199,8 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
                                 @Override
                                 public void onClick(DialogInterface dialogInt, int which) {
                                     aDialog.dismiss();
+                                    ((CSVFilesRecyclerAdapter)holder.getCsvRecyclerView().getAdapter()).updateFileList(getCsvFiles(labelConfigs.get(holder.getAdapterPosition()).label));
+                                    resizeLabelPanel(holder);
                                     firebase.uploadCSVFile(labelConfigs.get(holder.getAdapterPosition()).label);
                                 }
                             });
@@ -220,7 +235,7 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
         });
     }
 
-    AlertDialog dialog;
+    private AlertDialog dialog;
     private void startExecution(ViewHolder holder) {
         svc = new ServiceConnection() {
             @Override
@@ -388,6 +403,24 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
             editButton = itemView.findViewById(R.id.edit_sampling_button);
             shareButton = itemView.findViewById(R.id.share_sampling_button);
             csvRecyclerView = itemView.findViewById(R.id.csvfiles_reclyclerView);
+            csvRecyclerView.addOnItemTouchListener(new RecyclerView.OnItemTouchListener() {
+                @Override
+                public boolean onInterceptTouchEvent(@NonNull RecyclerView rv, @NonNull MotionEvent e) {
+                    int action = e.getAction();
+                    switch (action) {
+                        case MotionEvent.ACTION_MOVE:
+                            rv.getParent().requestDisallowInterceptTouchEvent(true);
+                            break;
+                    }
+                    return false;
+                }
+
+                @Override
+                public void onTouchEvent(@NonNull RecyclerView rv, @NonNull MotionEvent e) {}
+
+                @Override
+                public void onRequestDisallowInterceptTouchEvent(boolean disallowIntercept) {}
+            });
         }
 
         public void setOpened(boolean opened) {
