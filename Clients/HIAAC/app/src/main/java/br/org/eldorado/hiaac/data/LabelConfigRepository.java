@@ -9,6 +9,10 @@ import java.util.List;
 import java.util.function.Function;
 
 public class LabelConfigRepository {
+
+    public static final int TYPE_FIREBASE = 0;
+    public static final int TYPE_CSV = 1;
+
     private LabelConfigDao mLabelConfigDao;
     private LiveData<List<LabelConfig>> mAllLabels;
 
@@ -64,6 +68,32 @@ public class LabelConfigRepository {
             return null;})).execute(frequencies);
     }
 
+    public void insertLabeledData(LabeledData data) {
+        new LabeledDataAsyncTask(mLabelConfigDao, (labeledData -> {
+            mLabelConfigDao.insertLabeledData(labeledData);
+            return null;})).execute(data);
+    }
+
+    public List<LabeledData> getLabeledData(String label, int type) {
+        if (type == TYPE_FIREBASE) {
+            return mLabelConfigDao.getLabeledData(label);
+        } else {
+            return mLabelConfigDao.getLabeledDataCsv(label);
+        }
+    }
+
+
+    public void updateLabeledData( List<LabeledData> dt) {
+        mLabelConfigDao.updateLabeledData(dt);
+    }
+
+    void deleteLabeledData(LabeledData label) {
+        new LabeledDataAsyncTask(mLabelConfigDao, (labeledData -> {
+            mLabelConfigDao.deleteLabeledData(label.getLabel());
+            return null;})).execute(label);
+        //mLabelConfigDao.deleteLabeledData(label);
+    }
+
     private static class LabelConfigAsyncTask extends AsyncTask<LabelConfig, Void, Void> {
 
         private LabelConfigDao mAsyncTaskDao;
@@ -93,6 +123,23 @@ public class LabelConfigRepository {
 
         @Override
         protected Void doInBackground(List<SensorFrequency>... lists) {
+            mFunction.apply(lists[0]);
+            return null;
+        }
+    }
+
+    private static class LabeledDataAsyncTask extends AsyncTask<LabeledData, Void, Void> {
+
+        private LabelConfigDao mAsyncTaskDao;
+        private Function<LabeledData, Void> mFunction;
+
+        public LabeledDataAsyncTask(LabelConfigDao dao, Function<LabeledData, Void> function) {
+            this.mAsyncTaskDao = dao;
+            this.mFunction = function;
+        }
+
+        @Override
+        protected Void doInBackground(LabeledData... lists) {
             mFunction.apply(lists[0]);
             return null;
         }

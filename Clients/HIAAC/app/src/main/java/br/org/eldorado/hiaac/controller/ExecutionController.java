@@ -1,7 +1,18 @@
 package br.org.eldorado.hiaac.controller;
 
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.content.Context;
+import android.content.Intent;
+import android.graphics.Color;
 import android.os.CountDownTimer;
 
+import androidx.core.app.NotificationCompat;
+import androidx.lifecycle.ViewModelProvider;
+
+import br.org.eldorado.hiaac.R;
+import br.org.eldorado.hiaac.data.LabelConfigViewModel;
+import br.org.eldorado.hiaac.data.LabeledData;
 import br.org.eldorado.hiaac.data.SensorFrequency;
 import br.org.eldorado.hiaac.model.DataTrack;
 import br.org.eldorado.hiaac.service.ExecutionService;
@@ -23,12 +34,17 @@ public class ExecutionController {
     private ExecutionServiceListener listener;
     private ExecutionService service;
     private CountDownTimer timer;
+    private LabelConfigViewModel dbView;
 
     public static ExecutionController getInstance() {
         if (inst == null) {
             inst = new ExecutionController();
         }
         return inst;
+    }
+
+    public LabelConfigViewModel getDBModel() {
+        return dbView;
     }
 
     public boolean isRunning() {
@@ -44,8 +60,9 @@ public class ExecutionController {
             if (!isRunning) {
                 for (SensorFrequency sensorFrequency : dataTrack.getSensorList()) {
                     sensorFrequency.sensor.setFrequency(sensorFrequency.frequency);
-                    sensorFrequency.sensor.startSensor();
+                    //sensorFrequency.sensor.setFrequency(50);
                     sensorFrequency.sensor.registerListener(new MySensorListener(dataTrack));
+                    sensorFrequency.sensor.startSensor();
                 }
                 setExecutionTimer(dataTrack);
                 isRunning = true;
@@ -58,9 +75,11 @@ public class ExecutionController {
 
     public void setService(ExecutionService svr) {
         this.service = svr;
+        this.dbView = ViewModelProvider.AndroidViewModelFactory.getInstance(
+                service.getApplication()).create(LabelConfigViewModel.class);
     }
 
-    public void stopExecution(final DataTrack dataTrack) {
+    public void stopExecution(DataTrack dataTrack) {
         if (isRunning) {
             isRunning = false;
             timer.cancel();
@@ -92,7 +111,7 @@ public class ExecutionController {
 
                 @Override
                 public void onFinish() {
-                    stopExecution(dataTrack);
+                    service.stopExecution();
                 }
             }.start();
         }
@@ -132,10 +151,17 @@ public class ExecutionController {
             log.d("Sensor STOPED");
         }
 
+        private int num = 1;
         @Override
         public void onSensorChanged(SensorBase sensor) {
-            /* TODO Saves data to database */
-            log.d(sensor.toString());
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    log.d(dataTrack.getLabel() + " " + num++ + " - " + sensor.toString());
+                    LabeledData labeledData = new LabeledData(dataTrack.getLabel(), sensor);
+                    dbView.insertLabeledData(labeledData);
+                }
+            }).start();
         }
     }
 }

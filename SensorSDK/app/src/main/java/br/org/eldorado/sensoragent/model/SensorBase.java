@@ -44,7 +44,6 @@ public class SensorBase implements Parcelable {
         this.values = new float[1];
         this.isStarted = false;
         this.controller = SensorController.getInstance();
-        this.controller.addSensor(this);
     }
 
     public void registerListener(SensorSDKListener l) {
@@ -82,7 +81,7 @@ public class SensorBase implements Parcelable {
         return timestamp;
     }
 
-    protected float[] getValuesArray() {
+    public float[] getValuesArray() {
         return values;
     }
 
@@ -131,7 +130,6 @@ public class SensorBase implements Parcelable {
 
     public void stopSensor() {
         controller.stopSensor(this);
-        fireListener(ON_STOPPED);
     }
 
     private void fireListener(int type) {
@@ -181,6 +179,7 @@ public class SensorBase implements Parcelable {
                 .append("isStarted: ").append(isStarted).append("\n")
                 .append("power: ").append(power).append(" mAh\n")
                 .append("Timestamp: ").append(timestamp).append("\n")
+                .append("Frequency: ").append(frequency).append("\n")
                 .append("Values: [");
         if (values == null) {
             sb.append("null]");

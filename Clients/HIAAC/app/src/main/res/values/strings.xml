@@ -1,14 +1,23 @@
 <resources>
     <string name="app_name">HIAAC</string>
     <string name="action_settings">Settings</string>
-    <!-- Strings used for fragments for navigation -->
-    <string name="first_fragment_label">First Fragment</string>
-    <string name="second_fragment_label">Second Fragment</string>
     <string name="next">Next</string>
     <string name="previous">Previous</string>
 
-    <string name="hello_first_fragment">Hello first fragment</string>
-    <string name="hello_second_fragment">Hello second fragment. Arg: %1$s</string>
+    <string name="csv_files">Created CSV Files</string>
+    <string name="creating_csv_file">Creating CSV File . . .</string>
+    <string name="starting_upload_file">Starting Upload . . .</string>
+    <string name="share_with_firebase">Would you like to send data to Firebase Server?</string>
+    <string name="share_with_firebase_title">Send to Firebase.</string>
+    <string name="download_progress">Uploading . . .  %1$d%%</string>
+    <string name="success">Success</string>
+
+    <!-- Notifications -->
+    <string name="experiment_finished_title">Finished Experiment!</string>
+    <string name="experiment_finished_description">The Experiment %s has been finished!</string>
+    <string name="experiment_timer_title">The experiment will start in . . .</string>
+
+
     <string name="label">Label</string>
     <string name="start">Start</string>
     <string name="stop">Stop</string>

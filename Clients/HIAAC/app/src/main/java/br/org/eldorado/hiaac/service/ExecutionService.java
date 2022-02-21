@@ -1,17 +1,24 @@
 package br.org.eldorado.hiaac.service;
 
+import android.app.Application;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
+import android.media.RingtoneManager;
+import android.net.Uri;
 import android.os.Binder;
+import android.os.Build;
 import android.os.IBinder;
 
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
 
+import br.org.eldorado.hiaac.MainActivity;
 import br.org.eldorado.hiaac.R;
 import br.org.eldorado.hiaac.controller.ExecutionController;
 import br.org.eldorado.hiaac.model.DataTrack;
@@ -83,7 +90,48 @@ public class ExecutionService extends Service {
 
     public void stopExecution() {
         if (dataTrack != null) {
+            sendNotification(dataTrack);
             ExecutionController.getInstance().stopExecution(dataTrack);
+            dataTrack = null;
         }
+    }
+
+    private void sendNotification(DataTrack dt) {
+        NotificationCompat.Builder builder =
+                new NotificationCompat.Builder(this)
+                        .setSmallIcon(R.drawable.ic_launcher_foreground)
+                        .setContentTitle(getString(R.string.experiment_finished_title))
+                        .setContentText(getString(R.string.experiment_finished_description, dt.getLabel()));
+
+
+        Intent notificationIntent = new Intent(this, MainActivity.class);
+
+        PendingIntent contentIntent = PendingIntent.getActivity(this, 0, notificationIntent,
+                PendingIntent.FLAG_UPDATE_CURRENT);
+
+        builder.setContentIntent(contentIntent);
+        builder.setAutoCancel(true);
+        builder.setLights(Color.BLUE, 500, 500);
+        long[] pattern = {500,500,500,500,500,500,500,500,500};
+        builder.setVibrate(pattern);
+        Uri alarmSound = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+        builder.setSound(alarmSound);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            String channelId = "experiment_finished";
+            NotificationChannel channel = new NotificationChannel(
+                    channelId,
+                    "Experiment " + dt.getLabel() + " is finished!",
+                    NotificationManager.IMPORTANCE_HIGH);
+
+            NotificationManager mNotificationManager =
+                    (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+            mNotificationManager.createNotificationChannel(channel);
+            builder.setChannelId(channelId);
+        }
+
+        // Add as notification
+        NotificationManager manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        manager.notify(1, builder.build());
     }
 }
