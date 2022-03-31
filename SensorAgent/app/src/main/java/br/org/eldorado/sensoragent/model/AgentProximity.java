@@ -2,11 +2,11 @@ package br.org.eldorado.sensoragent.model;
 
 import android.hardware.Sensor;
 
-public class Proximity extends SensorBase {
+public class AgentProximity extends AgentSensorBase {
     private static final String TAG = "Proximity";
     private Sensor sensor;
 
-    public Proximity() {
+    public AgentProximity() {
         super(TAG, TYPE_PROXIMITY);
         sensor = sensorManager.getDefaultSensor(Sensor.TYPE_PROXIMITY);
         registerListener(sensor);

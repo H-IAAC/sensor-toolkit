@@ -2,11 +2,11 @@ package br.org.eldorado.sensoragent.model;
 
 import android.hardware.Sensor;
 
-public class AmbientTemperature  extends SensorBase {
+public class AgentAmbientTemperature extends AgentSensorBase {
     private static final String TAG = "AmbientTemperature";
     private Sensor sensor;
 
-    public AmbientTemperature() {
+    public AgentAmbientTemperature() {
         super(TAG, TYPE_AMBIENT_TEMPERATURE);
         sensor = sensorManager.getDefaultSensor(Sensor.TYPE_AMBIENT_TEMPERATURE);
         registerListener(sensor);

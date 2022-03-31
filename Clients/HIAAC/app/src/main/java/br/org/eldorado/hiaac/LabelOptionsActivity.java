@@ -6,10 +6,13 @@ import static br.org.eldorado.hiaac.MainActivity.NEW_LABEL_CONFIG_ACTIVITY;
 import static br.org.eldorado.hiaac.MainActivity.UPDATE_LABEL_CONFIG_ACTIVITY;
 import static br.org.eldorado.hiaac.view.adapter.SensorFrequencyViewAdapter.frequencyOptions;
 
+import android.Manifest;
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -21,6 +24,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.DialogFragment;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
@@ -35,10 +39,12 @@ import java.util.Map;
 import br.org.eldorado.hiaac.data.LabelConfig;
 import br.org.eldorado.hiaac.data.LabelConfigViewModel;
 import br.org.eldorado.hiaac.data.SensorFrequency;
+import br.org.eldorado.hiaac.util.Log;
 import br.org.eldorado.hiaac.util.Tools;
 import br.org.eldorado.hiaac.view.adapter.SensorFrequencyViewAdapter;
 import br.org.eldorado.sensoragent.model.Accelerometer;
 import br.org.eldorado.sensoragent.model.AmbientTemperature;
+import br.org.eldorado.sensoragent.model.GPS;
 import br.org.eldorado.sensoragent.model.Gyroscope;
 import br.org.eldorado.sensoragent.model.Luminosity;
 import br.org.eldorado.sensoragent.model.MagneticField;
@@ -66,6 +72,8 @@ public class LabelOptionsActivity extends AppCompatActivity {
     private SensorFrequencyViewAdapter mSensorFrequencyViewAdapter;
     private EditText mLabelTile;
     private Spinner mStopTimeSpinner;
+    private static final String TAG = "LabelOptionsActivity";
+    private Log log;
 
     private SensorFrequencyViewAdapter.SensorFrequencyChangeListener mSensorFrequencyChangeListener =
             new SensorFrequencyViewAdapter.SensorFrequencyChangeListener() {
@@ -78,6 +86,7 @@ public class LabelOptionsActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        log = new Log(TAG);
         setContentView(R.layout.activity_label_options);
         mLabelTile = findViewById(R.id.edit_label_name);
         mStopTimeSpinner = findViewById(R.id.stops_at_spinner);
@@ -116,6 +125,19 @@ public class LabelOptionsActivity extends AppCompatActivity {
                 break;
             default:
                 mIsUpdating = false;
+        }
+    }
+
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (100 == requestCode) {
+            log.d("request fine_location");
+            mSensorFrequencyViewAdapter.requestBackgroundPermission();
+        } else if (101 == requestCode) {
+            log.d("request background");
+            mSensorFrequencyViewAdapter.updateGPS(grantResults[0]);
         }
     }
 
@@ -213,6 +235,8 @@ public class LabelOptionsActivity extends AppCompatActivity {
                 SensorBase.TYPE_PROXIMITY, Proximity.TAG));
         selectedSensorFrequencies.add(createSelectedSensorFrequency(sensorTypeFrequencyMap,
                 SensorBase.TYPE_MAGNETIC_FIELD, MagneticField.TAG));
+        selectedSensorFrequencies.add(createSelectedSensorFrequency(sensorTypeFrequencyMap,
+                SensorBase.TYPE_GPS, GPS.TAG));
 
         return selectedSensorFrequencies;
     }
@@ -260,6 +284,8 @@ public class LabelOptionsActivity extends AppCompatActivity {
                 return new MagneticField();
             case Proximity.TAG:
                 return new Proximity();
+            case GPS.TAG:
+                return new GPS();
         }
         return null;
     }

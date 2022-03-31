@@ -2,13 +2,13 @@ package br.org.eldorado.sensoragent.model;
 
 import android.hardware.Sensor;
 
-public class Gyroscope  extends SensorBase {
-    private static final String TAG = "Gyroscope";
+public class AgentGravity extends AgentSensorBase {
+    private static final String TAG = "Gravity";
     private Sensor sensor;
 
-    public Gyroscope() {
-        super(TAG, TYPE_GYROSCOPE);
-        sensor = sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
+    public AgentGravity() {
+        super(TAG, TYPE_GRAVITY);
+        sensor = sensorManager.getDefaultSensor(Sensor.TYPE_GRAVITY);
         registerListener(sensor);
         values = new float[3];
         values[0] = 0;

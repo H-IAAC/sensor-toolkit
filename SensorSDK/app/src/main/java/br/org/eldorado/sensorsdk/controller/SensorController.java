@@ -12,8 +12,9 @@ import java.util.Map;
 
 import br.org.eldorado.sensoragent.ISensorAgentListener;
 import br.org.eldorado.sensoragent.model.ISensorAgent;
-import br.org.eldorado.sensorsdk.SensorSDKContext;
 import br.org.eldorado.sensoragent.model.SensorBase;
+import br.org.eldorado.sensoragent.service.SensorAgentService;
+import br.org.eldorado.sensorsdk.SensorSDKContext;
 import br.org.eldorado.sensorsdk.util.Log;
 
 
@@ -72,11 +73,13 @@ public class SensorController {
     }
 
     private void bindService() {
+        ComponentName n = mContext.startForegroundService(new Intent(mContext, SensorAgentService.class));
+        log.i("ComponentName: " + n);
         Intent intent = new Intent("br.org.eldorado.sensoragent.SENSOR_AGENT");
-        ComponentName n = new ComponentName("br.org.eldorado.sensoragent", "br.org.eldorado.sensoragent.service.SensorAgentService");
+        //n = new ComponentName("br.org.eldorado.sensoragent", "br.org.eldorado.sensoragent.service.SensorAgentService");
         intent.setComponent(n);
         intent.setPackage("br.org.eldorado.sensoragent");
-        mContext.startForegroundService(intent);
+        //mContext.startForegroundService(intent);
         boolean b = mContext.bindService(intent, mServiceConnection, Context.BIND_AUTO_CREATE);
         log.i("bind: " + b);
     }
@@ -126,7 +129,7 @@ public class SensorController {
 
     public void getInformation(SensorBase sensor) {
         try {
-            log.i("Getting information of " + sensor.getName());
+            log.i("Getting information of " + sensor.getName() + " " + sensorAgent);
             sensor.updateInformation(sensorAgent.getInformation(sensor.getType()));
         } catch (RemoteException e) {
             e.printStackTrace();

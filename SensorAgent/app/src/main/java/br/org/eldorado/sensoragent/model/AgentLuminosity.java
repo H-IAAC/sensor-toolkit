@@ -2,11 +2,11 @@ package br.org.eldorado.sensoragent.model;
 
 import android.hardware.Sensor;
 
-public class Luminosity extends SensorBase {
+public class AgentLuminosity extends AgentSensorBase {
     private static final String TAG = "Luminosity";
     private Sensor sensor;
 
-    public Luminosity() {
+    public AgentLuminosity() {
         super(TAG, TYPE_LIGHT);
         sensor = sensorManager.getDefaultSensor(Sensor.TYPE_LIGHT);
         registerListener(sensor);

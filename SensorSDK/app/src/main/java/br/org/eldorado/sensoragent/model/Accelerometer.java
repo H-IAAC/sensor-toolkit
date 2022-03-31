@@ -1,9 +1,5 @@
 package br.org.eldorado.sensoragent.model;
 
-import android.hardware.Sensor;
-
-import br.org.eldorado.sensorsdk.listener.SensorSDKListener;
-
 public class Accelerometer extends SensorBase {
     public static final String TAG = "Accelerometer";
 

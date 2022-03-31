@@ -1,7 +1,5 @@
 package br.org.eldorado.sensoragent.model;
 
-import android.hardware.Sensor;
-
 public class AmbientTemperature  extends SensorBase {
     public static final String TAG = "AmbientTemperature";
 
