@@ -95,16 +95,16 @@ public class AgentSensorBase
         try {
             if (power != event.sensor.getPower() || !Arrays.equals(event.values, values)) {
                 /* TODO save data to database */
-                log.i(event.sensor.getStringType() + " power: " + event.sensor.getPower() + " values: " +
-                        (event.values == null ? "null" : event.values[0]));
+                /*log.i(event.sensor.getStringType() + " power: " + event.sensor.getPower() + " values: " +
+                        (event.values == null ? "null" : event.values[0]));*/
                 this.power = event.sensor.getPower();
                 this.values = Arrays.copyOf(event.values, event.values.length);
                 this.timestamp = event.timestamp;
-                APICommand cmd =
+                /*APICommand cmd =
                         new APICommand(
                                 APICommand.CommandType.TYPE_GET_SENSOR_DATA,
                                 Arrays.asList(type, new Gson().toJson(AgentSensorBase.this, AgentSensorBase.class)));
-                APIController.getInstance().sendForAll(cmd);
+                APIController.getInstance().sendForAll(cmd);*/
             }
         } catch (Exception e) {
             e.printStackTrace();
