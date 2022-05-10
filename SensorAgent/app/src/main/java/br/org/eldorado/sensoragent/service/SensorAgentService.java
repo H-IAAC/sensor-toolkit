@@ -17,11 +17,9 @@ import br.org.eldorado.sensoragent.ISensorAgentListener;
 import br.org.eldorado.sensoragent.R;
 import br.org.eldorado.sensoragent.SensorAgentContext;
 import br.org.eldorado.sensoragent.apiserver.APIController;
+import br.org.eldorado.sensoragent.model.AgentSensorBase;
 import br.org.eldorado.sensoragent.model.ISensorAgent;
 import br.org.eldorado.sensoragent.controller.SensorController;
-import br.org.eldorado.sensoragent.model.Accelerometer;
-import br.org.eldorado.sensoragent.model.ISensorAgent;
-import br.org.eldorado.sensoragent.model.SensorBase;
 import br.org.eldorado.sensoragent.util.Log;
 
 public class SensorAgentService extends Service {
@@ -87,7 +85,7 @@ public class SensorAgentService extends Service {
         }
 
         @Override
-        public SensorBase getInformation(int sensor) throws RemoteException {
+        public AgentSensorBase getInformation(int sensor) throws RemoteException {
             return SensorController.getInstance().getInformation(sensor);
         }
 

@@ -10,13 +10,14 @@ import java.util.Map;
 import br.org.eldorado.sensoragent.ISensorAgentListener;
 import br.org.eldorado.sensoragent.apiserver.APICommand;
 import br.org.eldorado.sensoragent.apiserver.APIController;
-import br.org.eldorado.sensoragent.model.Accelerometer;
-import br.org.eldorado.sensoragent.model.AmbientTemperature;
-import br.org.eldorado.sensoragent.model.Gyroscope;
-import br.org.eldorado.sensoragent.model.Luminosity;
-import br.org.eldorado.sensoragent.model.MagneticField;
-import br.org.eldorado.sensoragent.model.Proximity;
-import br.org.eldorado.sensoragent.model.SensorBase;
+import br.org.eldorado.sensoragent.model.AgentAccelerometer;
+import br.org.eldorado.sensoragent.model.AgentAmbientTemperature;
+import br.org.eldorado.sensoragent.model.AgentGPS;
+import br.org.eldorado.sensoragent.model.AgentGyroscope;
+import br.org.eldorado.sensoragent.model.AgentLuminosity;
+import br.org.eldorado.sensoragent.model.AgentMagneticField;
+import br.org.eldorado.sensoragent.model.AgentProximity;
+import br.org.eldorado.sensoragent.model.AgentSensorBase;
 import br.org.eldorado.sensoragent.util.Log;
 
 public class SensorController {
@@ -25,7 +26,7 @@ public class SensorController {
     private static final int LISTENER_SENSOR_STOPPED = 1;
     private static final String TAG = "SensorController";
     private Log log;
-    private Map<Integer, SensorBase> sensorMap;
+    private Map<Integer, AgentSensorBase> sensorMap;
     private static SensorController inst;
     private RemoteCallbackList<ISensorAgentListener> mListener;
 
@@ -37,7 +38,7 @@ public class SensorController {
     }
 
     private SensorController() {
-        this.sensorMap = new HashMap<Integer, SensorBase>();
+        this.sensorMap = new HashMap<Integer, AgentSensorBase>();
         this.log = new Log(TAG);
     }
 
@@ -48,28 +49,31 @@ public class SensorController {
     public void addSensor(int sensorType) {
         if (!sensorMap.containsKey(sensorType)) {
             try {
-                SensorBase sensor;
+                AgentSensorBase sensor;
                 switch (sensorType) {
-                    case SensorBase.TYPE_ACCELEROMETER:
-                        sensor = new Accelerometer();
+                    case AgentSensorBase.TYPE_ACCELEROMETER:
+                        sensor = new AgentAccelerometer();
                         break;
-                    case SensorBase.TYPE_AMBIENT_TEMPERATURE:
-                        sensor = new AmbientTemperature();
+                    case AgentSensorBase.TYPE_AMBIENT_TEMPERATURE:
+                        sensor = new AgentAmbientTemperature();
                         break;
-                    case SensorBase.TYPE_GYROSCOPE:
-                        sensor = new Gyroscope();
+                    case AgentSensorBase.TYPE_GYROSCOPE:
+                        sensor = new AgentGyroscope();
                         break;
-                    case SensorBase.TYPE_LIGHT:
-                        sensor = new Luminosity();
+                    case AgentSensorBase.TYPE_LIGHT:
+                        sensor = new AgentLuminosity();
                         break;
-                    case SensorBase.TYPE_PROXIMITY:
-                        sensor = new Proximity();
+                    case AgentSensorBase.TYPE_PROXIMITY:
+                        sensor = new AgentProximity();
                         break;
-                    case SensorBase.TYPE_MAGNETIC_FIELD:
-                        sensor = new MagneticField();
+                    case AgentSensorBase.TYPE_MAGNETIC_FIELD:
+                        sensor = new AgentMagneticField();
+                        break;
+                    case AgentSensorBase.TYPE_GPS:
+                        sensor = new AgentGPS();
                         break;
                     default:
-                        sensor = new SensorBase("UNKNOWN", -1);
+                        sensor = new AgentSensorBase("UNKNOWN", -1);
                 }
                 sensorMap.put(sensorType, sensor);
                 APICommand cmd = new APICommand(APICommand.CommandType.TYPE_SENSOR_STARTED, Arrays.asList(sensorType));
@@ -108,7 +112,7 @@ public class SensorController {
         mListener.finishBroadcast();
     }
 
-    public SensorBase getInformation(int sensorType) {
+    public AgentSensorBase getInformation(int sensorType) {
         if (sensorMap.containsKey(sensorType)) {
             return sensorMap.get(sensorType);
         }

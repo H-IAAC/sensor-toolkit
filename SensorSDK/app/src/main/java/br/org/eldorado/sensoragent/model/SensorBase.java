@@ -17,6 +17,7 @@ public class SensorBase implements Parcelable {
     public static final int TYPE_PROXIMITY = Sensor.TYPE_PROXIMITY;
     public static final int TYPE_MAGNETIC_FIELD = Sensor.TYPE_MAGNETIC_FIELD;
     public static final int TYPE_GRAVITY = Sensor.TYPE_GRAVITY;
+    public static final int TYPE_GPS = 100;
 
     private static final int ON_STARTED = 0;
     private static final int ON_STOPPED = 1;
@@ -89,7 +90,8 @@ public class SensorBase implements Parcelable {
         return power;
     }
 
-    public void updateInformation(SensorBase s) {
+    public void updateInformation(AgentSensorBase s) {
+
         if (s == null || s.getValuesArray() == null) {
             log.i("Sensor not started");
             isStarted = false;
