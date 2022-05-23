@@ -8,5 +8,5 @@ dependencyResolutionManagement {
 }
 rootProject.name = "HIAAC"
 include ':app'
-include ":SensorSDK"
-project(":SensorSDK").projectDir = file("../../SensorSDK")
+//include ":SensorSDK"
+//project(":SensorSDK").projectDir = file("../../SensorSDK")
