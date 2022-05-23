@@ -8,3 +8,4 @@ dependencyResolutionManagement {
 }
 rootProject.name = "HIAAC"
 include ':app'
+include ':SensorSDK:app'
