@@ -10,3 +10,5 @@ rootProject.name = "HIAAC"
 include ':app'
 include ":SensorSDK:app"
 project(":SensorSDK:app").projectDir = file("../../SensorSDK")
+include ":SensorAgent:app"
+project(":SensorAgent:app").projectDir = file("../../SensorAgent")
