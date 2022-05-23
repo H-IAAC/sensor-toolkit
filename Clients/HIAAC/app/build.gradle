@@ -63,7 +63,7 @@ afterEvaluate {
                 from components.release
                 groupId = 'com.github.H-IAAC'
                 artifactId = 'sensor-toolkit'
-                version = 'v1.8'
+                version = 'v1.9'
             }
         }
     }
