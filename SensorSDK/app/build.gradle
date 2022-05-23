@@ -2,6 +2,8 @@ plugins {
     id 'com.android.library'
 }
 
+group = "br.org.eldorado.sensorsdk"
+
 android {
     compileSdk 31
 
