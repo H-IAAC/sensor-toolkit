@@ -3,6 +3,8 @@ plugins {
     id 'com.google.gms.google-services'
 }
 
+group = "br.org.eldorado.hiaac"
+
 android {
     compileSdk 31
 
