@@ -15,5 +15,3 @@ buildscript {
 task clean(type: Delete) {
     delete rootProject.buildDir
 }
-
-group = "br.org.eldorado.sensor-toolkit"
