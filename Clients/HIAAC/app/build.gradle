@@ -35,11 +35,11 @@ android {
 dependencies {
     def room_version = "2.3.0"
 
-    implementation "androidx.room:room-runtime:$room_version"
-    annotationProcessor "androidx.room:room-compiler:$room_version"
-    implementation platform('com.google.firebase:firebase-bom:29.0.3')
-    implementation 'com.google.firebase:firebase-storage'
-    implementation 'com.opencsv:opencsv:4.4'
+    //implementation "androidx.room:room-runtime:$room_version"
+    //annotationProcessor "androidx.room:room-compiler:$room_version"
+    //implementation platform('com.google.firebase:firebase-bom:29.0.3')
+    //implementation 'com.google.firebase:firebase-storage'
+    //implementation 'com.opencsv:opencsv:4.4'
     //api fileTree(dir: 'libs', include: ['*.aar'])
     //implementation project(':SensorSDK:app')
 
