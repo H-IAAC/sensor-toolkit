@@ -7,6 +7,8 @@
     <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"  />
+    <uses-feature android:name="android.hardware.camera" />
+    <uses-permission android:name="android.permission.CAMERA" />
 
     <application
         android:allowBackup="true"
@@ -20,6 +22,11 @@
         <activity
             android:name=".datacollector.DataCollectorActivity"
             android:exported="true"
+            android:label="@string/app_name" >
+        </activity>
+        <activity
+            android:name=".datacollector.PhotoCollectorActivity"
+            android:exported="false"
             android:label="@string/app_name" >
         </activity>
         <service

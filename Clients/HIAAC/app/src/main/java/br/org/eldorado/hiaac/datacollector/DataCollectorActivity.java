@@ -69,7 +69,13 @@ public class DataCollectorActivity extends AppCompatActivity {
             public void onClick(View v) {
                 Intent intent = new Intent(getApplicationContext(), LabelOptionsActivity.class);
                 intent.putExtra(LABEL_CONFIG_ACTIVITY_TYPE, NEW_LABEL_CONFIG_ACTIVITY);
+                //
+                // intent = new Intent(getApplicationContext(), PhotoCollectorActivity.class);
                 startActivity(intent);
+
+
+                /*Intent intent = new Intent(getApplicationContext(), PhotoCollectorActivity.class);
+                startActivity(intent);*/
             }
         });
     }
