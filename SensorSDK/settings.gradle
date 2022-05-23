@@ -8,3 +8,6 @@ dependencyResolutionManagement {
 }
 rootProject.name = "SensorSDK"
 include ':app'
+println "TESTE " + file("../../SensorSDK").list()[2]
+include ":SensorAgent"
+project(":SensorAgent").projectDir = file("../../SensorAgent/app")
