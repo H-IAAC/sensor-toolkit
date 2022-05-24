@@ -1,5 +1,6 @@
 plugins {
     id 'com.android.library'
+    id 'maven-publish'
 }
 
 group = "br.org.eldorado.sensorsdk"
@@ -35,4 +36,17 @@ dependencies {
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
 
     implementation project(':SensorAgent')
+}
+
+afterEvaluate {
+    publishing {
+        publications {
+            release(MavenPublication) {
+                from components.release
+                groupId = 'com.github.H-IAAC'
+                artifactId = 'sensorsdk'
+                version = 'v1.11'
+            }
+        }
+    }
 }
