@@ -8,7 +8,9 @@ dependencyResolutionManagement {
 }
 rootProject.name = "sensor-toolkit"
 include ':SensorAgent:app'
+project(":SensorAgent").projectDir = file("SensorAgent/app")
 include ':SensorSDK:app'
+project(":SensorSDK").projectDir = file("SensorSDK/app")
 include ':Clients:SensorManager:app'
 include ':Clients:HIAAC:app'
 include ':Clients:HIAACApp:app'

@@ -43,7 +43,6 @@ dependencies {
     implementation 'com.opencsv:opencsv:4.4'
     //api fileTree(dir: 'libs', include: ['*.aar'])
     implementation project(':SensorSDK')
-    implementation project(':SensorAgent')
 
     implementation 'androidx.appcompat:appcompat:1.4.0'
     implementation 'com.google.android.material:material:1.4.0'
@@ -63,7 +62,7 @@ afterEvaluate {
                 from components.release
                 groupId = 'com.github.H-IAAC'
                 artifactId = 'sensor-toolkit'
-                version = 'v1.9'
+                version = 'v1.10'
             }
         }
     }
