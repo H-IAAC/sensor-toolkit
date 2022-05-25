@@ -43,9 +43,9 @@ dependencies {
     implementation 'com.google.firebase:firebase-storage'
     implementation 'com.opencsv:opencsv:4.4'
     //api fileTree(dir: 'libs', include: ['*.aar'])
-    //implementation project(path: ':SensorSDK:app')
+    implementation project(path: ':SensorSDK:app')
     //implementation project(path: ':SensorAgent:app')
-    implementation 'com.github.H-IAAC:sensor-toolkit:1.24'
+    //implementation 'com.github.H-IAAC:sensor-toolkit:1.24'
 
     implementation 'androidx.appcompat:appcompat:1.4.0'
     implementation 'com.google.android.material:material:1.4.0'
@@ -65,7 +65,7 @@ afterEvaluate {
                 from components.release
                 groupId = 'com.github.H-IAAC.sensor-toolkit'
                 artifactId = 'hiaaclib'
-                version = 'v1.25'
+                version = 'v1.30'
             }
         }
     }
