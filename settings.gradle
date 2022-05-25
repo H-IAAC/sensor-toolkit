@@ -10,7 +10,7 @@ dependencyResolutionManagement {
 
 sourceControl {
     gitRepository("https://github.com/H-IAAC/sensor-toolkit.git") {
-        producesModule("com.github.H-IAAC.sensor-toolkit:hiaaclib")
+        producesModule("br.org.eldorado.hiaac:app")
     }
 }
 
