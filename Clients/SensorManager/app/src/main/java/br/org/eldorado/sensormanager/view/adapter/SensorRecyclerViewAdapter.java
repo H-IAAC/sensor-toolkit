@@ -15,22 +15,22 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import br.org.eldorado.sensoragent.model.Accelerometer;
+/*import br.org.eldorado.sensoragent.model.Accelerometer;
 import br.org.eldorado.sensoragent.model.AmbientTemperature;
 import br.org.eldorado.sensoragent.model.Gyroscope;
 import br.org.eldorado.sensoragent.model.Luminosity;
 import br.org.eldorado.sensoragent.model.MagneticField;
 import br.org.eldorado.sensoragent.model.Proximity;
-import br.org.eldorado.sensoragent.model.SensorBase;
+import br.org.eldorado.sensorsdk.listener.SensorSDKListener;
+import br.org.eldorado.sensoragent.model.SensorBase;*/
 import br.org.eldorado.sensormanager.R;
 import br.org.eldorado.sensormanager.util.Log;
-import br.org.eldorado.sensorsdk.listener.SensorSDKListener;
 
 public class SensorRecyclerViewAdapter  extends RecyclerView.Adapter<SensorRecyclerViewAdapter.ViewHolder> {
 
     private static final String TAG = "SensorRecyclerViewAdapter";
     private Log log;
-    private List<SensorBase> mData;
+    //private List<SensorBase> mData;
     private LayoutInflater mInflater;
     private Context mContext;
 
@@ -40,11 +40,11 @@ public class SensorRecyclerViewAdapter  extends RecyclerView.Adapter<SensorRecyc
         this.mContext = context;
         this.mInflater = LayoutInflater.from(context);
 
-        this.mData = new ArrayList<SensorBase>(
+        /*this.mData = new ArrayList<SensorBase>(
                 Arrays.asList(
                         new Accelerometer(), new AmbientTemperature(),
                         new Gyroscope(), new Luminosity(), new Proximity(),
-                        new MagneticField()));
+                        new MagneticField()));*/
     }
 
     @Override
@@ -56,23 +56,24 @@ public class SensorRecyclerViewAdapter  extends RecyclerView.Adapter<SensorRecyc
 
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
-        String sensorName = mData.get(position).getName();
+        /*String sensorName = mData.get(position).getName();
         holder.sensor = mData.get(position);
         holder.sensor.registerListener(holder);
-        holder.sensorName.setText(sensorName);
+        holder.sensorName.setText(sensorName);*/
     }
 
     @Override
     public int getItemCount() {
-        return mData.size();
+        return 0;
+        //return mData.size();
     }
 
-    public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener, SensorSDKListener {
+    public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener/*, SensorSDKListener*/ {
         public TextView sensorName;
         public TextView sensorConsumption;
         public TextView sensorValues;
         public Switch sensorSwitch;
-        public SensorBase sensor;
+        //public SensorBase sensor;
 
         public ViewHolder(View itemView) {
             super(itemView);
@@ -88,7 +89,7 @@ public class SensorRecyclerViewAdapter  extends RecyclerView.Adapter<SensorRecyc
             onItemClick(view, getAdapterPosition());
         }
 
-        @Override
+        /*@Override
         public void onSensorStarted(SensorBase s) {
             new Handler(Looper.getMainLooper()).post(new Runnable() {
                 public void run() {
@@ -115,21 +116,21 @@ public class SensorRecyclerViewAdapter  extends RecyclerView.Adapter<SensorRecyc
                     sensorValues.setText(sensor.getValuesString());
                 }
             });
-        }
+        }*/
     }
 
-    public SensorBase getItem(int id) {
+    /*public SensorBase getItem(int id) {
         return mData.get(id);
-    }
+    }*/
 
     public void onItemClick(View view, int position) {
         if (view instanceof Switch) {
             if (((Switch) view).isChecked()) {
-                log.i("Starting sensor " + getItem(position).getName());
-                getItem(position).startSensor();
+                //log.i("Starting sensor " + getItem(position).getName());
+                //getItem(position).startSensor();
             } else {
-                log.i("Stopping sensor " + getItem(position).getName());
-                getItem(position).stopSensor();
+                //log.i("Stopping sensor " + getItem(position).getName());
+                //getItem(position).stopSensor();
             }
         }
     }
