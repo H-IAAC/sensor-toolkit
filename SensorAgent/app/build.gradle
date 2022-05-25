@@ -1,6 +1,7 @@
 plugins {
     id 'com.android.library'
     id 'maven-publish'
+
 }
 group = "br.org.eldorado.H-IAAC"
 android {
@@ -23,6 +24,7 @@ android {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
+    buildToolsVersion '31.0.0'
 }
 
 dependencies {
@@ -43,7 +45,7 @@ afterEvaluate {
                 from components.release
                 groupId = 'com.github.H-IAAC.sensor-toolkit'
                 artifactId = 'sensoragent'
-                version = 'v1.16'
+                version = 'v1.17'
             }
         }
     }
