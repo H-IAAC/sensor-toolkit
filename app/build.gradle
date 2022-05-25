@@ -65,7 +65,7 @@ afterEvaluate {
                 from components.release
                 groupId = 'com.github.H-IAAC.sensor-toolkit'
                 artifactId = 'hiaaclib'
-                version = 'v1.32'
+                version = 'v1.33'
             }
         }
     }
