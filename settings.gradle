@@ -8,11 +8,6 @@ dependencyResolutionManagement {
     }
 }
 
-sourceControl {
-    gitRepository("https://github.com/H-IAAC/sensor-toolkit.git") {
-        producesModule("br.org.eldorado.hiaac:app")
-    }
-}
 
 rootProject.name = "HIAAC"
 include ':app'

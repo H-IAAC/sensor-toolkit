@@ -1,7 +1,7 @@
 plugins {
     id 'com.android.library'
     id 'com.google.gms.google-services'
-    id 'maven-publish'
+    //id 'maven-publish'
 }
 
 group = "br.org.eldorado.H-IAAC"
@@ -58,7 +58,7 @@ dependencies {
 
 }
 
-afterEvaluate {
+/*afterEvaluate {
     publishing {
         publications {
             release(MavenPublication) {
@@ -69,4 +69,4 @@ afterEvaluate {
             }
         }
     }
-}
+}*/
