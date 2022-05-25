@@ -35,4 +35,5 @@ dependencies {
 
     //api fileTree(include: ['*.aar'], dir: 'libs')
     implementation project(path: ':SensorAgent:app')
+    //implementation 'com.github.H-IAAC:sensor-toolkit:1.19'
 }
