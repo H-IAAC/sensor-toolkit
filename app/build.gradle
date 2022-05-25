@@ -1,7 +1,7 @@
 plugins {
     id 'com.android.library'
     id 'com.google.gms.google-services'
-    //id 'maven-publish'
+    id 'maven-publish'
 }
 
 //group = "br.org.eldorado.H-IAAC"
@@ -43,9 +43,9 @@ dependencies {
     implementation 'com.google.firebase:firebase-storage'
     implementation 'com.opencsv:opencsv:4.4'
     //api fileTree(dir: 'libs', include: ['*.aar'])
-    implementation project(path: ':SensorSDK:app')
+    //implementation project(path: ':SensorSDK:app')
     //implementation project(path: ':SensorAgent:app')
-    //implementation 'com.github.H-IAAC.sensor-toolkit:SensorSDK:v1.11'
+    implementation 'com.github.H-IAAC:sensor-toolkit:1.24'
 
     implementation 'androidx.appcompat:appcompat:1.4.0'
     implementation 'com.google.android.material:material:1.4.0'
@@ -58,15 +58,15 @@ dependencies {
 
 }
 
-/*afterEvaluate {
+afterEvaluate {
     publishing {
         publications {
             release(MavenPublication) {
                 from components.release
                 groupId = 'com.github.H-IAAC.sensor-toolkit'
                 artifactId = 'hiaaclib'
-                version = 'v1.21'
+                version = 'v1.25'
             }
         }
     }
-}*/
+}
