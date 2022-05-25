@@ -9,7 +9,7 @@ dependencyResolutionManagement {
 }
 rootProject.name = "HIAAC"
 include ':app'
-include ':SensorSDK:app'
+/*include ':SensorSDK:app'
 include ':SensorAgent:app'
-/*include ':Clients:SensorManager:app'
+include ':Clients:SensorManager:app'
 include ':Clients:HIAACApp:app'*/
