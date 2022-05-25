@@ -1,0 +1,72 @@
+plugins {
+    id 'com.android.library'
+    id 'com.google.gms.google-services'
+    //id 'maven-publish'
+}
+
+//group = "br.org.eldorado.H-IAAC"
+
+android {
+    compileSdk 31
+
+    defaultConfig {
+        minSdk 27
+        targetSdk 31
+        versionCode 1
+        versionName "1.0"
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+    buildFeatures {
+        viewBinding true
+    }
+    buildToolsVersion '31.0.0'
+}
+
+dependencies {
+    def room_version = "2.3.0"
+
+    implementation "androidx.room:room-runtime:$room_version"
+    annotationProcessor "androidx.room:room-compiler:$room_version"
+    implementation platform('com.google.firebase:firebase-bom:29.0.3')
+    implementation 'com.google.firebase:firebase-storage'
+    implementation 'com.opencsv:opencsv:4.4'
+    //api fileTree(dir: 'libs', include: ['*.aar'])
+    implementation project(path: ':SensorSDK:app')
+    //implementation project(path: ':SensorAgent:app')
+    //implementation 'com.github.H-IAAC:sensor-toolkit:1.24'
+
+    implementation 'androidx.appcompat:appcompat:1.4.0'
+    implementation 'com.google.android.material:material:1.4.0'
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.2'
+    implementation 'androidx.navigation:navigation-fragment:2.3.5'
+    implementation 'androidx.navigation:navigation-ui:2.3.5'
+    testImplementation 'junit:junit:4.+'
+    androidTestImplementation 'androidx.test.ext:junit:1.1.3'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
+
+}
+
+/*afterEvaluate {
+    publishing {
+        publications {
+            release(MavenPublication) {
+                from components.release
+                groupId = 'com.github.H-IAAC.sensor-toolkit'
+                artifactId = 'hiaaclib'
+                version = 'v1.35'
+            }
+        }
+    }
+}*/

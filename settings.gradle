@@ -7,8 +7,8 @@ dependencyResolutionManagement {
         jcenter() // Warning: this repository is going to shut down soon
     }
 }
-rootProject.name = "HIAAC"
-include ':app'
+rootProject.name = "sensor-toolkit"
+include ':HiaacLib:app'
 include ':SensorSDK:app'
 include ':SensorAgent:app'
 //include ':Clients:HIAACApp:app'
