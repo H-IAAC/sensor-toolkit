@@ -7,10 +7,9 @@ dependencyResolutionManagement {
         maven { url "https://jitpack.io" }
     }
 }
-
-
 rootProject.name = "HIAAC"
 include ':app'
-include ':SensorAgent:app'
 include ':SensorSDK:app'
-include ':Clients:SensorManager:app'
+include ':SensorAgent:app'
+/*include ':Clients:SensorManager:app'
+include ':Clients:HIAACApp:app'*/
