@@ -7,6 +7,13 @@ dependencyResolutionManagement {
         maven { url "https://jitpack.io" }
     }
 }
+
+sourceControl {
+    gitRepository("https://github.com/H-IAAC/sensor-toolkit.git") {
+        producesModule("com.github.H-IAAC.sensor-toolkit:hiaaclib")
+    }
+}
+
 rootProject.name = "HIAAC"
 include ':app'
 include ':SensorAgent:app'
