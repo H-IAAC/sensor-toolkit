@@ -8,5 +8,3 @@ dependencyResolutionManagement {
 }
 rootProject.name = "SensorSDK"
 include ':app'
-include ":SensorAgent"
-project(":SensorAgent").projectDir = file("../SensorAgent/app")

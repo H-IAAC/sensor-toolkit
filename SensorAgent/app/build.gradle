@@ -2,7 +2,7 @@ plugins {
     id 'com.android.library'
     id 'maven-publish'
 }
-group = "br.org.eldorado.sensoragent"
+group = "br.org.eldorado.H-IAAC"
 android {
     compileSdk 31
 
@@ -41,9 +41,9 @@ afterEvaluate {
         publications {
             release(MavenPublication) {
                 from components.release
-                groupId = 'com.github.H-IAAC'
+                groupId = 'com.github.H-IAAC.sensor-toolkit'
                 artifactId = 'sensoragent'
-                version = 'v1.11'
+                version = 'v1.15'
             }
         }
     }
