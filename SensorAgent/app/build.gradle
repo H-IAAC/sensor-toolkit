@@ -3,7 +3,7 @@ plugins {
     //id 'maven-publish'
 
 }
-group = "br.org.eldorado.H-IAAC"
+//group = "br.org.eldorado.H-IAAC"
 android {
     compileSdk 31
 
