@@ -48,7 +48,7 @@ afterEvaluate {
                 from components.release
                 groupId = 'com.github.H-IAAC.sensorsdk'
                 artifactId = 'sensorsdk'
-                version = 'v1.43'
+                version = 'v1.50'
             }
         }
     }
