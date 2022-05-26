@@ -3,7 +3,7 @@ plugins {
     id 'maven-publish'
 }
 
-group = "br.org.eldorado.H-IAAC"
+group = "com.github.H-IAAC"
 
 android {
     compileSdk 31
@@ -46,9 +46,9 @@ afterEvaluate {
         publications {
             release(MavenPublication) {
                 from components.release
-                groupId = 'com.github.H-IAAC.sensorsdk'
+                groupId = 'com.github.H-IAAC'
                 artifactId = 'sensorsdk'
-                version = 'v1.43'
+                version = 'v1.46'
             }
         }
     }
