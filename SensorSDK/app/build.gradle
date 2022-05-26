@@ -46,9 +46,9 @@ afterEvaluate {
         publications {
             release(MavenPublication) {
                 from components.release
-                groupId = 'com.github.H-IAAC'
+                //groupId = 'com.github.H-IAAC'
                 artifactId = 'sensorsdk'
-                version = 'v1.52'
+                version = 'v1.53'
             }
         }
     }
