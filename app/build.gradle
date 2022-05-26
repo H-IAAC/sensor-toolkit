@@ -65,7 +65,7 @@ afterEvaluate {
                 from components.release
                 groupId = 'com.github.H-IAAC'
                 artifactId = 'hiaaclib'
-                version = 'v1.60'
+                version = 'v1.61'
             }
         }
     }

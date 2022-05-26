@@ -1,9 +1,9 @@
 plugins {
     id 'com.android.library'
-    //id 'maven-publish'
+    id 'maven-publish'
 
 }
-//group = "br.org.eldorado.H-IAAC"
+group = "br.org.eldorado.H-IAAC.agent"
 android {
     compileSdk 31
 
@@ -38,15 +38,14 @@ dependencies {
     implementation 'com.google.android.gms:play-services-location:19.0.1'
 }
 
-/*afterEvaluate {
-    publishing {
+afterEvaluate {    publishing {
         publications {
             release(MavenPublication) {
                 from components.release
-                groupId = 'com.github.H-IAAC.sensor-toolkit'
+                groupId = 'com.github.H-IAAC'
                 artifactId = 'sensoragent'
-                version = 'v1.20'
+                version = 'v1.61'
             }
         }
     }
-}*/
+}
