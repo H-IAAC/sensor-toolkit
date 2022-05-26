@@ -43,9 +43,9 @@ afterEvaluate {
         publications {
             release(MavenPublication) {
                 from components.release
-                groupId = 'com.github.H-IAAC'
+                groupId = project.group
                 artifactId = 'sensoragent'
-                version = 'v1.70'
+                version = project.version
             }
         }
     }
