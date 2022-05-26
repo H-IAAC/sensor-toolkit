@@ -1,10 +1,10 @@
 plugins {
     id 'com.android.library'
     id 'com.google.gms.google-services'
-    //id 'maven-publish'
+    id 'maven-publish'
 }
 
-//group = "br.org.eldorado.H-IAAC"
+group = "br.org.eldorado.H-IAAC"
 
 android {
     compileSdk 31
@@ -58,15 +58,15 @@ dependencies {
 
 }
 
-/*afterEvaluate {
+afterEvaluate {
     publishing {
         publications {
             release(MavenPublication) {
                 from components.release
-                groupId = 'com.github.H-IAAC.sensor-toolkit'
+                groupId = 'com.github.H-IAAC'
                 artifactId = 'hiaaclib'
-                version = 'v1.21'
+                version = 'v1.58'
             }
         }
     }
-}*/
+}
