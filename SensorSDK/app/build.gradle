@@ -37,8 +37,8 @@ dependencies {
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'*/
 
     //api fileTree(include: ['*.aar'], dir: 'libs')
-    //implementation project(path: ':SensorAgent:app')
-    implementation 'com.github.H-IAAC:sensor-toolkit:1.19'
+    implementation project(path: ':SensorAgent:app')
+    //implementation 'com.github.H-IAAC:sensor-toolkit:1.19'
 }
 
 afterEvaluate {
@@ -48,7 +48,7 @@ afterEvaluate {
                 from components.release
                 groupId = 'com.github.H-IAAC'
                 artifactId = 'sensorsdk'
-                version = 'v1.59'
+                version = 'v1.60'
             }
         }
     }
