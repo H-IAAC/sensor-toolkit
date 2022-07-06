@@ -1,14 +1,10 @@
 dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
     repositories {
-        mavenCentral()
         google()
+        mavenCentral()
         jcenter() // Warning: this repository is going to shut down soon
     }
 }
-rootProject.name = "sensor-toolkit"
-include ':HiaacLib:app'
-include ':SensorSDK:app'
-include ':SensorAgent:app'
-//include ':Clients:HIAACApp:app'
-/*include ':Clients:SensorManager:app'*/
+rootProject.name = "HiaacLib"
+include ':app'

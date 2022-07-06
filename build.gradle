@@ -11,7 +11,10 @@ buildscript {
         // in the individual module build.gradle files
     }
 }
-
+allprojects {
+    version = "1.71"
+    group = 'com.github.H-IAAC'
+}
 task clean(type: Delete) {
     delete rootProject.buildDir
 }

@@ -1,7 +1,7 @@
 // ISensorAgent.aidl
 package br.org.eldorado.sensoragent.model;
 
-import br.org.eldorado.sensoragent.IsensorAgentListener;
+import br.org.eldorado.sensoragent.ISensorAgentListener;
 parcelable AgentSensorBase;
 
 interface ISensorAgent {
