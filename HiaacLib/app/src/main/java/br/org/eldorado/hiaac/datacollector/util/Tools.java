@@ -9,6 +9,8 @@ import android.view.animation.AccelerateDecelerateInterpolator;
 import java.util.ArrayList;
 
 public class Tools {
+    public static final int CRONOMETER = 1;
+
     public enum pixelType {
         px,
         dp,
@@ -65,16 +67,20 @@ public class Tools {
     public static ArrayList<String> createTimeFormatedList(int[] values) {
         ArrayList<String> list = new ArrayList<>();
         for (int v : values) {
-            list.add(getFormatedTime(v));
+            list.add(getFormatedTime(v, 0));
         }
 
         return list;
     }
 
-    public static String getFormatedTime(int v) {
+    public static String getFormatedTime(int v, int type) {
         int hours = v / 3600;
+        int days = hours / 24;
         int minutes = (v % 3600) / 60;
         int seconds = v % 60;
+        if (hours >= 24 && type != CRONOMETER) {
+            return String.format("%d days", hours/24);
+        }
         return String.format("%02d:%02d:%02d", hours, minutes, seconds);
     }
 

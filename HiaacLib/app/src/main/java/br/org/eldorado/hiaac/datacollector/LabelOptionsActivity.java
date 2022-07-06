@@ -48,13 +48,20 @@ import br.org.eldorado.sensoragent.model.SensorBase;
 public class LabelOptionsActivity extends AppCompatActivity {
     public static final int MINUTE = 60;
     public static final int HOUR = 3600;
+    public static final int DAY = 24 * HOUR;
 
     private final int[] stopTimeOptions = {
             5,
             30,
             1 * MINUTE,
             5 * MINUTE,
-            10 * MINUTE
+            10 * MINUTE,
+            30 * MINUTE,
+            1 * HOUR,
+            12 * HOUR,
+            24 * HOUR,
+            3 * DAY,
+            7 * DAY,
     };
 
     private LabelConfigViewModel mLabelConfigViewModel;

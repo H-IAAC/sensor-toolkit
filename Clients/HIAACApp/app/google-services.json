@@ -1,0 +1,68 @@
+{
+  "project_info": {
+    "project_number": "725108127180",
+    "project_id": "hiaac-2fec1",
+    "storage_bucket": "hiaac-2fec1.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:725108127180:android:734271947a1f9935ba5969",
+        "android_client_info": {
+          "package_name": "br.org.eldorado.hiaac"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "725108127180-2arjpf0qqvk6194m1aakiaa9mhpolshd.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDvH2nPhVXHLAUYtcFr1LOzLMfjsFrNgOY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "725108127180-2arjpf0qqvk6194m1aakiaa9mhpolshd.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:725108127180:android:a137e71612e67f4cba5969",
+        "android_client_info": {
+          "package_name": "br.org.eldorado.hiaacapp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "725108127180-2arjpf0qqvk6194m1aakiaa9mhpolshd.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDvH2nPhVXHLAUYtcFr1LOzLMfjsFrNgOY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "725108127180-2arjpf0qqvk6194m1aakiaa9mhpolshd.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

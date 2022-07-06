@@ -101,7 +101,7 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
             }
         });
         holder.getLabelTimer().setText(
-                Tools.getFormatedTime(labelConfigs.get(holder.getAdapterPosition()).stopTime).substring(3));
+                Tools.getFormatedTime(labelConfigs.get(holder.getAdapterPosition()).stopTime, Tools.CRONOMETER));
 
         Button editButton = holder.getEditButton();
         editButton.setOnClickListener(new View.OnClickListener() {
@@ -255,8 +255,8 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
                             ((Activity)mContext).runOnUiThread(new Runnable() {
                                 @Override
                                 public void run() {
-                                    String labelTimer = Tools.getFormatedTime((int)remainingTime/1000);
-                                    holder.getLabelTimer().setText(labelTimer.substring(3));
+                                    String labelTimer = Tools.getFormatedTime((int)remainingTime/1000, Tools.CRONOMETER);
+                                    holder.getLabelTimer().setText(labelTimer);
                                 }
                             });
                         }
@@ -271,7 +271,7 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
                                     holder.getStartButton().setEnabled(true);
                                     holder.getStopButton().setEnabled(false);
                                     holder.getLabelTimer().setText(
-                                            Tools.getFormatedTime(labelConfigs.get(holder.getAdapterPosition()).stopTime).substring(3));
+                                            Tools.getFormatedTime(labelConfigs.get(holder.getAdapterPosition()).stopTime, Tools.CRONOMETER));
                                 }
                             });
                         }
@@ -301,35 +301,42 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
         holder.getStartButton().setEnabled(false);
 
 
-        AlertDialog.Builder timer = new AlertDialog.Builder(mContext);
-        //timer.setTitle();
-        dialog = timer.create();
-        dialog.setTitle(mContext.getString(R.string.experiment_timer_title));
-        dialog.setMessage("\t 10");
-        dialog.setCancelable(false);
-        CountDownTimer countDown = new CountDownTimer(9000, 1000) {
-            @Override
-            public void onTick(long timeRemaining) {
-                ((Activity)mContext).runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        dialog.setMessage("\t" + timeRemaining/1000);
-                    }
-                });
-            }
-            @Override
-            public void onFinish() {
-                dialog.dismiss();
-                Intent execServiceIntent = new Intent(mContext, ExecutionService.class);
-                mContext.startForegroundService(execServiceIntent);
-                mContext.bindService(execServiceIntent, svc, Context.BIND_AUTO_CREATE);
-            }
-        };
-        dialog.show();
-        TextView messageView = (TextView)dialog.findViewById(android.R.id.message);
-        messageView.setGravity(Gravity.CENTER);
-        messageView.setTextSize(30);
-        countDown.start();
+        if (execService.isRunning() == null) {
+            AlertDialog.Builder timer = new AlertDialog.Builder(mContext);
+            //timer.setTitle();
+            dialog = timer.create();
+            dialog.setTitle(mContext.getString(R.string.experiment_timer_title));
+            dialog.setMessage("\t 10");
+            dialog.setCancelable(false);
+            CountDownTimer countDown = new CountDownTimer(9000, 1000) {
+                @Override
+                public void onTick(long timeRemaining) {
+                    ((Activity) mContext).runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            dialog.setMessage("\t" + timeRemaining / 1000);
+                        }
+                    });
+                }
+
+                @Override
+                public void onFinish() {
+                    dialog.dismiss();
+                    Intent execServiceIntent = new Intent(mContext, ExecutionService.class);
+                    mContext.startForegroundService(execServiceIntent);
+                    mContext.bindService(execServiceIntent, svc, Context.BIND_AUTO_CREATE);
+                }
+            };
+            dialog.show();
+            TextView messageView = (TextView) dialog.findViewById(android.R.id.message);
+            messageView.setGravity(Gravity.CENTER);
+            messageView.setTextSize(30);
+            countDown.start();
+        } else {
+            Intent execServiceIntent = new Intent(mContext, ExecutionService.class);
+            mContext.startForegroundService(execServiceIntent);
+            mContext.bindService(execServiceIntent, svc, Context.BIND_AUTO_CREATE);
+        }
     }
 
     private void checkExecution(ViewHolder holder) {
