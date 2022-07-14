@@ -12,6 +12,7 @@ import android.os.Bundle;
 import android.os.Looper;
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.os.SystemClock;
 
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
@@ -99,7 +100,8 @@ public class AgentSensorBase
                         (event.values == null ? "null" : event.values[0]));*/
                 this.power = event.sensor.getPower();
                 this.values = Arrays.copyOf(event.values, event.values.length);
-                this.timestamp = event.timestamp;
+                //this.timestamp = event.timestamp;
+                this.timestamp = System.currentTimeMillis() + (event.timestamp - SystemClock.elapsedRealtimeNanos()) / 1000000;
                 /*APICommand cmd =
                         new APICommand(
                                 APICommand.CommandType.TYPE_GET_SENSOR_DATA,

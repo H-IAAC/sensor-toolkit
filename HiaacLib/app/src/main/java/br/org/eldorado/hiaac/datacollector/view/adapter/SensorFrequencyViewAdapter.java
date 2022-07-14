@@ -23,6 +23,7 @@ import br.org.eldorado.hiaac.datacollector.layout.AnimatedLinearLayout;
 import br.org.eldorado.hiaac.datacollector.util.Log;
 import br.org.eldorado.hiaac.datacollector.util.Tools;
 import br.org.eldorado.sensoragent.model.GPS;
+import br.org.eldorado.sensorsdk.SensorSDK;
 
 public class SensorFrequencyViewAdapter extends RecyclerView.Adapter<SensorFrequencyViewAdapter.ViewHolder> {
     private final LayoutInflater mInflater;
@@ -127,22 +128,39 @@ public class SensorFrequencyViewAdapter extends RecyclerView.Adapter<SensorFrequ
                                 updateGPS(PackageManager.PERMISSION_DENIED);
                             }
                         }).create();
-                alert.setTitle("ALERT");
+                alert.setTitle(mContext.getString(R.string.dialog_alert_title));
                 alert.show();
             } else {
                 requestGPSPermission();
             }
         } else {
-            if (holder.getSelectSensorCheckBox().isChecked()) {
+            if (holder.getSelectSensorCheckBox().isChecked()
+                    && checkSensorAvailability(selectedSensorFrequency.sensor)) {
                 selectedSensorFrequency.setSelected(true);
                 frequencyContainer.expand(60);
             } else {
+                holder.getSelectSensorCheckBox().setChecked(false);
                 selectedSensorFrequency.setSelected(false);
                 frequencyContainer.close();
             }
             notifySensorFrequencyChanged();
         }
     }
+
+    private boolean checkSensorAvailability(String sensorName) {
+        boolean isAvailable = true;
+        if (!SensorSDK.getInstance().checkSensorAvailability(Tools.getSensorFromTitleName(sensorName).getType())) {
+            AlertDialog alert = new AlertDialog.Builder(mContext)
+                    .setMessage(mContext.getString(R.string.sensor_not_available))
+                    .setCancelable(true)
+                    .create();
+            alert.setTitle(mContext.getString(R.string.dialog_alert_title));
+            alert.show();
+            isAvailable = false;
+        }
+        return isAvailable;
+    }
+
 
     private void requestGPSPermission() {
         log.d("requestGPSPermission");
