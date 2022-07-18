@@ -26,7 +26,7 @@ public class ProfilingController {
     private long frequency;
     private String csvFileName;
     private Thread profilingThread;
-    private String[] csvHeader = {"Elapsed Time", "Used Memory from Application (bytes)", "Used System`s RAM (MB)",
+    private String[] csvHeader = {"Timestamp", "Elapsed Time", "Used Memory from Application (bytes)", "Used System`s RAM (MB)",
             "Used System`s RAM (%)", "Used System`s CPU (%)", "Battery Level", "Profiling Type"};
 
     protected ProfilingController() {
