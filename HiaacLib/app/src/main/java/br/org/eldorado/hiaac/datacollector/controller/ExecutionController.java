@@ -147,9 +147,11 @@ public class ExecutionController {
             new Thread(new Runnable() {
                 @Override
                 public void run() {
-                    log.d(dataTrack.getLabel() + " " + num++ + " - " + sensor.toString());
-                    LabeledData labeledData = new LabeledData(dataTrack.getLabel(), sensor);
-                    dbView.insertLabeledData(labeledData);
+                    if (sensor.getValuesArray()[0] != 0.0 && sensor.getValuesArray()[1] != 0.0) {
+                        log.d(dataTrack.getLabel() + " " + num++ + " - " + sensor.toString());
+                        LabeledData labeledData = new LabeledData(dataTrack.getLabel(), sensor);
+                        dbView.insertLabeledData(labeledData);
+                    }
                 }
             }).start();
         }

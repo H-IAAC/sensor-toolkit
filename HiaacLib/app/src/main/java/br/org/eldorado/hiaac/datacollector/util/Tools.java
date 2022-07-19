@@ -8,6 +8,15 @@ import android.view.View;
 import android.view.animation.AccelerateDecelerateInterpolator;
 import java.util.ArrayList;
 
+import br.org.eldorado.sensoragent.model.Accelerometer;
+import br.org.eldorado.sensoragent.model.AmbientTemperature;
+import br.org.eldorado.sensoragent.model.GPS;
+import br.org.eldorado.sensoragent.model.Gyroscope;
+import br.org.eldorado.sensoragent.model.Luminosity;
+import br.org.eldorado.sensoragent.model.MagneticField;
+import br.org.eldorado.sensoragent.model.Proximity;
+import br.org.eldorado.sensoragent.model.SensorBase;
+
 public class Tools {
     public static final int CRONOMETER = 1;
 
@@ -82,6 +91,26 @@ public class Tools {
             return String.format("%d days", hours/24);
         }
         return String.format("%02d:%02d:%02d", hours, minutes, seconds);
+    }
+
+    public static SensorBase getSensorFromTitleName(String title) {
+        switch (title) {
+            case Accelerometer.TAG:
+                return new Accelerometer();
+            case AmbientTemperature.TAG:
+                return new AmbientTemperature();
+            case Gyroscope.TAG:
+                return new Gyroscope();
+            case Luminosity.TAG:
+                return new Luminosity();
+            case MagneticField.TAG:
+                return new MagneticField();
+            case Proximity.TAG:
+                return new Proximity();
+            case GPS.TAG:
+                return new GPS();
+        }
+        return null;
     }
 
     public static ArrayList<String> createHertzList(int[] values) {

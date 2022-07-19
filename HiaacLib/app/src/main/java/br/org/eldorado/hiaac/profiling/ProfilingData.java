@@ -40,6 +40,10 @@ public class ProfilingData {
         return dt.format(currentTime-startTime);
     }
 
+    protected String getTimestamp() {
+        return  String.valueOf(currentTime);
+    }
+
     protected String getRAMMB() {
         return ramMB;
     }
@@ -65,7 +69,7 @@ public class ProfilingData {
     }
 
     protected String[] getCSVFormattedString() {
-        String str[] = {getElapsedTime(), getUsedMemory(), getRAMMB(), getRAMPercentage(), getCpuUsage(),
+        String str[] = {getTimestamp(), getElapsedTime(), getUsedMemory(), getRAMMB(), getRAMPercentage(), getCpuUsage(),
                         getBatteryLevel(), getType()};
         return str;
     }

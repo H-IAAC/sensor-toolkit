@@ -101,7 +101,7 @@ public class SensorBase implements Parcelable {
         this.timestamp = s.getTimestamp();
         this.power = s.getPower();
         this.values = s.getValuesArray();
-        log.i("Update information " + toString());
+        //log.i("Update information " + toString());
         if (!isStarted) {
             //isStarted = true;
             fireListener(ON_STARTED);

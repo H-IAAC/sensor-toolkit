@@ -261,7 +261,7 @@ public class LabelOptionsActivity extends AppCompatActivity {
             if (selectedSensorFrequency.isSelected()) {
                 SensorFrequency sensorFrequency = new SensorFrequency(
                         label,
-                        getSensorFromTitleName(selectedSensorFrequency.getSensor()),
+                        Tools.getSensorFromTitleName(selectedSensorFrequency.getSensor()),
                         selectedSensorFrequency.getFrequency());
                 sensorFrequencies.add(sensorFrequency);
             }
@@ -270,25 +270,7 @@ public class LabelOptionsActivity extends AppCompatActivity {
         return sensorFrequencies;
     }
 
-    private SensorBase getSensorFromTitleName(String title) {
-        switch (title) {
-            case Accelerometer.TAG:
-                return new Accelerometer();
-            case AmbientTemperature.TAG:
-                return new AmbientTemperature();
-            case Gyroscope.TAG:
-                return new Gyroscope();
-            case Luminosity.TAG:
-                return new Luminosity();
-            case MagneticField.TAG:
-                return new MagneticField();
-            case Proximity.TAG:
-                return new Proximity();
-            case GPS.TAG:
-                return new GPS();
-        }
-        return null;
-    }
+
 
     private void onSaveButtonClick() {
         String label = mLabelTile.getText().toString().trim();
