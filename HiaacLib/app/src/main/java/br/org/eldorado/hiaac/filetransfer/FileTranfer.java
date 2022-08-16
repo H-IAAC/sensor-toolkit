@@ -18,15 +18,12 @@ public class FileTranfer {
     private static final int PORT = 8080;
     private static final String FILES_DIR = "/home/hiaac/files/";
 
-    public static void transfer(File file, Context context) throws IOException {
+    public static void transfer(File file, String dir) throws IOException {
         try (Socket socket = new Socket(IP, PORT);
              FileInputStream fileInputStream = new FileInputStream(file.getAbsolutePath());
              DataOutputStream dataOutputStream = new DataOutputStream(socket.getOutputStream())) {
             String fileName = file.getName();
-            String fileNameDir = FILES_DIR + "/"
-                    + android.os.Build.MODEL + "-"
-                    + Settings.Secure.getString(context.getContentResolver(),
-                    Settings.Secure.ANDROID_ID) + "/";
+            String fileNameDir = FILES_DIR + "/" + dir + "/";
 
             fileName = fileNameDir + fileName;
             byte[] fileNameBytes = fileName.getBytes();
