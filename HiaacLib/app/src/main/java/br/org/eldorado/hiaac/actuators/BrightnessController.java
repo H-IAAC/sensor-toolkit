@@ -28,16 +28,17 @@ public class BrightnessController {
         changeBrightness(-20);
     }
 
-    private void changeBrightness(int change) {
+    /**
+     * Set brightness level.
+     * @param brightness value must be >= 0 and <= 255
+     */
+    public void setBrightness(int brightness) {
         Context context = activity.getApplicationContext();
-        int brightness =
-                Settings.System.getInt(context.getContentResolver(),
-                        Settings.System.SCREEN_BRIGHTNESS, 0);
-        brightness = brightness + change;
-        if (change > 0) {
-            brightness = brightness > 255 ? 255 : brightness;
-        } else {
-            brightness = brightness < 0 ? 0 : brightness;
+
+        if (brightness > 255) {
+            brightness =  255;
+        } else if (brightness < 0){
+            brightness = 0;
         }
 
         boolean permission;
@@ -59,5 +60,17 @@ public class BrightnessController {
             }
         }
         Log.d("Brightness", ": " + brightness);
+    }
+
+    public int getBrightness() {
+        Context context = activity.getApplicationContext();
+        return Settings.System.getInt(context.getContentResolver(),
+                Settings.System.SCREEN_BRIGHTNESS, 0);
+    }
+
+    private void changeBrightness(int change) {
+        int brightness = getBrightness();
+        brightness = brightness + change;
+        setBrightness(brightness);
     }
 }
