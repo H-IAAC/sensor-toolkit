@@ -15,6 +15,8 @@ Supported sensors:
 - Light
 - Magnetic Field
 - Proximity
+- Gravity
+- GPS
 
 
 ## Project Setup

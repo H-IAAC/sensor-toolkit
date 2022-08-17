@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import br.org.eldorado.sensoragent.model.Accelerometer;
 import br.org.eldorado.sensoragent.model.AmbientTemperature;
 import br.org.eldorado.sensoragent.model.GPS;
+import br.org.eldorado.sensoragent.model.Gravity;
 import br.org.eldorado.sensoragent.model.Gyroscope;
 import br.org.eldorado.sensoragent.model.Luminosity;
 import br.org.eldorado.sensoragent.model.MagneticField;
@@ -107,6 +108,8 @@ public class Tools {
                 return new MagneticField();
             case Proximity.TAG:
                 return new Proximity();
+            case Gravity.TAG:
+                return new Gravity();
             case GPS.TAG:
                 return new GPS();
         }
