@@ -13,6 +13,7 @@ import br.org.eldorado.sensoragent.apiserver.APIController;
 import br.org.eldorado.sensoragent.model.AgentAccelerometer;
 import br.org.eldorado.sensoragent.model.AgentAmbientTemperature;
 import br.org.eldorado.sensoragent.model.AgentGPS;
+import br.org.eldorado.sensoragent.model.AgentGravity;
 import br.org.eldorado.sensoragent.model.AgentGyroscope;
 import br.org.eldorado.sensoragent.model.AgentLuminosity;
 import br.org.eldorado.sensoragent.model.AgentMagneticField;
@@ -68,6 +69,9 @@ public class SensorController {
                         break;
                     case AgentSensorBase.TYPE_MAGNETIC_FIELD:
                         sensor = new AgentMagneticField();
+                        break;
+                    case AgentSensorBase.TYPE_GRAVITY:
+                        sensor = new AgentGravity();
                         break;
                     case AgentSensorBase.TYPE_GPS:
                         sensor = new AgentGPS();

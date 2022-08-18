@@ -3,11 +3,11 @@ package br.org.eldorado.hiaac.actuators;
 import android.app.Activity;
 
 public class Actuators {
-    public VolumeController VOLUME;
-    public BluetoothController BLUETOOTH;
-    public BrightnessController BRIGHTNESS;
-    public GpsController GPS;
-    public WifiController WIFI;
+    public final VolumeController VOLUME;
+    public final BluetoothController BLUETOOTH;
+    public final BrightnessController BRIGHTNESS;
+    public final GpsController GPS;
+    public final WifiController WIFI;
 
     public Actuators(Activity activity) {
         VOLUME = new VolumeController(activity);

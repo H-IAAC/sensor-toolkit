@@ -25,4 +25,9 @@ public class BluetoothController {
             Log.d("BT", "Bluetooth enable");
         }
     }
+
+    public boolean getBluetoothStatus() {
+        BluetoothAdapter mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+        return mBluetoothAdapter.isEnabled();
+    }
 }

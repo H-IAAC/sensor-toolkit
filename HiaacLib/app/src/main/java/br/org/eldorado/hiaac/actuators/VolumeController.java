@@ -43,4 +43,9 @@ public class VolumeController {
         int volume = audioManager.getStreamVolume(stream);
         Log.d("Volume", ": " + volume);
     }
+
+    public int getVolume() {
+        AudioManager audioManager = (AudioManager) activity.getSystemService(Context.AUDIO_SERVICE);
+        return audioManager.getStreamVolume(stream);
+    }
 }
