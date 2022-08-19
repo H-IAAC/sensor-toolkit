@@ -58,7 +58,7 @@ public class FirebaseUploadController {
                  *  If the upload is successful, delete the data from database */
                 List<LabeledData> labeledData = dbView.getLabeledData(labelName, LabelConfigRepository.TYPE_FIREBASE);
                 if (labeledData == null || labeledData.size() == 0) {
-                    fireListener(ERROR, "No data");
+                    fireListener(ERROR, mContext.getString(R.string.error_no_data_upload_firebase));
                     return;
                 }
 
@@ -87,7 +87,7 @@ public class FirebaseUploadController {
                         log.d("onSuccess ");
                         csvFile.delete();
                         dbView.deleteLabeledData(labeledData.get(0));
-                        fireListener(SUCCESS, null);
+                        fireListener(SUCCESS, mContext.getString(R.string.success_csv_uploaded_firebase));
                     }
                 }).addOnFailureListener(new OnFailureListener() {
                     @Override
@@ -101,18 +101,55 @@ public class FirebaseUploadController {
         }).start();
     }
 
+    public void uploadFile(File file, String firebasePath) {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                FirebaseStorage storage = FirebaseStorage.getInstance();
+                storage.setMaxUploadRetryTimeMillis(2000);
+                StorageReference csvRef = storage.getReference().child(firebasePath);
+
+                Uri uriFile = Uri.fromFile(file);
+                fireListener(ON_PROGRESS, mContext.getString(R.string.starting_upload_file));
+
+                UploadTask uploadTask = csvRef.child(uriFile.getLastPathSegment()).putFile(uriFile);
+
+                uploadTask.addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
+                    @Override
+                    public void onProgress(@NonNull UploadTask.TaskSnapshot snapshot) {
+                        double progress = (100.0 * snapshot.getBytesTransferred()) / snapshot.getTotalByteCount();
+                        log.d("Progress " + progress);
+                        fireListener(ON_PROGRESS, mContext.getString(R.string.download_progress, (int)progress));
+                    }
+                }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                    @Override
+                    public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                        log.d("onSuccess ");
+                        fireListener(SUCCESS, mContext.getString(R.string.success_csv_uploaded_firebase));
+                    }
+                }).addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        log.d("onFailure " + e);
+                        fireListener(ERROR, e.getMessage());
+                    }
+                });
+            }
+        }).start();
+    }
+
     public void exportToCSV(String label) {
         new Thread(new Runnable() {
             @Override
             public void run() {
                 List<LabeledData> labeledData = dbView.getLabeledData(label, LabelConfigRepository.TYPE_CSV);
                 if (labeledData == null || labeledData.size() == 0) {
-                    fireListener(ERROR, "No data");
+                    fireListener(ERROR, mContext.getString(R.string.error_no_data_create_csc));
                     return;
                 }
                 fireListener(ON_PROGRESS, mContext.getString(R.string.creating_csv_file));
                 File csvFile = createCSVFile(labeledData);
-                fireListener(ON_PROGRESS, mContext.getString(R.string.share_with_firebase));
+                fireListener(SUCCESS, mContext.getString(R.string.success_csv_file));
             }
         }).start();
     }
@@ -161,7 +198,7 @@ public class FirebaseUploadController {
         if (listener != null) {
             switch (type) {
                 case SUCCESS:
-                    listener.onCompleted(mContext.getString(R.string.success));
+                    listener.onCompleted(msg);
                     break;
                 case ERROR:
                     listener.onCompleted(msg);

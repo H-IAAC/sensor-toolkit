@@ -36,6 +36,7 @@ public class SensorFrequencyViewAdapter extends RecyclerView.Adapter<SensorFrequ
     public static final int[] frequencyOptions = {
             1,
             10,
+            40,
             50,
             500,
             1000
