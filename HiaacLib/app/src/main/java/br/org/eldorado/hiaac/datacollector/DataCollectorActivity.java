@@ -1,6 +1,5 @@
 package br.org.eldorado.hiaac.datacollector;
 
-import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
@@ -38,6 +37,9 @@ public class DataCollectorActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        }
         setContentView(R.layout.data_collector_activity_main);
 
         RecyclerView recyclerView = (RecyclerView) findViewById(R.id.label_recycle_view);
@@ -72,11 +74,18 @@ public class DataCollectorActivity extends AppCompatActivity {
                 startActivity(intent);
             }
         });
+
     }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_main, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onSupportNavigateUp() {
+        onBackPressed();
         return true;
     }
 
