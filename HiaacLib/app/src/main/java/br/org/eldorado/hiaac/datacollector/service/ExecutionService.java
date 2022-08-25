@@ -104,7 +104,7 @@ public class ExecutionService extends Service {
         Intent notificationIntent = new Intent(this, DataCollectorActivity.class);
 
         PendingIntent contentIntent = PendingIntent.getActivity(this, 0, notificationIntent,
-                PendingIntent.FLAG_UPDATE_CURRENT);
+                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_MUTABLE);
 
         builder.setContentIntent(contentIntent);
         builder.setAutoCancel(true);

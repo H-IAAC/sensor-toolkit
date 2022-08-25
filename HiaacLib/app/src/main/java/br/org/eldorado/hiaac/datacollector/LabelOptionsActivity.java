@@ -39,6 +39,7 @@ import br.org.eldorado.hiaac.datacollector.view.adapter.SensorFrequencyViewAdapt
 import br.org.eldorado.sensoragent.model.Accelerometer;
 import br.org.eldorado.sensoragent.model.AmbientTemperature;
 import br.org.eldorado.sensoragent.model.GPS;
+import br.org.eldorado.sensoragent.model.Gravity;
 import br.org.eldorado.sensoragent.model.Gyroscope;
 import br.org.eldorado.sensoragent.model.Luminosity;
 import br.org.eldorado.sensoragent.model.MagneticField;
@@ -235,6 +236,8 @@ public class LabelOptionsActivity extends AppCompatActivity {
                 SensorBase.TYPE_PROXIMITY, Proximity.TAG));
         selectedSensorFrequencies.add(createSelectedSensorFrequency(sensorTypeFrequencyMap,
                 SensorBase.TYPE_MAGNETIC_FIELD, MagneticField.TAG));
+        selectedSensorFrequencies.add(createSelectedSensorFrequency(sensorTypeFrequencyMap,
+                SensorBase.TYPE_GRAVITY, Gravity.TAG));
         selectedSensorFrequencies.add(createSelectedSensorFrequency(sensorTypeFrequencyMap,
                 SensorBase.TYPE_GPS, GPS.TAG));
 

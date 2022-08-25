@@ -4,6 +4,7 @@ import androidx.room.TypeConverter;
 import br.org.eldorado.sensoragent.model.Accelerometer;
 import br.org.eldorado.sensoragent.model.AmbientTemperature;
 import br.org.eldorado.sensoragent.model.GPS;
+import br.org.eldorado.sensoragent.model.Gravity;
 import br.org.eldorado.sensoragent.model.Gyroscope;
 import br.org.eldorado.sensoragent.model.Luminosity;
 import br.org.eldorado.sensoragent.model.MagneticField;
@@ -26,6 +27,8 @@ public class SensorConverters {
                 return new MagneticField();
             case "Proximity":
                 return new Proximity();
+            case "Gravity":
+                return new Gravity();
             case "GPS":
                 return new GPS();
         }
