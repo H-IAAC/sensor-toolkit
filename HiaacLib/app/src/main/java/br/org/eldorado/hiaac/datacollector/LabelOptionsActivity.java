@@ -53,8 +53,12 @@ public class LabelOptionsActivity extends AppCompatActivity {
 
     private final int[] stopTimeOptions = {
             5,
+            15,
             30,
+            45,
             1 * MINUTE,
+            2 * MINUTE,
+            3 * MINUTE,
             5 * MINUTE,
             10 * MINUTE,
             30 * MINUTE,

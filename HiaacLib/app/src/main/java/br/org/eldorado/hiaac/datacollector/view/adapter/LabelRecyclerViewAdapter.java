@@ -6,6 +6,7 @@ import static br.org.eldorado.hiaac.datacollector.DataCollectorActivity.UPDATE_L
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.Application;
 import android.app.ProgressDialog;
 import android.content.ComponentName;
 import android.content.Context;
@@ -23,6 +24,9 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
+import androidx.lifecycle.LifecycleOwner;
+import androidx.lifecycle.Observer;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import java.io.File;
@@ -33,6 +37,7 @@ import java.util.Map;
 import br.org.eldorado.hiaac.datacollector.LabelOptionsActivity;
 import br.org.eldorado.hiaac.R;
 import br.org.eldorado.hiaac.datacollector.data.LabelConfig;
+import br.org.eldorado.hiaac.datacollector.data.LabelConfigViewModel;
 import br.org.eldorado.hiaac.datacollector.data.SensorFrequency;
 import br.org.eldorado.hiaac.datacollector.firebase.FirebaseListener;
 import br.org.eldorado.hiaac.datacollector.firebase.FirebaseUploadController;
@@ -42,8 +47,13 @@ import br.org.eldorado.hiaac.datacollector.service.ExecutionService;
 import br.org.eldorado.hiaac.datacollector.service.listener.ExecutionServiceListenerAdapter;
 import br.org.eldorado.hiaac.datacollector.util.Log;
 import br.org.eldorado.hiaac.datacollector.util.Tools;
+import br.org.eldorado.hiaac.profiling.Profiling;
 
 public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecyclerViewAdapter.ViewHolder> {
+
+    private final int SEND_DATA_TO_FIREBASE = 0;
+    private final int CREATE_CSV_FILE = 1;
+
     private static final String TAG = "LabelRecyclerViewAdapter";
     private final LayoutInflater mInflater;
     private List<LabelConfig> labelConfigs;
@@ -52,6 +62,8 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
     private ExecutionService execService;
     private ServiceConnection svc;
     private Log log;
+    private ProgressDialog sendDataDialog;
+    private LabelConfigViewModel mLabelConfigViewModel;
 
     public LabelRecyclerViewAdapter(Context context) {
         mInflater = LayoutInflater.from(context);
@@ -75,11 +87,13 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
         return new ViewHolder(view);
     }
 
-
     public void onBindViewHolder(ViewHolder holder, int position) {
         log.d("CSVFilesRecyclerAdapter");
         LabelConfig labelConfig = labelConfigs.get(holder.getAdapterPosition());
         String labelTitle = labelConfig.label;
+
+        mLabelConfigViewModel = ViewModelProvider.AndroidViewModelFactory
+                .getInstance((Application)mContext.getApplicationContext()).create(LabelConfigViewModel.class);
 
         RecyclerView csvList = holder.getCsvRecyclerView();
         List<File> filesList = getCsvFiles(labelConfig.label);
@@ -118,7 +132,45 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
         shareButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                sendData(holder);
+                sendData(holder, SEND_DATA_TO_FIREBASE,true);
+            }
+        });
+
+        ImageView deleteButton = holder.getDeleteButton();
+        deleteButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                AlertDialog.Builder aDialogBuilder = new AlertDialog.Builder(mContext);
+                AlertDialog aDialog = aDialogBuilder.create();
+                aDialog.setTitle(mContext.getString(R.string.delete_config_title));
+                aDialog.setMessage(mContext.getString(R.string.delete_config_confirmation));
+
+                aDialog.setButton(DialogInterface.BUTTON_NEGATIVE, mContext.getString(R.string.no), new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInt, int which) {
+                        aDialog.dismiss();
+                    }
+                });
+                aDialog.setButton(DialogInterface.BUTTON_POSITIVE, mContext.getString(R.string.yes), new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInt, int which) {
+                        aDialog.dismiss();
+                        mLabelConfigViewModel.getLabelConfigById(labelTitle)
+                                .observe((LifecycleOwner) mContext, new Observer<LabelConfig>() {
+                                    @Override
+                                    public void onChanged(LabelConfig labelConfig) {
+                                        try {
+                                            if (labelConfig != null) {
+                                                mLabelConfigViewModel.deleteConfig(labelConfig);
+                                            }
+                                        } catch (Exception e) {
+                                            e.printStackTrace();
+                                        }
+                                    }
+                                });
+                    }
+                });
+                aDialog.show();
             }
         });
 
@@ -148,7 +200,7 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
         if (((CSVFilesRecyclerAdapter)holder.getCsvRecyclerView().getAdapter()).getItemCount() > 0) {
             holder.getButtonContainer().expand(300);
         } else {
-            holder.getButtonContainer().expand(60);
+            holder.getButtonContainer().expand(54);
         }
     }
 
@@ -164,8 +216,11 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
         return filesList;
     }
 
-    private void sendData(ViewHolder holder) {
-        final ProgressDialog dialog = ProgressDialog.show(mContext, "Export to CSV File", "Creating CSV", true);
+
+    private void sendData(ViewHolder holder, int type, boolean showDialog) {
+        if (showDialog) {
+            sendDataDialog = ProgressDialog.show(mContext, "Export to CSV File", "Creating CSV", true);
+        }
         FirebaseUploadController firebase = new FirebaseUploadController(mContext);
         firebase.registerListener(new FirebaseListener() {
 
@@ -174,35 +229,8 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
                 ((Activity)mContext).runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        if (message.equals(mContext.getString(R.string.share_with_firebase))) {
-
-                            AlertDialog.Builder aDialogBuilder = new AlertDialog.Builder(mContext);
-                            AlertDialog aDialog = aDialogBuilder.create();
-                            aDialog.setTitle(mContext.getString(R.string.share_with_firebase_title));
-                            aDialog.setMessage(message);
-
-                            aDialog.setButton(DialogInterface.BUTTON_NEGATIVE, mContext.getString(R.string.no), new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialogInt, int which) {
-                                    aDialog.dismiss();
-                                    ((CSVFilesRecyclerAdapter)holder.getCsvRecyclerView().getAdapter()).updateFileList(getCsvFiles(labelConfigs.get(holder.getAdapterPosition()).label));
-                                    resizeLabelPanel(holder);
-                                    onSendDataCompleted(mContext.getString(R.string.success), dialog);
-                                }
-                            });
-                            aDialog.setButton(DialogInterface.BUTTON_POSITIVE, mContext.getString(R.string.yes), new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialogInt, int which) {
-                                    aDialog.dismiss();
-                                    ((CSVFilesRecyclerAdapter)holder.getCsvRecyclerView().getAdapter()).updateFileList(getCsvFiles(labelConfigs.get(holder.getAdapterPosition()).label));
-                                    resizeLabelPanel(holder);
-                                    firebase.uploadCSVFile(labelConfigs.get(holder.getAdapterPosition()).label);
-                                }
-                            });
-                            aDialog.show();
-
-                        } else {
-                            dialog.setMessage(message);
+                        if (showDialog) {
+                            sendDataDialog.setMessage(message);
                         }
                     }
                 });
@@ -210,24 +238,60 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
 
             @Override
             public void onCompleted(String message) {
-                onSendDataCompleted(message, dialog);
+                onSendDataCompleted(message, sendDataDialog, holder);
             }
         });
-        firebase.exportToCSV(labelConfigs.get(holder.getAdapterPosition()).label);
+
+        if (type == CREATE_CSV_FILE) {
+            firebase.exportToCSV(labelConfigs.get(holder.getAdapterPosition()).label);
+        } else if (type == SEND_DATA_TO_FIREBASE) {
+            AlertDialog.Builder aDialogBuilder = new AlertDialog.Builder(mContext);
+            AlertDialog aDialog = aDialogBuilder.create();
+            aDialog.setTitle(mContext.getString(R.string.share_with_firebase_title));
+            aDialog.setMessage(mContext.getString(R.string.share_with_firebase));
+
+            aDialog.setButton(DialogInterface.BUTTON_NEGATIVE, mContext.getString(R.string.no), new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInt, int which) {
+                    sendDataDialog.dismiss();
+                    aDialog.dismiss();
+                    ((CSVFilesRecyclerAdapter)holder.getCsvRecyclerView().getAdapter()).updateFileList(getCsvFiles(labelConfigs.get(holder.getAdapterPosition()).label));
+                    resizeLabelPanel(holder);
+                }
+            });
+            aDialog.setButton(DialogInterface.BUTTON_POSITIVE, mContext.getString(R.string.yes), new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInt, int which) {
+                    aDialog.dismiss();
+                    firebase.uploadCSVFile(labelConfigs.get(holder.getAdapterPosition()).label);
+                }
+            });
+            aDialog.show();
+        }
     }
 
-    private void onSendDataCompleted(String message, ProgressDialog dialog) {
+    private void onSendDataCompleted(String message, ProgressDialog dialog, ViewHolder holder) {
         ((Activity)mContext).runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                dialog.cancel();
-                AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
-                builder.setTitle(message);
-                builder.setIcon(R.drawable.ic_baseline_success);
-                AlertDialog dl = builder.create();
-                dl.show();
+                if (dialog != null) {
+                    dialog.cancel();
+                    AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
+                    builder.setTitle(message);
+                    builder.setIcon(R.drawable.ic_baseline_success);
+                    AlertDialog dl = builder.create();
+                    dl.show();
+                }
+                ((CSVFilesRecyclerAdapter)holder.getCsvRecyclerView().getAdapter()).updateFileList(getCsvFiles(labelConfigs.get(holder.getAdapterPosition()).label));
+                if (dialog != null) {
+                    resizeLabelPanel(holder);
+                }
             }
         });
+    }
+
+    private void sendToFirebase(ViewHolder holder) {
+        sendData(holder, SEND_DATA_TO_FIREBASE, true);
     }
 
     private AlertDialog dialog;
@@ -239,7 +303,7 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
                     log.d("Connected");
                     ExecutionService.MyBinder binder = (ExecutionService.MyBinder) service;
                     execService = binder.getServer();
-
+                    Profiling.getInstance().start();
                     DataTrack dt = new DataTrack();
                     String label = labelConfigs.get(holder.getAdapterPosition()).label;
                     int stopTime = labelConfigs.get(holder.getAdapterPosition()).stopTime;
@@ -272,6 +336,7 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
                                     holder.getStopButton().setEnabled(false);
                                     holder.getLabelTimer().setText(
                                             Tools.getFormatedTime(labelConfigs.get(holder.getAdapterPosition()).stopTime, Tools.CRONOMETER));
+                                    sendData(holder, CREATE_CSV_FILE,true);
                                 }
                             });
                         }
@@ -359,6 +424,8 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
                         holder.getStartButton().setEnabled(false);
                         holder.getStopButton().setEnabled(true);
                         startExecution(holder);
+                    } else {
+                        sendData(holder, CREATE_CSV_FILE, false);
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -392,6 +459,7 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
         private Button stopButton;
         private Button editButton;
         private ImageView shareButton;
+        private ImageView deleteButton;
         private RecyclerView csvRecyclerView;
 
         public ViewHolder(@NonNull View itemView) {
@@ -404,6 +472,7 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
             stopButton = itemView.findViewById(R.id.stop_sampling_button);
             editButton = itemView.findViewById(R.id.edit_sampling_button);
             shareButton = itemView.findViewById(R.id.share_sampling_button);
+            deleteButton = itemView.findViewById(R.id.delete_button);
             csvRecyclerView = itemView.findViewById(R.id.csvfiles_reclyclerView);
             csvRecyclerView.addOnItemTouchListener(new RecyclerView.OnItemTouchListener() {
                 @Override
@@ -459,6 +528,10 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
 
         public ImageView getShareButton() {
             return shareButton;
+        }
+
+        public ImageView getDeleteButton() {
+            return deleteButton;
         }
     }
 }
