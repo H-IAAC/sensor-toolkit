@@ -169,7 +169,7 @@ public class FirebaseUploadController {
                         File.separator +
                         data.get(0).getLabel() +
                         File.separator +
-                        data.get(0).getLabel() + "_" +
+                        data.get(0).getLabel() + "__" +
                         df.format(new Date(System.currentTimeMillis())) +
                         ".csv");
         try {
