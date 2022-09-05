@@ -30,6 +30,7 @@ public class DataCollectorActivity extends AppCompatActivity {
     public static final int UPDATE_LABEL_CONFIG_ACTIVITY = 2;
     public static final String LABEL_CONFIG_ACTIVITY_TYPE = "label_config_type";
     public static final String LABEL_CONFIG_ACTIVITY_ID = "label_config_id";
+    public static final String FOLDER_NAME = "datacollector";
 
     private FloatingActionButton mAddButton;
     private LabelConfigViewModel mLabelConfigViewModel;
