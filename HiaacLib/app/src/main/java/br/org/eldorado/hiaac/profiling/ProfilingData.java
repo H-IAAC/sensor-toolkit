@@ -2,12 +2,14 @@ package br.org.eldorado.hiaac.profiling;
 
 import android.app.ActivityManager;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.BatteryManager;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.TimeZone;
 
-public class ProfilingData {
+class ProfilingData {
 
     protected static final String TYPE_CHECKPOINT = "CHECKPOINT";
     protected static final String TYPE_AUTOMATIC = "AUTOMATIC";
@@ -23,7 +25,10 @@ public class ProfilingData {
     private String batteryLevel;
     private String cpuUsage;
 
-    protected ProfilingData(long st, Context ctx, String tp) {
+    private Intent battery;
+
+    protected ProfilingData(long st, Context ctx, String tp, Intent bat) {
+        battery = bat;
         type = tp;
         startTime = st;
         currentTime = System.currentTimeMillis();

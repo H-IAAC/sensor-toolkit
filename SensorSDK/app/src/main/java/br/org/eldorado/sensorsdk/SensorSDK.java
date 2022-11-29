@@ -3,6 +3,7 @@ package br.org.eldorado.sensorsdk;
 import android.app.Application;
 import android.hardware.SensorManager;
 
+import br.org.eldorado.sensoragent.util.RemoteApplicationTime;
 import br.org.eldorado.sensorsdk.controller.SensorController;
 import br.org.eldorado.sensorsdk.util.Log;
 
@@ -31,5 +32,9 @@ public class SensorSDK extends Application {
     public boolean checkSensorAvailability(int sensorType) {
         SensorManager sensorManager = (SensorManager) getSystemService(SensorSDKContext.getInstance().getContext().SENSOR_SERVICE);
         return sensorManager.getDefaultSensor(sensorType) != null;
+    }
+
+    public void setRemoteTime(long time) {
+        RemoteApplicationTime.setCurrentTimeMillis(time);
     }
 }

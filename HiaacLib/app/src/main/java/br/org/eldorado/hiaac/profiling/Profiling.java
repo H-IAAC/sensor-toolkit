@@ -1,6 +1,10 @@
 package br.org.eldorado.hiaac.profiling;
 
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.os.BatteryManager;
+
 import java.io.File;
 import br.org.eldorado.sensorsdk.SensorSDKContext;
 
@@ -10,6 +14,9 @@ public class Profiling {
     private ProfilingController controller;
     private boolean isManualOnly;
     private static Profiling inst;
+    private int frequency;
+    private String csvFileName;
+
 
     public static Profiling getInstance() {
         if (inst == null) {
@@ -21,6 +28,8 @@ public class Profiling {
     private Profiling(Context ctx) {
         mContext = ctx;
         isManualOnly = false;
+        frequency = 1;
+        csvFileName = "";
     }
 
     /**
@@ -33,7 +42,7 @@ public class Profiling {
     }
 
     public void setCsvFileName(String name) {
-        controller.setCsvFileName(name);
+        csvFileName = name;
     }
 
     /**
@@ -41,12 +50,16 @@ public class Profiling {
      * @param seconds Data will be collected every parameter seconds
      */
     public void setFrequency(int seconds) {
-        controller.setFrequency(seconds*1000);
+        if (frequency < 1 || frequency > 3600) {
+            throw new IllegalArgumentException("Frequency should be a value between 1 and 3600");
+        }
+        frequency = seconds*1000;
     }
 
     public void start() {
         controller = new ProfilingController();
         controller.setContext(mContext);
+        controller.setFrequency(frequency);
         if (!isManualOnly) {
             controller.start();
         }
@@ -61,6 +74,9 @@ public class Profiling {
     }
 
     public File finishProfiling() {
+        if (!csvFileName.isEmpty()) {
+            controller.setCsvFileName(csvFileName);
+        }
         File csv = controller.finishProfiling();
         controller = null;
         return csv;

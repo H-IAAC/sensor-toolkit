@@ -7,6 +7,7 @@ import android.util.TypedValue;
 import android.view.View;
 import android.view.animation.AccelerateDecelerateInterpolator;
 import java.util.ArrayList;
+import java.util.List;
 
 import br.org.eldorado.sensoragent.model.Accelerometer;
 import br.org.eldorado.sensoragent.model.AmbientTemperature;
@@ -116,9 +117,13 @@ public class Tools {
         return null;
     }
 
-    public static ArrayList<String> createHertzList(int[] values) {
+    public static ArrayList<String> createHertzList(List<Integer> values) {
         ArrayList<String> list = new ArrayList<>();
         for (int v : values) {
+            if (v == 0) {
+                list.add("Add frequency");
+                continue;
+            }
             list.add(v + " Hz");
         }
 

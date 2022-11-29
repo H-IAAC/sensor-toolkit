@@ -129,10 +129,20 @@ public class SensorController {
 
     public void getInformation(SensorBase sensor) {
         try {
-            log.i("Getting information of " + sensor.getName() + " " + sensorAgent);
+            //log.i("Getting information of " + sensor.getName() + " " + sensorAgent);
             sensor.updateInformation(sensorAgent.getInformation(sensor.getType()));
         } catch (RemoteException e) {
             e.printStackTrace();
+        }
+    }
+
+    static public void spinWait(long ms){
+        if (ms > 0) {
+            long end = System.currentTimeMillis() + ms;
+            long current = System.currentTimeMillis();
+            while (current < end) {
+                current = System.currentTimeMillis();
+            }
         }
     }
 
@@ -146,8 +156,9 @@ public class SensorController {
                     while (sensor.isStarted()) {
                         try {
                             getInformation(sensor);
-                            Thread.sleep(1000/sensor.getFrequency());
-                        } catch (InterruptedException e) {
+                            spinWait(1000/sensor.getFrequency());
+                            //Thread.sleep(1000/sensor.getFrequency());
+                        } catch (/*InterruptedException*/ Exception e) {
                             sensor.setIsStarted(false);
                             e.printStackTrace();
                         }
@@ -165,10 +176,10 @@ public class SensorController {
             log.d("onSensorStarted " + sensor.getListener());
             if (sensor != null && sensor.getListener() != null) {
                 try {
-                    Thread.sleep(1000);
+                    //Thread.sleep(1000);
                     startGettingInformationThread(sensor);
                     sensor.getListener().onSensorStarted(sensor);
-                } catch (InterruptedException e) {
+                } catch (/*InterruptedException*/ Exception e) {
                     e.printStackTrace();
                 }
             }

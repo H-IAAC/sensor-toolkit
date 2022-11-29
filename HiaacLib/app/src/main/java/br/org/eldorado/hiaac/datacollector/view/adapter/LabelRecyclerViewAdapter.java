@@ -20,6 +20,7 @@ import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -32,6 +33,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import br.org.eldorado.hiaac.datacollector.LabelOptionsActivity;
@@ -47,7 +49,6 @@ import br.org.eldorado.hiaac.datacollector.service.ExecutionService;
 import br.org.eldorado.hiaac.datacollector.service.listener.ExecutionServiceListenerAdapter;
 import br.org.eldorado.hiaac.datacollector.util.Log;
 import br.org.eldorado.hiaac.datacollector.util.Tools;
-import br.org.eldorado.hiaac.profiling.Profiling;
 
 public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecyclerViewAdapter.ViewHolder> {
 
@@ -88,7 +89,7 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
     }
 
     public void onBindViewHolder(ViewHolder holder, int position) {
-        log.d("CSVFilesRecyclerAdapter");
+        log.d("CSVFilesRecyclerAdapter - ActiveThreads: " + Thread.activeCount());
         LabelConfig labelConfig = labelConfigs.get(holder.getAdapterPosition());
         String labelTitle = labelConfig.label;
 
@@ -300,10 +301,9 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
             @Override
             public void onServiceConnected(ComponentName name, IBinder service) {
                 try {
-                    log.d("Connected");
+                    log.d("Connected execService");
                     ExecutionService.MyBinder binder = (ExecutionService.MyBinder) service;
                     execService = binder.getServer();
-                    Profiling.getInstance().start();
                     DataTrack dt = new DataTrack();
                     String label = labelConfigs.get(holder.getAdapterPosition()).label;
                     int stopTime = labelConfigs.get(holder.getAdapterPosition()).stopTime;
@@ -328,17 +328,52 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
                         @Override
                         public void onStopped() {
                             // Enable buttons
-                            ((Activity)mContext).runOnUiThread(new Runnable() {
-                                @Override
-                                public void run() {
-                                    holder.getEditButton().setEnabled(true);
-                                    holder.getStartButton().setEnabled(true);
-                                    holder.getStopButton().setEnabled(false);
-                                    holder.getLabelTimer().setText(
-                                            Tools.getFormatedTime(labelConfigs.get(holder.getAdapterPosition()).stopTime, Tools.CRONOMETER));
-                                    sendData(holder, CREATE_CSV_FILE,true);
-                                }
-                            });
+                            try {
+                                ((Activity) mContext).runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        /*execService.stopSelf();
+                                        execService.stopForeground(true);*/
+                                        holder.getEditButton().setEnabled(true);
+                                        holder.getStartButton().setEnabled(true);
+                                        holder.getStopButton().setEnabled(false);
+                                        holder.getLabelTimer().setText(
+                                                Tools.getFormatedTime(labelConfigs.get(holder.getAdapterPosition()).stopTime, Tools.CRONOMETER));
+
+                                        AlertDialog.Builder timer = new AlertDialog.Builder(mContext);
+                                        AlertDialog createCSVDialog;
+                                        createCSVDialog = timer.create();
+                                        createCSVDialog.setMessage(mContext.getString(R.string.before_create_csv_file));
+                                        createCSVDialog.setCancelable(false);
+                                        createCSVDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
+                                            @Override
+                                            public void onCancel(DialogInterface dialog) {
+                                                sendData(holder, CREATE_CSV_FILE, true);
+                                            }
+                                        });
+                                        CountDownTimer countDown = new CountDownTimer(5000, 1000) {
+                                            @Override
+                                            public void onTick(long timeRemaining) {
+                                            }
+
+                                            @Override
+                                            public void onFinish() {
+                                                /*createCSVDialog.setCancelable(true);
+                                                createCSVDialog.setMessage("OK");*/
+                                                createCSVDialog.dismiss();
+                                                sendData(holder, CREATE_CSV_FILE, true);
+                                            }
+                                        };
+                                        createCSVDialog.show();
+                                        TextView messageView = (TextView) createCSVDialog.findViewById(android.R.id.message);
+                                        messageView.setGravity(Gravity.CENTER);
+                                        messageView.setTextSize(26);
+                                        countDown.start();
+                                    }
+                                });
+                            } catch (WindowManager.BadTokenException e) {
+                                log.e("App is not running");
+                            }
                         }
 
                         @Override
@@ -365,10 +400,9 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
 
         holder.getStartButton().setEnabled(false);
 
-
+        execService.setRemoteTime(System.currentTimeMillis() + (1000*60*60));
         if (execService.isRunning() == null) {
             AlertDialog.Builder timer = new AlertDialog.Builder(mContext);
-            //timer.setTitle();
             dialog = timer.create();
             dialog.setTitle(mContext.getString(R.string.experiment_timer_title));
             dialog.setMessage("\t 10");
@@ -386,13 +420,21 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
 
                 @Override
                 public void onFinish() {
-                    dialog.dismiss();
+                    try {
+                        dialog.dismiss();
+                    } catch (IllegalArgumentException e) {
+                        log.e("App is not running");
+                    }
                     Intent execServiceIntent = new Intent(mContext, ExecutionService.class);
                     mContext.startForegroundService(execServiceIntent);
                     mContext.bindService(execServiceIntent, svc, Context.BIND_AUTO_CREATE);
                 }
             };
-            dialog.show();
+            try {
+                dialog.show();
+            } catch (Exception e) {
+                log.e("App is not running!");
+            }
             TextView messageView = (TextView) dialog.findViewById(android.R.id.message);
             messageView.setGravity(Gravity.CENTER);
             messageView.setTextSize(30);

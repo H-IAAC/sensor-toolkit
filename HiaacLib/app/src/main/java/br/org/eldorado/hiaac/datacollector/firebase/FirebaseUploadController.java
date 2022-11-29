@@ -14,6 +14,7 @@ import com.google.firebase.storage.UploadTask;
 import com.opencsv.CSVWriter;
 import java.io.File;
 import java.io.FileWriter;
+import java.io.IOException;
 import java.sql.Date;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -56,12 +57,13 @@ public class FirebaseUploadController {
             public void run() {
                 /* Create the CSV file if there are data for that and upload to firebase
                  *  If the upload is successful, delete the data from database */
-                List<LabeledData> labeledData = dbView.getLabeledData(labelName, LabelConfigRepository.TYPE_FIREBASE);
+                List<LabeledData> labeledData = dbView.getLabeledData(labelName, LabelConfigRepository.TYPE_FIREBASE, 0);
                 if (labeledData == null || labeledData.size() == 0) {
                     fireListener(ERROR, mContext.getString(R.string.error_no_data_upload_firebase));
                     return;
                 }
 
+                LabeledData toBeDeleted = labeledData.get(0);
                 fireListener(ON_PROGRESS, mContext.getString(R.string.creating_csv_file));
 
                 FirebaseStorage storage = FirebaseStorage.getInstance();
@@ -69,6 +71,14 @@ public class FirebaseUploadController {
                 StorageReference csvRef = storage.getReference().child(labelName+ File.separator + "csv");
 
                 File csvFile = createCSVFile(labeledData);
+                labeledData.clear();
+                long offset = labeledData.size();
+                while ((labeledData = dbView.getLabeledData(labelName, LabelConfigRepository.TYPE_FIREBASE, offset)).size() > 0) {
+                    appendDataToCsvFile(csvFile, labeledData, 1);
+                    offset += labeledData.size();
+                    labeledData.clear();
+                }
+
                 Uri file = Uri.fromFile(csvFile);
                 fireListener(ON_PROGRESS, mContext.getString(R.string.starting_upload_file));
 
@@ -86,7 +96,7 @@ public class FirebaseUploadController {
                     public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
                         log.d("onSuccess ");
                         csvFile.delete();
-                        dbView.deleteLabeledData(labeledData.get(0));
+                        dbView.deleteLabeledData(toBeDeleted);
                         fireListener(SUCCESS, mContext.getString(R.string.success_csv_uploaded_firebase));
                     }
                 }).addOnFailureListener(new OnFailureListener() {
@@ -142,16 +152,58 @@ public class FirebaseUploadController {
         new Thread(new Runnable() {
             @Override
             public void run() {
-                List<LabeledData> labeledData = dbView.getLabeledData(label, LabelConfigRepository.TYPE_CSV);
+                long start = System.currentTimeMillis();
+                List<LabeledData> labeledData = dbView.getLabeledData(label, LabelConfigRepository.TYPE_CSV, 0);
                 if (labeledData == null || labeledData.size() == 0) {
                     fireListener(ERROR, mContext.getString(R.string.error_no_data_create_csc));
                     return;
                 }
                 fireListener(ON_PROGRESS, mContext.getString(R.string.creating_csv_file));
                 File csvFile = createCSVFile(labeledData);
+                labeledData.clear();
+                while ((labeledData = dbView.getLabeledData(label, LabelConfigRepository.TYPE_CSV, 0)).size() > 0) {
+                    appendDataToCsvFile(csvFile, labeledData, 1);
+                    labeledData.clear();
+                }
+                long end = System.currentTimeMillis();
+                log.d("FINALIZADO EM " + ((end-start)/1000)/60 + "m " + ((end-start)/1000)%60);
                 fireListener(SUCCESS, mContext.getString(R.string.success_csv_file));
             }
         }).start();
+    }
+
+    private void appendDataToCsvFile(File csvFile, List<LabeledData> data, int type) {
+        try {
+            log.d("Appending data " + data.get(0).getCSVFormattedString()[1] + " - " + data.get(0).getCSVFormattedString()[4] + " " + data.size());
+            CSVWriter writer = null;
+            Locale l = Locale.getDefault();
+            try {
+                Locale.setDefault(new Locale("pt", "BR"));
+                writer = new CSVWriter(new FileWriter(csvFile, true), ';');
+                if (type == 0) {
+                    writer.writeNext(data.get(0).getCSVHeaders());
+                }
+                for (LabeledData dt : data) {
+                    writer.writeNext(dt.getCSVFormattedString());
+                    dt.setIsDataUsed(1);
+                }
+                dbView.updateLabeledData(data);
+                Thread.sleep(1000);
+            } catch (Exception e) {
+                e.printStackTrace();
+            } finally {
+                if (writer != null) {
+                    try {
+                        Locale.setDefault(l);
+                        writer.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     private File createCSVFile(List<LabeledData> data) {
@@ -172,21 +224,7 @@ public class FirebaseUploadController {
                         data.get(0).getLabel() + "__" +
                         df.format(new Date(System.currentTimeMillis())) +
                         ".csv");
-        try {
-            Locale l = Locale.getDefault();
-            Locale.setDefault(new Locale("pt", "BR"));
-            CSVWriter writer = new CSVWriter(new FileWriter(csvFile), ';');
-            writer.writeNext(data.get(0).getCSVHeaders());
-            for (LabeledData dt : data) {
-                writer.writeNext(dt.getCSVFormattedString());
-                dt.setIsDataUsed(1);
-            }
-            writer.close();
-            Locale.setDefault(l);
-            dbView.updateLabeledData(data);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        appendDataToCsvFile(csvFile, data, 0);
         return csvFile;
     }
 

@@ -104,6 +104,7 @@ public class LabelOptionsActivity extends AppCompatActivity {
                 R.layout.custom_spinner, list);
         mStopTimeSpinner.setAdapter(arrayAdapter);
 
+
         RecyclerView recyclerView = (RecyclerView) findViewById(R.id.sensors_recycler_view);
         mSensorFrequencyViewAdapter =
                 new SensorFrequencyViewAdapter(this, mSensorFrequencyChangeListener);
@@ -133,7 +134,6 @@ public class LabelOptionsActivity extends AppCompatActivity {
                 mIsUpdating = false;
         }
     }
-
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
@@ -256,7 +256,7 @@ public class LabelOptionsActivity extends AppCompatActivity {
                 new SensorFrequencyViewAdapter.SelectedSensorFrequency(
                         frequency != null,
                         sensorName,
-                        frequency == null ? frequencyOptions[0] : frequency.intValue()
+                        frequency == null ? frequencyOptions.get(0) : frequency.intValue()
                 );
 
         return selectedSensorFrequency;
@@ -276,8 +276,6 @@ public class LabelOptionsActivity extends AppCompatActivity {
 
         return sensorFrequencies;
     }
-
-
 
     private void onSaveButtonClick() {
         String label = mLabelTile.getText().toString().trim();

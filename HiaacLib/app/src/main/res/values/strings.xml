@@ -7,6 +7,7 @@
 
     <string name="csv_files">Created CSV Files</string>
     <string name="creating_csv_file">Creating CSV File . . .</string>
+    <string name="before_create_csv_file">Finishing getting data to create CSV file. Please wait . . .</string>
     <string name="starting_upload_file">Starting Upload . . .</string>
     <string name="share_with_firebase">Would you like to send data to Firebase Server?</string>
     <string name="share_with_firebase_title">Send to Firebase.</string>

@@ -35,6 +35,7 @@ import br.org.eldorado.sensoragent.SensorAgentContext;
 import br.org.eldorado.sensoragent.apiserver.APICommand;
 import br.org.eldorado.sensoragent.apiserver.APIController;
 import br.org.eldorado.sensoragent.util.Log;
+import br.org.eldorado.sensoragent.util.RemoteApplicationTime;
 
 public class AgentSensorBase
         implements SensorEventListener, Parcelable {
@@ -100,8 +101,10 @@ public class AgentSensorBase
                         (event.values == null ? "null" : event.values[0]));*/
                 this.power = event.sensor.getPower();
                 this.values = Arrays.copyOf(event.values, event.values.length);
-                //this.timestamp = event.timestamp;
-                this.timestamp = System.currentTimeMillis() + (event.timestamp - SystemClock.elapsedRealtimeNanos()) / 1000000;
+                //this.timestamp = System.currentTimeMillis() + (event.timestamp - SystemClock.elapsedRealtimeNanos()) / 1000000;
+                //this.timestamp = RemoteApplicationTime.getCurrentRemoteTimeMillis() + (event.timestamp - SystemClock.elapsedRealtimeNanos()) / 1000000;
+                this.timestamp = RemoteApplicationTime.getCurrentRemoteTimeMillis();
+
                 /*APICommand cmd =
                         new APICommand(
                                 APICommand.CommandType.TYPE_GET_SENSOR_DATA,
@@ -170,6 +173,8 @@ public class AgentSensorBase
                     values[0] = (float)locationResult.getLastLocation().getLatitude();
                     values[1] = (float)locationResult.getLastLocation().getLongitude();
                     timestamp = locationResult.getLastLocation().getTime();
+                    //timestamp = System.currentTimeMillis();
+                    timestamp = RemoteApplicationTime.getCurrentRemoteTimeMillis();
                 }
             };
 

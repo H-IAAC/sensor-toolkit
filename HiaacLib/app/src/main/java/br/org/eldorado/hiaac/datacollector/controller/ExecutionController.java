@@ -2,6 +2,10 @@ package br.org.eldorado.hiaac.datacollector.controller;
 
 import android.os.CountDownTimer;
 import androidx.lifecycle.ViewModelProvider;
+
+import java.util.LinkedList;
+import java.util.List;
+
 import br.org.eldorado.hiaac.datacollector.data.LabelConfigViewModel;
 import br.org.eldorado.hiaac.datacollector.data.LabeledData;
 import br.org.eldorado.hiaac.datacollector.data.SensorFrequency;
@@ -73,15 +77,24 @@ public class ExecutionController {
         if (isRunning) {
             isRunning = false;
             timer.cancel();
+            long totalData = 0;
             for (SensorFrequency sensorFrequency : dataTrack.getSensorList()) {
                 sensorFrequency.sensor.stopSensor();
+                //labeledDataList.addAll(((MySensorListener)sensorFrequency.sensor.getListener()).getLabeledDataList());
+                if (sensorFrequency.sensor.getListener() != null) {
+                    log.d("Collected data from " + sensorFrequency.sensor.getName() + ": " + ((MySensorListener) sensorFrequency.sensor.getListener()).getCollectedData());
+                    dbView.insertLabeledData(((MySensorListener) sensorFrequency.sensor.getListener()).getLabeledDataList());
+                    totalData += ((MySensorListener) sensorFrequency.sensor.getListener()).getCollectedData();
+                }
             }
-            listener.onStopped();
             if (service != null) {
                 service.stopForeground(true);
                 service.stopSelf();
                 service = null;
             }
+            log.d("Total data collected: " + totalData);
+            //dbView.insertLabeledData(labeledDataList);
+            listener.onStopped();
         }
     }
 
@@ -126,9 +139,20 @@ public class ExecutionController {
     private class MySensorListener implements SensorSDKListener {
 
         private DataTrack dataTrack;
+        private LinkedList<LabeledData> labeledData;
+        private long collectedData = 0;
 
         public MySensorListener(DataTrack data) {
             this.dataTrack = data;
+            labeledData = new LinkedList<LabeledData>();
+        }
+
+        public List<LabeledData> getLabeledDataList() {
+            return labeledData == null ? new LinkedList<LabeledData>() : labeledData;
+        }
+
+        public long getCollectedData() {
+            return collectedData;
         }
 
         @Override
@@ -141,26 +165,30 @@ public class ExecutionController {
             log.d("Sensor STOPED");
         }
 
-        private int num = 1;
         @Override
         public void onSensorChanged(SensorBase sensor) {
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        if (sensor.getValuesArray()[0] != 0.0
-                                && ((sensor.getValuesArray().length == 1)
-                                    || (sensor.getValuesArray().length > 1 && sensor.getValuesArray()[1] != 0.0))) {
-                            log.d(dataTrack.getLabel() + " " + num++ + " - " + sensor.toString());
-                            LabeledData labeledData = new LabeledData(dataTrack.getLabel(), sensor);
-                            dbView.insertLabeledData(labeledData);
-                        }
-                    } catch (Exception e) {
-                        log.d("OnSensorChanged error");
-                        e.printStackTrace();
+            try {
+                if (sensor.getValuesArray()[0] != 0.0
+                        && ((sensor.getValuesArray().length == 1)
+                            || (sensor.getValuesArray().length > 1 && sensor.getValuesArray()[1] != 0.0))) {
+                    //log.d(dataTrack.getLabel() + " Active Threads: " + Thread.activeCount() + "  - " + num++ + " - " + sensor.toString());
+                    LabeledData data = new LabeledData(dataTrack.getLabel(), sensor);
+                    labeledData.add(data);
+                    collectedData++;
+
+                    if (labeledData.size() > 50000) {
+                        dbView.insertLabeledData((LinkedList<LabeledData>)labeledData.clone());
+                        labeledData.clear();
                     }
                 }
-            }).start();
+            } catch (Exception e) {
+                if (labeledData.size() > 0) {
+                    dbView.insertLabeledData(labeledData);
+                    labeledData.clear();
+                }
+                log.d("OnSensorChanged error");
+                e.printStackTrace();
+            }
         }
     }
 }

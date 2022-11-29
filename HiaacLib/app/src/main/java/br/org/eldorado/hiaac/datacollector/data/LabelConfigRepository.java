@@ -3,6 +3,8 @@ package br.org.eldorado.hiaac.datacollector.data;
 import android.app.Application;
 import android.os.AsyncTask;
 import androidx.lifecycle.LiveData;
+
+import java.util.LinkedList;
 import java.util.List;
 import java.util.function.Function;
 
@@ -66,15 +68,15 @@ public class LabelConfigRepository {
             return null;})).execute(frequencies);
     }
 
-    public void insertLabeledData(LabeledData data) {
+    public void insertLabeledData(List<LabeledData> data) {
         new LabeledDataAsyncTask(mLabelConfigDao, (labeledData -> {
             mLabelConfigDao.insertLabeledData(labeledData);
             return null;})).execute(data);
     }
 
-    public List<LabeledData> getLabeledData(String label, int type) {
+    public List<LabeledData> getLabeledData(String label, int type, long offset) {
         if (type == TYPE_FIREBASE) {
-            return mLabelConfigDao.getLabeledData(label);
+            return mLabelConfigDao.getLabeledData(label, offset);
         } else {
             return mLabelConfigDao.getLabeledDataCsv(label);
         }
@@ -86,9 +88,11 @@ public class LabelConfigRepository {
     }
 
     void deleteLabeledData(LabeledData label) {
+        LinkedList<LabeledData> l = new LinkedList();
+        l.add(label);
         new LabeledDataAsyncTask(mLabelConfigDao, (labeledData -> {
             mLabelConfigDao.deleteLabeledData(label.getLabel());
-            return null;})).execute(label);
+            return null;})).execute(l);
         //mLabelConfigDao.deleteLabeledData(label);
     }
 
@@ -126,18 +130,18 @@ public class LabelConfigRepository {
         }
     }
 
-    private static class LabeledDataAsyncTask extends AsyncTask<LabeledData, Void, Void> {
+    private static class LabeledDataAsyncTask extends AsyncTask<List<LabeledData>, Void, Void> {
 
         private LabelConfigDao mAsyncTaskDao;
-        private Function<LabeledData, Void> mFunction;
+        private Function<List<LabeledData>, Void> mFunction;
 
-        public LabeledDataAsyncTask(LabelConfigDao dao, Function<LabeledData, Void> function) {
+        public LabeledDataAsyncTask(LabelConfigDao dao, Function<List<LabeledData>, Void> function) {
             this.mAsyncTaskDao = dao;
             this.mFunction = function;
         }
 
         @Override
-        protected Void doInBackground(LabeledData... lists) {
+        protected Void doInBackground(List<LabeledData>... lists) {
             mFunction.apply(lists[0]);
             return null;
         }

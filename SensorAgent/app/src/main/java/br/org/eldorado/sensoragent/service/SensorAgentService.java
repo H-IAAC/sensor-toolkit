@@ -16,7 +16,6 @@ import androidx.core.app.NotificationCompat;
 import br.org.eldorado.sensoragent.ISensorAgentListener;
 import br.org.eldorado.sensoragent.R;
 import br.org.eldorado.sensoragent.SensorAgentContext;
-import br.org.eldorado.sensoragent.apiserver.APIController;
 import br.org.eldorado.sensoragent.model.AgentSensorBase;
 import br.org.eldorado.sensoragent.model.ISensorAgent;
 import br.org.eldorado.sensoragent.controller.SensorController;
@@ -51,7 +50,7 @@ public class SensorAgentService extends Service {
         if (SensorAgentContext.getInstance().getContext() == null) {
             SensorAgentContext.getInstance().setContext(this);
         }
-        APIController.getInstance();
+        //APIController.getInstance();
         mClientListener = new RemoteCallbackList<ISensorAgentListener>();
         SensorController.getInstance().setListener(mClientListener);
     }
