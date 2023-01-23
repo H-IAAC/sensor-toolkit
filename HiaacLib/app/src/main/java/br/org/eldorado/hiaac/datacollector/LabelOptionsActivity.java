@@ -14,6 +14,7 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ArrayAdapter;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.Toast;
@@ -77,7 +78,11 @@ public class LabelOptionsActivity extends AppCompatActivity {
 
     private SensorFrequencyViewAdapter mSensorFrequencyViewAdapter;
     private EditText mLabelTile;
+    private EditText mActivityTxt;
     private Spinner mStopTimeSpinner;
+    private Spinner mDeviceLocation;
+    private CheckBox mSendFilesToServer;
+    private EditText mUserIdTxt;
     private static final String TAG = "LabelOptionsActivity";
     private Log log;
 
@@ -95,7 +100,11 @@ public class LabelOptionsActivity extends AppCompatActivity {
         log = new Log(TAG);
         setContentView(R.layout.activity_label_options);
         mLabelTile = findViewById(R.id.edit_label_name);
+        mActivityTxt = findViewById(R.id.activity_txt);
         mStopTimeSpinner = findViewById(R.id.stops_at_spinner);
+        mDeviceLocation = findViewById(R.id.device_location_spinner);
+        mUserIdTxt = findViewById(R.id.user_id_txt);
+        mSendFilesToServer = findViewById(R.id.send_files_to_server_checkbox);
         mLabelConfigViewModel = ViewModelProvider.AndroidViewModelFactory
                 .getInstance(getApplication()).create(LabelConfigViewModel.class);
 
@@ -103,6 +112,13 @@ public class LabelOptionsActivity extends AppCompatActivity {
         ArrayAdapter<String> arrayAdapter = new ArrayAdapter(this,
                 R.layout.custom_spinner, list);
         mStopTimeSpinner.setAdapter(arrayAdapter);
+
+        List<String> deviceLocationList = new ArrayList<>();
+        for (int i = 0; i < mDeviceLocation.getCount(); i++) {
+            deviceLocationList.add(mDeviceLocation.getItemAtPosition(i).toString());
+        }
+        mDeviceLocation.setAdapter(new ArrayAdapter(this,
+                R.layout.custom_spinner, deviceLocationList));
 
 
         RecyclerView recyclerView = (RecyclerView) findViewById(R.id.sensors_recycler_view);
@@ -195,6 +211,9 @@ public class LabelOptionsActivity extends AppCompatActivity {
     private void updateFields() {
         if (mCurrentConfig != null) {
             mLabelTile.setText(mCurrentConfig.label);
+            mActivityTxt.setText(mCurrentConfig.activity);
+            mUserIdTxt.setText(mCurrentConfig.userId);
+            mSendFilesToServer.setChecked(mCurrentConfig.sendToServer);
             int position = 0;
             for (int i = 0; i < stopTimeOptions.length; i++) {
                 if (mCurrentConfig.stopTime == stopTimeOptions[i]) {
@@ -203,6 +222,13 @@ public class LabelOptionsActivity extends AppCompatActivity {
                 }
             }
             mStopTimeSpinner.setSelection(position);
+            position = 0;
+            for (int i = 0; i < mDeviceLocation.getCount(); i++) {
+                if (mCurrentConfig.deviceLocation.equals(mDeviceLocation.getItemAtPosition(i))) {
+                    mDeviceLocation.setSelection(i);
+                    break;
+                }
+            }
             populateRecyclerView();
         }
     }
@@ -285,9 +311,24 @@ public class LabelOptionsActivity extends AppCompatActivity {
             return;
         }
 
+        String activity = mActivityTxt.getText().toString().trim();
+        if (activity.isEmpty()) {
+            Toast.makeText(getApplicationContext(),
+                    R.string.activity_title_empty, Toast.LENGTH_LONG).show();
+            return;
+        }
+
+        String userId = mUserIdTxt.getText().toString().trim();
+        if (userId.isEmpty()) {
+            Toast.makeText(getApplicationContext(),
+                    R.string.user_id_empty, Toast.LENGTH_LONG).show();
+            return;
+        }
+
         int spinnerPosition = mStopTimeSpinner.getSelectedItemPosition();
+        String deviceLocation = mDeviceLocation.getSelectedItem().toString();
         int stopTime = stopTimeOptions[spinnerPosition];
-        LabelConfig newConfig = new LabelConfig(label, stopTime);
+        LabelConfig newConfig = new LabelConfig(label, stopTime, deviceLocation, userId, mSendFilesToServer.isChecked(), activity);
         if (mIsUpdating && mCurrentConfig != null) {
             if (label == mCurrentConfig.label) {
                 mLabelConfigViewModel.updateConfig(newConfig);

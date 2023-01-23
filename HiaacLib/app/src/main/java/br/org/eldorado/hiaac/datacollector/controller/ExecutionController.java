@@ -172,7 +172,7 @@ public class ExecutionController {
                         && ((sensor.getValuesArray().length == 1)
                             || (sensor.getValuesArray().length > 1 && sensor.getValuesArray()[1] != 0.0))) {
                     //log.d(dataTrack.getLabel() + " Active Threads: " + Thread.activeCount() + "  - " + num++ + " - " + sensor.toString());
-                    LabeledData data = new LabeledData(dataTrack.getLabel(), sensor);
+                    LabeledData data = new LabeledData(dataTrack.getLabel(), sensor, dataTrack.getDeviceLocation(), dataTrack.getUserId(), dataTrack.getActivity());
                     labeledData.add(data);
                     collectedData++;
 

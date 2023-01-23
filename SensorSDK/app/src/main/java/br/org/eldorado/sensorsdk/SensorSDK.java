@@ -37,4 +37,8 @@ public class SensorSDK extends Application {
     public void setRemoteTime(long time) {
         RemoteApplicationTime.setCurrentTimeMillis(time);
     }
+
+    public long getRemoteTime() {
+        return RemoteApplicationTime.getCurrentRemoteTimeMillis();
+    }
 }

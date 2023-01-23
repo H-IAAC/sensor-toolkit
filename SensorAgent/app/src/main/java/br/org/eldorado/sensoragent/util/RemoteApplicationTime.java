@@ -18,5 +18,6 @@ public class RemoteApplicationTime {
 
     public static void setCurrentTimeMillis(long time) {
         currentRemoteTime = time;
+        initialLocalTime = System.currentTimeMillis();
     }
 }

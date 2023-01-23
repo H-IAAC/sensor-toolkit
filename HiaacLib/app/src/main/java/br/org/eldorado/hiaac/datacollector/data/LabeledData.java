@@ -15,6 +15,9 @@ public class LabeledData {
     @ColumnInfo(name = "label-name")
     private String label;
 
+    @ColumnInfo(name = "device-position")
+    private String devicePosition;
+
     @ColumnInfo(name = "sensor-name")
     private String sensorName;
 
@@ -31,12 +34,20 @@ public class LabeledData {
     @ColumnInfo(name = "sensor-values")
     private String sensorValues;
 
+    @ColumnInfo(name = "user-id")
+    private String userId;
+
+    @ColumnInfo(name = "activity")
+    private String activity;
+
+
     @ColumnInfo(name = "data-used")
     private int isDataUsed;
 
+
     private SensorBase sensor;
 
-    public LabeledData(String label, SensorBase sensor) {
+    public LabeledData(String label, SensorBase sensor, String devicePosition, String userId, String activity) {
         this.sensor = sensor;
         this.label = label;
         this.sensorName = sensor.getName();
@@ -45,6 +56,33 @@ public class LabeledData {
         this.sensorValues = sensor.getValuesString();
         this.power = sensor.getPower();
         this.isDataUsed = 0;
+        this.devicePosition = devicePosition;
+        this.userId = userId;
+        this.activity = activity;
+    }
+
+    public String getUserId() {
+        return userId;
+    }
+
+    public String getActivity() {
+        return activity;
+    }
+
+    public void setActivity(String activity) {
+        this.activity = activity;
+    }
+
+    public void setUserId(String userId) {
+        this.userId = userId;
+    }
+
+    public String getDevicePosition() {
+        return devicePosition;
+    }
+
+    public void setDevicePosition(String devicePosition) {
+        this.devicePosition = devicePosition;
     }
 
     public int getId() {

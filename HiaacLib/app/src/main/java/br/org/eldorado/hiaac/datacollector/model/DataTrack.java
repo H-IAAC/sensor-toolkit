@@ -10,9 +10,46 @@ public class DataTrack {
     private List<SensorFrequency> sensorList;
     private String label;
     private int stopTime;
+    private String mDeviceLocation;
+    private String mUserId;
+    private String mActivity;
+    private boolean mSendFilesToServer;
 
     public DataTrack() {
         sensorList = new ArrayList<SensorFrequency>();
+        mDeviceLocation = "";
+    }
+
+    public String getActivity() {
+        return mActivity;
+    }
+
+    public void setActivity(String mActivity) {
+        this.mActivity = mActivity;
+    }
+
+    public String getUserId() {
+        return mUserId;
+    }
+
+    public void setUserId(String mUserId) {
+        this.mUserId = mUserId;
+    }
+
+    public boolean isSendFilesToServer() {
+        return mSendFilesToServer;
+    }
+
+    public void setSendFilesToServer(boolean mSendFilesToServer) {
+        this.mSendFilesToServer = mSendFilesToServer;
+    }
+
+    public String getDeviceLocation() {
+        return mDeviceLocation;
+    }
+
+    public void setDeviceLocation(String mDeviceLocation) {
+        this.mDeviceLocation = mDeviceLocation;
     }
 
     public void setStopTime(int stp) {

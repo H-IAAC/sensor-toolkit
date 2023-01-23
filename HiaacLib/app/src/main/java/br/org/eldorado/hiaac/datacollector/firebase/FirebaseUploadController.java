@@ -166,7 +166,7 @@ public class FirebaseUploadController {
                     labeledData.clear();
                 }
                 long end = System.currentTimeMillis();
-                log.d("FINALIZADO EM " + ((end-start)/1000)/60 + "m " + ((end-start)/1000)%60);
+                log.d("CSV FILE CREATED IN " + ((end-start)/1000)/60 + "m" + ((end-start)/1000)%60+"s");
                 fireListener(SUCCESS, mContext.getString(R.string.success_csv_file));
             }
         }).start();
@@ -221,7 +221,9 @@ public class FirebaseUploadController {
                         File.separator +
                         data.get(0).getLabel() +
                         File.separator +
-                        data.get(0).getLabel() + "__" +
+                        data.get(0).getUserId() + "_" +
+                        data.get(0).getActivity() + "_" +
+                        data.get(0).getDevicePosition() + "__" +
                         df.format(new Date(System.currentTimeMillis())) +
                         ".csv");
         appendDataToCsvFile(csvFile, data, 0);
