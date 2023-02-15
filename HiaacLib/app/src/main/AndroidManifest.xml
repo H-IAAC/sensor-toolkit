@@ -26,6 +26,7 @@
             android:exported="true"
             android:launchMode="singleInstance"
             android:label="@string/app_name" >
+            android:screenOrientation="portrait">
         </activity>
         <service
             android:name=".datacollector.service.ExecutionService"
