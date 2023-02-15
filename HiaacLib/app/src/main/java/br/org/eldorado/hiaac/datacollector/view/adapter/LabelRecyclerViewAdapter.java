@@ -5,8 +5,10 @@ import static br.org.eldorado.hiaac.datacollector.DataCollectorActivity.LABEL_CO
 import static br.org.eldorado.hiaac.datacollector.DataCollectorActivity.UPDATE_LABEL_CONFIG_ACTIVITY;
 
 import android.app.Activity;
+import android.app.AlarmManager;
 import android.app.AlertDialog;
 import android.app.Application;
+import android.app.PendingIntent;
 import android.app.ProgressDialog;
 import android.content.ComponentName;
 import android.content.Context;
@@ -31,13 +33,14 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.google.gson.JsonObject;
-
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 import br.org.eldorado.hiaac.datacollector.LabelOptionsActivity;
 import br.org.eldorado.hiaac.R;
 import br.org.eldorado.hiaac.datacollector.api.ApiInterface;
@@ -54,6 +57,7 @@ import br.org.eldorado.hiaac.datacollector.service.ExecutionService;
 import br.org.eldorado.hiaac.datacollector.service.listener.ExecutionServiceListenerAdapter;
 import br.org.eldorado.hiaac.datacollector.util.Log;
 import br.org.eldorado.hiaac.datacollector.util.Tools;
+import br.org.eldorado.sensorsdk.SensorSDK;
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
 import okhttp3.RequestBody;
@@ -76,6 +80,7 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
     private Log log;
     private ProgressDialog sendDataDialog;
     private LabelConfigViewModel mLabelConfigViewModel;
+    private Map<String, ViewHolder> holdersMap = new HashMap<>();
 
     public LabelRecyclerViewAdapter(Context context) {
         mInflater = LayoutInflater.from(context);
@@ -103,6 +108,7 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
         log.d("CSVFilesRecyclerAdapter - ActiveThreads: " + Thread.activeCount());
         LabelConfig labelConfig = labelConfigs.get(holder.getAdapterPosition());
         String labelTitle = labelConfig.label;
+        holdersMap.put(labelTitle, holder);
 
         mLabelConfigViewModel = ViewModelProvider.AndroidViewModelFactory
                 .getInstance((Application)mContext.getApplicationContext()).create(LabelConfigViewModel.class);
@@ -206,6 +212,23 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
         });
 
         checkExecution(holder);
+
+        if (labelConfig.scheduledTime > 0) {
+            Calendar c = Calendar.getInstance();
+            c.setTimeInMillis(labelConfig.scheduledTime);
+
+            Calendar now = Calendar.getInstance();
+            now.setTimeInMillis(SensorSDK.getInstance().getRemoteTime());
+            if (c.after(now)) {
+                String action = "br.org.eldorado.schedule_collect_data";
+                Intent i = new Intent(action);
+                i.putExtra("holder", labelConfig.label);
+                AlarmManager mgr = (AlarmManager) mContext.getSystemService(Context.ALARM_SERVICE);
+                PendingIntent pi = PendingIntent.getBroadcast(mContext, 0, i, PendingIntent.FLAG_MUTABLE | PendingIntent.FLAG_UPDATE_CURRENT);
+                long startsTime = labelConfig.scheduledTime - SensorSDK.getInstance().getRemoteTime();
+                mgr.setExact(AlarmManager.RTC_WAKEUP, System.currentTimeMillis() + startsTime, pi);
+            }
+        }
     }
 
     private void resizeLabelPanel(ViewHolder holder) {
@@ -251,6 +274,7 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
             @Override
             public void onCompleted(String message) {
                 onSendDataCompleted(message, sendDataDialog, holder);
+                sendDataDialog = null;
             }
         });
 
@@ -300,11 +324,26 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
                     resizeLabelPanel(holder);
                 }
 
+                if (dialog != null && labelConfigs.get(holder.getAdapterPosition()).sendToServer) {
+                    AlertDialog.Builder aDialogBuilder = new AlertDialog.Builder(mContext);
+                    AlertDialog aDialog = aDialogBuilder.create();
+                    aDialog.setTitle(mContext.getString(R.string.share_with_server_title));
+                    aDialog.setMessage(mContext.getString(R.string.share_with_server));
 
-                /** TEST */
-
-                if (labelConfigs.get(holder.getAdapterPosition()).sendToServer) {
-                    sendFilesToServer(files, holder);
+                    aDialog.setButton(DialogInterface.BUTTON_NEGATIVE, mContext.getString(R.string.no), new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInt, int which) {
+                            aDialog.dismiss();
+                        }
+                    });
+                    aDialog.setButton(DialogInterface.BUTTON_POSITIVE, mContext.getString(R.string.yes), new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInt, int which) {
+                            aDialog.dismiss();
+                            sendFilesToServer(files, holder);
+                        }
+                    });
+                    aDialog.show();
                 }
             }
         });
@@ -351,8 +390,17 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
         sendData(holder, SEND_DATA_TO_FIREBASE, true);
     }
 
+    public ViewHolder getViewHolder(String label) {
+        if (holdersMap.containsKey(label)) {
+            return holdersMap.get(label);
+        }
+        return null;
+    }
+
     private AlertDialog dialog;
-    private void startExecution(ViewHolder holder) {
+    public void startExecution(ViewHolder holder) {
+        if (holder.isStarted() || (execService != null && execService.isRunning() != null)) return;
+        holder.setStarted(true);
         svc = new ServiceConnection() {
             @Override
             public void onServiceConnected(ComponentName name, IBinder service) {
@@ -429,6 +477,7 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
                                         messageView.setGravity(Gravity.CENTER);
                                         messageView.setTextSize(26);
                                         countDown.start();
+                                        holder.setStarted(false);
                                     }
                                 });
                             } catch (WindowManager.BadTokenException e) {
@@ -461,6 +510,7 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
         holder.getStartButton().setEnabled(false);
 
         execService.setRemoteTime(System.currentTimeMillis() + (1000*60*60));
+
         if (execService.isRunning() == null) {
             AlertDialog.Builder timer = new AlertDialog.Builder(mContext);
             dialog = timer.create();
@@ -567,9 +617,11 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
         private ImageView shareButton;
         private ImageView deleteButton;
         private RecyclerView csvRecyclerView;
+        private boolean started;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
+            started = false;
             isOpened = false;
             labelTitle = itemView.findViewById(R.id.label_title);
             labelTimer = itemView.findViewById(R.id.label_timer);
@@ -598,6 +650,14 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
                 @Override
                 public void onRequestDisallowInterceptTouchEvent(boolean disallowIntercept) {}
             });
+        }
+
+        public void setStarted(boolean b) {
+            this.started = b;
+        }
+
+        public boolean isStarted() {
+            return started;
         }
 
         public void setOpened(boolean opened) {

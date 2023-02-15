@@ -1,6 +1,9 @@
 package br.org.eldorado.hiaac.datacollector;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.Menu;
@@ -52,7 +55,8 @@ public class DataCollectorActivity extends AppCompatActivity {
     private LabelConfigViewModel mLabelConfigViewModel;
     private TextView serverTimeTxt;
     private DateFormat df;
-
+    private LabelRecyclerViewAdapter adapter;
+    private BroadcastReceiver br;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -63,7 +67,20 @@ public class DataCollectorActivity extends AppCompatActivity {
 
         RecyclerView recyclerView = (RecyclerView) findViewById(R.id.label_recycle_view);
         new Log("DataCollectorActivity").d("recycler " + recyclerView);
-        LabelRecyclerViewAdapter adapter = new LabelRecyclerViewAdapter(this);
+        adapter = new LabelRecyclerViewAdapter(this);
+        br = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context c, Intent i) {
+                LabelRecyclerViewAdapter.ViewHolder holder = adapter.getViewHolder(i.getStringExtra("holder"));
+                android.util.Log.d("TAGTAGTAG", "RECEBI O ALARM broadcast " + this + " holder " + holder);
+                if (holder != null && !holder.isStarted()) {
+                    adapter.startExecution(holder);
+                }
+            }
+        };
+        String action = "br.org.eldorado.schedule_collect_data";
+        registerReceiver(br, new IntentFilter(action));
+
         recyclerView.setAdapter(adapter);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         mLabelConfigViewModel = ViewModelProvider.AndroidViewModelFactory
@@ -99,6 +116,14 @@ public class DataCollectorActivity extends AppCompatActivity {
         ClientAPI api = new ClientAPI();
         ApiInterface apiInterface = api.getClient(Tools.SERVER_HOST, Tools.SERVER_PORT).create(ApiInterface.class);
         updateServerTime(apiInterface);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (br != null) {
+            unregisterReceiver(br);
+        }
     }
 
     private void updateServerTime(ApiInterface apiInterface) {

@@ -37,57 +37,78 @@
             android:hint="@string/activity_title"
             android:inputType="textPersonName" />
 
+        <EditText
+            android:id="@+id/user_id_txt"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:height="52dp"
+            android:ems="10"
+            android:hint="@string/user_id"
+            android:inputType="textPersonName" />
+
     </LinearLayout>
 
     <TextView
         android:id="@+id/textView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="86dp"
+        android:layout_height="45dp"
         android:layout_marginStart="4dp"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="8dp"
         android:paddingTop="8sp"
         android:paddingBottom="8sp"
         android:text="@string/stops_at"
         android:textSize="20sp"
         app:layout_constraintStart_toStartOf="@+id/linearLayout"
-        app:layout_constraintTop_toBottomOf="@+id/linearLayout" />
+        app:layout_constraintTop_toBottomOf="@+id/device_location" />
+
+    <TextView
+        android:id="@+id/textView2"
+        android:layout_width="114dp"
+        android:layout_height="39dp"
+        android:layout_marginStart="4dp"
+        android:layout_marginTop="8dp"
+        android:paddingTop="8sp"
+        android:paddingBottom="8sp"
+        android:text="@string/schedule_time"
+        android:textSize="20sp"
+        app:layout_constraintStart_toStartOf="@+id/linearLayout"
+        app:layout_constraintTop_toBottomOf="@+id/textView" />
 
     <TextView
         android:id="@+id/device_location"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="155dp"
+        android:layout_height="42dp"
         android:layout_marginStart="4dp"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="8dp"
         android:paddingTop="8sp"
         android:paddingBottom="8sp"
         android:text="@string/device_location"
         android:textSize="20sp"
         app:layout_constraintStart_toStartOf="@+id/linearLayout"
-        app:layout_constraintTop_toBottomOf="@+id/textView" />
+        app:layout_constraintTop_toBottomOf="@+id/linearLayout" />
+
+    <Spinner
+        android:id="@+id/device_location_spinner"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:entries="@array/device_location_items"
+        android:minHeight="48dp"
+        app:layout_constraintEnd_toEndOf="@+id/linearLayout"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="@+id/stops_at_spinner"
+        app:layout_constraintTop_toBottomOf="@+id/linearLayout"
+        tools:ignore="SpeakableTextPresentCheck" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/sensors_recycler_view"
-        android:layout_width="460dp"
-        android:layout_height="632dp"
-        android:layout_marginTop="20dp"
+        android:layout_width="425dp"
+        android:layout_height="471dp"
+        android:layout_marginTop="8dp"
         android:paddingBottom="120dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/send_files_to_server_checkbox" />
-
-    <EditText
-        android:id="@+id/user_id_txt"
-        android:layout_width="293dp"
-        android:layout_height="50dp"
-        android:layout_marginTop="16dp"
-        android:height="52dp"
-        android:ems="10"
-        android:hint="@string/user_id"
-        android:inputType="textPersonName"
-        app:layout_constraintEnd_toEndOf="@+id/device_location_spinner"
-        app:layout_constraintHorizontal_bias="1.0"
-        app:layout_constraintStart_toEndOf="@+id/user_id"
-        app:layout_constraintTop_toBottomOf="@+id/device_location_spinner" />
 
     <Spinner
         android:id="@+id/stops_at_spinner"
@@ -99,44 +120,28 @@
         app:layout_constraintEnd_toEndOf="@+id/linearLayout"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toEndOf="@+id/textView"
-        app:layout_constraintTop_toBottomOf="@+id/linearLayout"
-        app:layout_constraintVertical_bias="1.0"
+        app:layout_constraintTop_toBottomOf="@+id/device_location_spinner"
+        app:layout_constraintVertical_bias="0.0"
         tools:ignore="SpeakableTextPresentCheck" />
-
-    <Spinner
-        android:id="@+id/device_location_spinner"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="128dp"
-        android:layout_marginTop="16dp"
-        android:entries="@array/device_location_items"
-        android:minHeight="48dp"
-        app:layout_constraintEnd_toEndOf="@+id/linearLayout"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toEndOf="@+id/textView"
-        app:layout_constraintTop_toBottomOf="@+id/stops_at_spinner"
-        tools:ignore="SpeakableTextPresentCheck" />
-
-    <TextView
-        android:id="@+id/user_id"
-        android:layout_width="74dp"
-        android:layout_height="45dp"
-        android:layout_marginStart="4dp"
-        android:layout_marginTop="24dp"
-        android:paddingTop="8sp"
-        android:paddingBottom="8sp"
-        android:text="@string/user_id"
-        android:textSize="20sp"
-        app:layout_constraintStart_toStartOf="@+id/linearLayout"
-        app:layout_constraintTop_toBottomOf="@+id/device_location" />
 
     <CheckBox
         android:id="@+id/send_files_to_server_checkbox"
         android:layout_width="169dp"
         android:layout_height="48dp"
-        android:layout_marginTop="20dp"
+        android:layout_marginTop="8dp"
         android:text="@string/send_files_to_server"
-        app:layout_constraintEnd_toEndOf="@+id/user_id_txt"
-        app:layout_constraintTop_toBottomOf="@+id/user_id_txt" />
+        app:layout_constraintEnd_toEndOf="@+id/stops_at_spinner"
+        app:layout_constraintTop_toBottomOf="@+id/txtScheduleTime" />
+
+    <EditText
+        android:id="@+id/txtScheduleTime"
+        android:layout_width="251dp"
+        android:layout_height="41dp"
+        android:layout_marginTop="8dp"
+        android:ems="10"
+        android:hint="@string/schedule_time_hint"
+        android:inputType="time"
+        app:layout_constraintEnd_toEndOf="@+id/linearLayout"
+        app:layout_constraintTop_toBottomOf="@+id/stops_at_spinner" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
