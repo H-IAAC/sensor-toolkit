@@ -8,14 +8,18 @@ import static br.org.eldorado.hiaac.datacollector.view.adapter.SensorFrequencyVi
 
 import android.app.AlertDialog;
 import android.app.Dialog;
+import android.app.TimePickerDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.ArrayAdapter;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.Spinner;
+import android.widget.TimePicker;
 import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -25,7 +29,11 @@ import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -45,6 +53,7 @@ import br.org.eldorado.sensoragent.model.Luminosity;
 import br.org.eldorado.sensoragent.model.MagneticField;
 import br.org.eldorado.sensoragent.model.Proximity;
 import br.org.eldorado.sensoragent.model.SensorBase;
+import br.org.eldorado.sensorsdk.SensorSDK;
 
 public class LabelOptionsActivity extends AppCompatActivity {
     public static final int MINUTE = 60;
@@ -77,7 +86,13 @@ public class LabelOptionsActivity extends AppCompatActivity {
 
     private SensorFrequencyViewAdapter mSensorFrequencyViewAdapter;
     private EditText mLabelTile;
+    private EditText mActivityTxt;
+    private EditText mScheduleTimeTxt;
+    private TimePickerDialog timePickerDialog;
     private Spinner mStopTimeSpinner;
+    private Spinner mDeviceLocation;
+    private CheckBox mSendFilesToServer;
+    private EditText mUserIdTxt;
     private static final String TAG = "LabelOptionsActivity";
     private Log log;
 
@@ -95,7 +110,38 @@ public class LabelOptionsActivity extends AppCompatActivity {
         log = new Log(TAG);
         setContentView(R.layout.activity_label_options);
         mLabelTile = findViewById(R.id.edit_label_name);
+        mActivityTxt = findViewById(R.id.activity_txt);
+
+        mScheduleTimeTxt = findViewById(R.id.txtScheduleTime);
+        mScheduleTimeTxt.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Calendar now = Calendar.getInstance();
+                now.setTimeInMillis(SensorSDK.getInstance().getRemoteTime());
+
+                timePickerDialog = new TimePickerDialog(LabelOptionsActivity.this, new TimePickerDialog.OnTimeSetListener() {
+                    @Override
+                    public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
+                        mScheduleTimeTxt.setText(hourOfDay + ":" + minute);
+                    }
+
+                } , now.get(Calendar.HOUR_OF_DAY), now.get(Calendar.MINUTE), true);
+
+                timePickerDialog.show();
+                timePickerDialog.getButton(TimePickerDialog.BUTTON_NEGATIVE).setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        timePickerDialog.cancel();
+                        mScheduleTimeTxt.setText("");
+                    }
+                });
+            }
+        });
+
         mStopTimeSpinner = findViewById(R.id.stops_at_spinner);
+        mDeviceLocation = findViewById(R.id.device_location_spinner);
+        mUserIdTxt = findViewById(R.id.user_id_txt);
+        mSendFilesToServer = findViewById(R.id.send_files_to_server_checkbox);
         mLabelConfigViewModel = ViewModelProvider.AndroidViewModelFactory
                 .getInstance(getApplication()).create(LabelConfigViewModel.class);
 
@@ -103,6 +149,14 @@ public class LabelOptionsActivity extends AppCompatActivity {
         ArrayAdapter<String> arrayAdapter = new ArrayAdapter(this,
                 R.layout.custom_spinner, list);
         mStopTimeSpinner.setAdapter(arrayAdapter);
+
+        List<String> deviceLocationList = new ArrayList<>();
+        for (int i = 0; i < mDeviceLocation.getCount(); i++) {
+            deviceLocationList.add(mDeviceLocation.getItemAtPosition(i).toString());
+        }
+        mDeviceLocation.setAdapter(new ArrayAdapter(this,
+                R.layout.custom_spinner, deviceLocationList));
+
 
         RecyclerView recyclerView = (RecyclerView) findViewById(R.id.sensors_recycler_view);
         mSensorFrequencyViewAdapter =
@@ -133,7 +187,6 @@ public class LabelOptionsActivity extends AppCompatActivity {
                 mIsUpdating = false;
         }
     }
-
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
@@ -195,6 +248,17 @@ public class LabelOptionsActivity extends AppCompatActivity {
     private void updateFields() {
         if (mCurrentConfig != null) {
             mLabelTile.setText(mCurrentConfig.label);
+            mActivityTxt.setText(mCurrentConfig.activity);
+
+            if (mCurrentConfig.scheduledTime > 0) {
+                DateFormat df = new SimpleDateFormat("HH:mm");
+                Calendar c = Calendar.getInstance();
+                c.setTimeInMillis(mCurrentConfig.scheduledTime);
+                mScheduleTimeTxt.setText(df.format(c.getTime()));
+            }
+
+            mUserIdTxt.setText(mCurrentConfig.userId);
+            mSendFilesToServer.setChecked(mCurrentConfig.sendToServer);
             int position = 0;
             for (int i = 0; i < stopTimeOptions.length; i++) {
                 if (mCurrentConfig.stopTime == stopTimeOptions[i]) {
@@ -203,6 +267,13 @@ public class LabelOptionsActivity extends AppCompatActivity {
                 }
             }
             mStopTimeSpinner.setSelection(position);
+            position = 0;
+            for (int i = 0; i < mDeviceLocation.getCount(); i++) {
+                if (mCurrentConfig.deviceLocation.equals(mDeviceLocation.getItemAtPosition(i))) {
+                    mDeviceLocation.setSelection(i);
+                    break;
+                }
+            }
             populateRecyclerView();
         }
     }
@@ -256,7 +327,7 @@ public class LabelOptionsActivity extends AppCompatActivity {
                 new SensorFrequencyViewAdapter.SelectedSensorFrequency(
                         frequency != null,
                         sensorName,
-                        frequency == null ? frequencyOptions[0] : frequency.intValue()
+                        frequency == null ? frequencyOptions.get(0) : frequency.intValue()
                 );
 
         return selectedSensorFrequency;
@@ -277,8 +348,6 @@ public class LabelOptionsActivity extends AppCompatActivity {
         return sensorFrequencies;
     }
 
-
-
     private void onSaveButtonClick() {
         String label = mLabelTile.getText().toString().trim();
         if (label.isEmpty()) {
@@ -287,9 +356,36 @@ public class LabelOptionsActivity extends AppCompatActivity {
             return;
         }
 
+        String activity = mActivityTxt.getText().toString().trim();
+        if (activity.isEmpty()) {
+            Toast.makeText(getApplicationContext(),
+                    R.string.activity_title_empty, Toast.LENGTH_LONG).show();
+            return;
+        }
+
+        String scheduledTimeStr = mScheduleTimeTxt.getText().toString().trim();
+        long scheduledTime = 0;
+        if (!scheduledTimeStr.isEmpty()) {
+            Calendar c = Calendar.getInstance();
+            c.setTimeInMillis(SensorSDK.getInstance().getRemoteTime());
+            String[] timeSplit = scheduledTimeStr.split(":");
+            c.set(Calendar.HOUR_OF_DAY, Integer.parseInt(timeSplit[0]));
+            c.set(Calendar.MINUTE, Integer.parseInt(timeSplit[1]));
+            c.set(Calendar.SECOND, 0);
+            scheduledTime = c.getTimeInMillis();
+        }
+
+        String userId = mUserIdTxt.getText().toString().trim();
+        if (userId.isEmpty()) {
+            Toast.makeText(getApplicationContext(),
+                    R.string.user_id_empty, Toast.LENGTH_LONG).show();
+            return;
+        }
+
         int spinnerPosition = mStopTimeSpinner.getSelectedItemPosition();
+        String deviceLocation = mDeviceLocation.getSelectedItem().toString();
         int stopTime = stopTimeOptions[spinnerPosition];
-        LabelConfig newConfig = new LabelConfig(label, stopTime);
+        LabelConfig newConfig = new LabelConfig(label, stopTime, deviceLocation, userId, mSendFilesToServer.isChecked(), activity, scheduledTime);
         if (mIsUpdating && mCurrentConfig != null) {
             if (label == mCurrentConfig.label) {
                 mLabelConfigViewModel.updateConfig(newConfig);

@@ -7,6 +7,7 @@ import android.util.TypedValue;
 import android.view.View;
 import android.view.animation.AccelerateDecelerateInterpolator;
 import java.util.ArrayList;
+import java.util.List;
 
 import br.org.eldorado.sensoragent.model.Accelerometer;
 import br.org.eldorado.sensoragent.model.AmbientTemperature;
@@ -19,7 +20,9 @@ import br.org.eldorado.sensoragent.model.Proximity;
 import br.org.eldorado.sensoragent.model.SensorBase;
 
 public class Tools {
-    public static final int CRONOMETER = 1;
+    public static final String SERVER_HOST = "vm.hiaac.ic.unicamp.br";
+    public static final String SERVER_PORT = "8081";
+    public static final int CHRONOMETER = 1;
 
     public enum pixelType {
         px,
@@ -88,7 +91,7 @@ public class Tools {
         int days = hours / 24;
         int minutes = (v % 3600) / 60;
         int seconds = v % 60;
-        if (hours >= 24 && type != CRONOMETER) {
+        if (hours >= 24 && type != CHRONOMETER) {
             return String.format("%d days", hours/24);
         }
         return String.format("%02d:%02d:%02d", hours, minutes, seconds);
@@ -116,9 +119,13 @@ public class Tools {
         return null;
     }
 
-    public static ArrayList<String> createHertzList(int[] values) {
+    public static ArrayList<String> createHertzList(List<Integer> values) {
         ArrayList<String> list = new ArrayList<>();
         for (int v : values) {
+            if (v == 0) {
+                list.add("Add frequency");
+                continue;
+            }
             list.add(v + " Hz");
         }
 

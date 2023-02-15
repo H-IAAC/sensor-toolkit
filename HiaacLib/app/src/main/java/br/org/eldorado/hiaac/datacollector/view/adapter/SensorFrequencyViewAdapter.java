@@ -17,6 +17,8 @@ import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 import androidx.recyclerview.widget.RecyclerView;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import br.org.eldorado.hiaac.R;
 import br.org.eldorado.hiaac.datacollector.layout.AnimatedLinearLayout;
@@ -33,14 +35,16 @@ public class SensorFrequencyViewAdapter extends RecyclerView.Adapter<SensorFrequ
     private ViewHolder gpsHolder;
     private Log log;
 
-    public static final int[] frequencyOptions = {
-            1,
-            10,
-            40,
-            50,
-            500,
-            1000
-    };
+    public static List<Integer> frequencyOptions = new ArrayList<Integer>(
+            Arrays.asList(  0,
+                            1,
+                            10,
+                            40,
+                            50,
+                            500,
+                            1000
+                        )
+    );
 
     public SensorFrequencyViewAdapter(Context context, SensorFrequencyChangeListener listener) {
         log = new Log("SensorFrequencyViewAdapter");
@@ -68,6 +72,7 @@ public class SensorFrequencyViewAdapter extends RecyclerView.Adapter<SensorFrequ
         AnimatedLinearLayout frequencyContainer = holder.getFrequencyContainer();
         Spinner frequenciesSpinner = holder.getFrequenciesSpinner();
         SelectedSensorFrequency selectedSensorFrequency = mSelectedSensors.get(position);
+        addFrequency(selectedSensorFrequency.getFrequency());
 
         ArrayList<String> list = Tools.createHertzList(frequencyOptions);
         ArrayAdapter<String> adapter = new ArrayAdapter<>(frequenciesSpinner.getContext(),
@@ -78,20 +83,24 @@ public class SensorFrequencyViewAdapter extends RecyclerView.Adapter<SensorFrequ
             checkBox.setChecked(true);
         }
 
-        int spinnerPosition = 0;
-        for (int i = 0; i < frequencyOptions.length; i++) {
-            if (selectedSensorFrequency.getFrequency() == frequencyOptions[i]) {
-                spinnerPosition = i;
-                break;
-            }
-        }
-        frequenciesSpinner.setSelection(spinnerPosition);
+        frequenciesSpinner.setSelection(getFrequencySpinnerPositionForSelected(selectedSensorFrequency));
 
         frequenciesSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                selectedSensorFrequency.setFrequency(frequencyOptions[position]);
-                notifySensorFrequencyChanged();
+                if (position == 0) {
+                    /* Abrir popup */
+                    /*addFrequency(29);
+                    adapter.clear();
+                    adapter.addAll(Tools.createHertzList(frequencyOptions));
+                    frequenciesSpinner.setAdapter(adapter);
+                    selectedSensorFrequency.setFrequency(29);
+                    frequenciesSpinner.setSelection(getFrequencySpinnerPositionForSelected(selectedSensorFrequency));
+                    notifySensorFrequencyChanged();*/
+                } else {
+                    selectedSensorFrequency.setFrequency(frequencyOptions.get(position));
+                    notifySensorFrequencyChanged();
+                }
             }
 
             @Override
@@ -107,6 +116,34 @@ public class SensorFrequencyViewAdapter extends RecyclerView.Adapter<SensorFrequ
                 handleCheckBox(holder, selectedSensorFrequency, frequencyContainer);
             }
         });
+    }
+
+    private int getFrequencySpinnerPositionForSelected(SensorFrequencyViewAdapter.SelectedSensorFrequency selectedSensorFrequency) {
+        int spinnerPosition = 0;
+        for (int i = 0; i < frequencyOptions.size(); i++) {
+            if (selectedSensorFrequency.getFrequency() == frequencyOptions.get(i)) {
+                spinnerPosition = i;
+                break;
+            }
+        }
+        return spinnerPosition;
+    }
+
+    public void setFrequencyForAll(int freq) {
+        addFrequency(freq);
+        for (SelectedSensorFrequency sensor : mSelectedSensors) {
+            
+            if (sensor.isSelected) {
+                sensor.setFrequency(freq);
+            }
+        }
+    }
+
+    public void addFrequency(int freq) {
+        if (!frequencyOptions.contains(freq)) {
+            frequencyOptions.add(freq);
+            Collections.sort(frequencyOptions);
+        }
     }
 
     private void handleCheckBox(ViewHolder holder, SelectedSensorFrequency selectedSensorFrequency, AnimatedLinearLayout frequencyContainer) {
@@ -191,7 +228,6 @@ public class SensorFrequencyViewAdapter extends RecyclerView.Adapter<SensorFrequ
                 }
                 notifySensorFrequencyChanged();
             } else {
-                log.d("teste");
                 gpsCheckBox.setEnabled(false);
                 gpsCheckBox.setChecked(false);
                 mSelectedSensors.get(gpsHolder.getAdapterPosition()).setSelected(false);

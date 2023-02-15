@@ -43,15 +43,18 @@ public interface LabelConfigDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     void insertLabeledData(LabeledData data);
 
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    void insertLabeledData(List<LabeledData> data);
+
     @Query("DELETE from LabeledData where `label-name`=:label")
     void deleteLabeledData(String label);
 
     @Update
     void updateLabeledData(List<LabeledData> dt);
 
-    @Query("SELECT * from LabeledData where `label-name`=:label ORDER BY `sensor-name`, `sensor-timestamp`")
-    List<LabeledData> getLabeledData(String label);
+    @Query("SELECT * from LabeledData where `label-name`=:label ORDER BY `sensor-name`, `sensor-timestamp` LIMIT 300000 OFFSET :offset")
+    List<LabeledData> getLabeledData(String label, long offset);
 
-    @Query("SELECT * from LabeledData where `label-name`=:label and `data-used`=0 ORDER BY `sensor-name`, `sensor-timestamp`")
+    @Query("SELECT * from LabeledData where `label-name`=:label and `data-used`=0 ORDER BY `sensor-name`, `sensor-timestamp` LIMIT 300000 OFFSET 0")
     List<LabeledData> getLabeledDataCsv(String label);
 }

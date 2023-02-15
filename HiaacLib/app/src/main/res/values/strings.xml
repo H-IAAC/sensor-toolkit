@@ -1,15 +1,19 @@
 <resources>
     <string name="app_name">HIAAC</string>
-    <string name="app_version">Version v1.3</string>
+    <string name="app_version">Version v1.5</string>
     <string name="action_settings">Settings</string>
     <string name="next">Next</string>
     <string name="previous">Previous</string>
 
+    <string name="server_time">Server Time: </string>
     <string name="csv_files">Created CSV Files</string>
     <string name="creating_csv_file">Creating CSV File . . .</string>
+    <string name="before_create_csv_file">Finishing getting data to create CSV file. Please wait . . .</string>
     <string name="starting_upload_file">Starting Upload . . .</string>
     <string name="share_with_firebase">Would you like to send data to Firebase Server?</string>
     <string name="share_with_firebase_title">Send to Firebase.</string>
+    <string name="share_with_server">Would you like to send data to IC Server?</string>
+    <string name="share_with_server_title">Send to IC Server.</string>
     <string name="download_progress">Uploading . . .  %1$d%%</string>
     <string name="success">Success</string>
     <string name="success_csv_file">CSV file successfully created</string>
@@ -32,13 +36,33 @@
     <string name="start">Start</string>
     <string name="stop">Stop</string>
     <string name="edit">Edit</string>
-    <string name="label_title">Label title</string>
+    <string name="label_title">Experiment title</string>
+    <string name="activity_title">Activity</string>
     <string name="delete_label">Delete label</string>
     <string name="stops_at">Stops at:</string>
+    <string name="device_location">Device Location:</string>
+    <string name="user_id">User ID:</string>
+    <string name="send_files_to_server">Send files to server</string>
     <string name="delete_config_confirmation">Would you to delete this configuration?</string>
     <string name="delete_config_title">Delete Configuration</string>
     <string name="yes">Yes</string>
     <string name="no">No</string>
     <string name="configuration_deleted">Configuration deleted</string>
-    <string name="label_title_empty">Label tile is empty</string>
+    <string name="label_title_empty">Experiment tile is empty</string>
+    <string name="activity_title_empty">Activity is empty</string>
+    <string name="user_id_empty">User ID is empty</string>
+    <string name="schedule_time">Schedule:</string>
+    <string name="schedule_time_hint">Automatic start at this time</string>
+
+    <string-array name="device_location_items">
+        <item>Cabeça</item>
+        <item>Braço Direito</item>
+        <item>Braço Esquerdo</item>
+        <item>Mão Direita</item>
+        <item>Mão Esquerda</item>
+        <item>Bolso Direito</item>
+        <item>Bolso Esquerdo</item>
+        <item>Perna Direita</item>
+        <item>Perna Esquerda</item>
+    </string-array>
 </resources>

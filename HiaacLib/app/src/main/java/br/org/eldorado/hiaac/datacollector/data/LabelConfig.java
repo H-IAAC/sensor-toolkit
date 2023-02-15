@@ -15,8 +15,33 @@ public class LabelConfig {
     @ColumnInfo(name = "stop-time")
     public int stopTime;
 
-    public LabelConfig(@NonNull String label, int stopTime) {
+    @NonNull
+    @ColumnInfo(name = "scheduled-time")
+    public long scheduledTime;
+
+    @NonNull
+    @ColumnInfo(name = "device-location")
+    public String deviceLocation;
+
+    @NonNull
+    @ColumnInfo(name = "user-id")
+    public String userId;
+
+    @NonNull
+    @ColumnInfo(name = "activity")
+    public String activity;
+
+    @NonNull
+    @ColumnInfo(name = "sendToServer")
+    public boolean sendToServer;
+
+    public LabelConfig(@NonNull String label, int stopTime, String deviceLocation, String userId, boolean sendToServer, String activity, long scheduledTime) {
         this.label = label;
         this.stopTime = stopTime;
+        this.deviceLocation = deviceLocation;
+        this.userId = userId;
+        this.sendToServer = sendToServer;
+        this.activity = activity;
+        this.scheduledTime = scheduledTime;
     }
 }

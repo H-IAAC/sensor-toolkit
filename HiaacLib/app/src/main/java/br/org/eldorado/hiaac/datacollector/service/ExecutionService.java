@@ -7,6 +7,7 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.ServiceInfo;
 import android.graphics.Color;
 import android.media.RingtoneManager;
 import android.net.Uri;
@@ -14,6 +15,7 @@ import android.os.Binder;
 import android.os.Build;
 import android.os.IBinder;
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 import androidx.core.app.NotificationCompat;
 import br.org.eldorado.hiaac.datacollector.DataCollectorActivity;
 import br.org.eldorado.hiaac.R;
@@ -21,6 +23,7 @@ import br.org.eldorado.hiaac.datacollector.controller.ExecutionController;
 import br.org.eldorado.hiaac.datacollector.model.DataTrack;
 import br.org.eldorado.hiaac.datacollector.service.listener.ExecutionServiceListener;
 import br.org.eldorado.hiaac.datacollector.util.Log;
+import br.org.eldorado.sensorsdk.SensorSDK;
 
 public class ExecutionService extends Service {
 
@@ -43,6 +46,8 @@ public class ExecutionService extends Service {
     }
 
     private void initService() {
+        log.d("initService");
+        setRemoteTime(System.currentTimeMillis());
         NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         String channelId = createNotificationChannel(notificationManager);
         NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this, channelId);
@@ -85,11 +90,17 @@ public class ExecutionService extends Service {
         }
     }
 
+    public void setRemoteTime(long time) {
+        SensorSDK.getInstance().setRemoteTime(time);
+    }
+
     public void stopExecution() {
         if (dataTrack != null) {
-            sendNotification(dataTrack);
             ExecutionController.getInstance().stopExecution(dataTrack);
+            sendNotification(dataTrack);
             dataTrack = null;
+            setRemoteTime(System.currentTimeMillis());
+            stopForeground(true);
         }
     }
 
