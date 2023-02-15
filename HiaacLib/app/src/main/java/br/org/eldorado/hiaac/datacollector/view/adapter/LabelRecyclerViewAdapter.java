@@ -1,5 +1,6 @@
 package br.org.eldorado.hiaac.datacollector.view.adapter;
 
+import static br.org.eldorado.hiaac.datacollector.DataCollectorActivity.FOLDER_NAME;
 import static br.org.eldorado.hiaac.datacollector.DataCollectorActivity.LABEL_CONFIG_ACTIVITY_ID;
 import static br.org.eldorado.hiaac.datacollector.DataCollectorActivity.LABEL_CONFIG_ACTIVITY_TYPE;
 import static br.org.eldorado.hiaac.datacollector.DataCollectorActivity.UPDATE_LABEL_CONFIG_ACTIVITY;
@@ -242,6 +243,8 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
     private List<File> getCsvFiles(String label) {
         File directory = new File(
                 mContext.getFilesDir().getAbsolutePath() +
+                        File.separator +
+                        FOLDER_NAME +
                         File.separator +
                         label);
         List<File> filesList = new ArrayList<File>();

@@ -1,5 +1,7 @@
 package br.org.eldorado.hiaac.datacollector.firebase;
 
+import static br.org.eldorado.hiaac.datacollector.DataCollectorActivity.FOLDER_NAME;
+
 import android.app.Application;
 import android.content.Context;
 import android.net.Uri;
@@ -211,13 +213,17 @@ public class FirebaseUploadController {
         File directory = new File(
                 mContext.getFilesDir().getAbsolutePath() +
                 File.separator +
+                FOLDER_NAME +
+                File.separator +
                 data.get(0).getLabel());
         if (!directory.exists()) {
-            directory.mkdir();
+            directory.mkdirs();
         }
 
         File csvFile = new File(
                 mContext.getFilesDir().getAbsolutePath() +
+                        File.separator +
+                        FOLDER_NAME +
                         File.separator +
                         data.get(0).getLabel() +
                         File.separator +
