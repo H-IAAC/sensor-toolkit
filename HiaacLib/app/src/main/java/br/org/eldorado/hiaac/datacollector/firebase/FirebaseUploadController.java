@@ -181,7 +181,11 @@ public class FirebaseUploadController {
             Locale l = Locale.getDefault();
             try {
                 Locale.setDefault(new Locale("pt", "BR"));
-                writer = new CSVWriter(new FileWriter(csvFile, true), ';');
+                writer = new CSVWriter(new FileWriter(csvFile),
+                                      ';',
+                                       CSVWriter.NO_QUOTE_CHARACTER,
+                                       CSVWriter.DEFAULT_ESCAPE_CHARACTER,
+                                       CSVWriter.DEFAULT_LINE_END);
                 if (type == 0) {
                     writer.writeNext(data.get(0).getCSVHeaders());
                 }
