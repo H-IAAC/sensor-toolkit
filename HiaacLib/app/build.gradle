@@ -48,7 +48,7 @@ dependencies {
     annotationProcessor "androidx.room:room-compiler:$room_version"
     implementation platform('com.google.firebase:firebase-bom:29.0.3')
     implementation 'com.google.firebase:firebase-storage'
-    implementation 'com.opencsv:opencsv:4.4'
+    implementation 'com.opencsv:opencsv:5.7.1'
     //api fileTree(dir: 'libs', include: ['*.aar'])
     implementation project(path: ':SensorSDK:app')
     //implementation 'com.github.H-IAAC:sensor-toolkit:1.24'
