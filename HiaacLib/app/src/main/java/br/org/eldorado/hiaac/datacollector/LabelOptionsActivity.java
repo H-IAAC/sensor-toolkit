@@ -15,6 +15,7 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
 import android.widget.EditText;
@@ -109,6 +110,7 @@ public class LabelOptionsActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         log = new Log(TAG);
         setContentView(R.layout.activity_label_options);
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         mLabelTile = findViewById(R.id.edit_label_name);
         mActivityTxt = findViewById(R.id.activity_txt);
 

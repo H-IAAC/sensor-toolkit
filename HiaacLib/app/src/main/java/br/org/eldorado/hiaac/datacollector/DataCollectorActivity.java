@@ -9,6 +9,7 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.TextView;
 
 import androidx.annotation.RequiresApi;
@@ -65,15 +66,14 @@ public class DataCollectorActivity extends AppCompatActivity {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         }
         setContentView(R.layout.data_collector_activity_main);
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
-        RecyclerView recyclerView = (RecyclerView) findViewById(R.id.label_recycle_view);
-        new Log("DataCollectorActivity").d("recycler " + recyclerView);
+        RecyclerView recyclerView = findViewById(R.id.label_recycle_view);
         adapter = new LabelRecyclerViewAdapter(this);
         br = new BroadcastReceiver() {
             @Override
             public void onReceive(Context c, Intent i) {
                 LabelRecyclerViewAdapter.ViewHolder holder = adapter.getViewHolder(i.getStringExtra("holder"));
-                android.util.Log.d("TAGTAGTAG", "RECEBI O ALARM broadcast " + this + " holder " + holder);
                 if (holder != null && !holder.isStarted()) {
                     adapter.startExecution(holder);
                 }

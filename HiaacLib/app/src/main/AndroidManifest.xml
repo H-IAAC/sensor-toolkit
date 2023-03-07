@@ -20,6 +20,7 @@
         android:supportsRtl="true">
         <activity
             android:name=".datacollector.LabelOptionsActivity"
+            android:screenOrientation="portrait"
             android:exported="false" />
         <activity
             android:name=".datacollector.DataCollectorActivity"
