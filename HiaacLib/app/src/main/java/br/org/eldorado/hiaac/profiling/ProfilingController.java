@@ -110,7 +110,11 @@ class ProfilingController {
             log.d("Creating  profiling CSV . . .");
             Locale l = Locale.getDefault();
             Locale.setDefault(new Locale("pt", "BR"));
-            CSVWriter writer = new CSVWriter(new FileWriter(csvFile), ';');
+            CSVWriter writer = new CSVWriter(new FileWriter(csvFile),
+                              ';',
+                               CSVWriter.NO_QUOTE_CHARACTER,
+                               CSVWriter.DEFAULT_ESCAPE_CHARACTER,
+                               CSVWriter.DEFAULT_LINE_END);
             writer.writeNext(csvHeader);
             for (ProfilingData dt : data) {
                 writer.writeNext(dt.getCSVFormattedString());
