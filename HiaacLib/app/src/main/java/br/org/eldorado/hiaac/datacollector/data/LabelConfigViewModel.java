@@ -57,8 +57,8 @@ public class LabelConfigViewModel extends AndroidViewModel {
         mRepository.insertLabeledData(labeledData);
     }
 
-    public List<LabeledData> getLabeledData(String label, int type, long offset) {
-        return mRepository.getLabeledData(label, type, offset);
+    public List<LabeledData> getLabeledData(int labelId, int type, long offset) {
+        return mRepository.getLabeledData(labelId, type, offset);
     }
 
     public void updateLabeledData(List<LabeledData> dt) {

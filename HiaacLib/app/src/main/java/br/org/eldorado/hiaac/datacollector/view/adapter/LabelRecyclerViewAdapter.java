@@ -35,6 +35,10 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.nio.file.attribute.FileAttributeView;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -70,6 +74,8 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
 
     private final int SEND_DATA_TO_FIREBASE = 0;
     private final int CREATE_CSV_FILE = 1;
+    private final int SEND_DATA_TO_HIAAC = 2;
+
 
     private static final String TAG = "LabelRecyclerViewAdapter";
     private final LayoutInflater mInflater;
@@ -151,7 +157,8 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
         shareButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                sendData(holder, SEND_DATA_TO_FIREBASE,true);
+                shareButton.setEnabled(false);
+                sendData(holder, SEND_DATA_TO_HIAAC,false);
             }
         });
 
@@ -181,6 +188,7 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
                                         try {
                                             if (labelConfig != null) {
                                                 mLabelConfigViewModel.deleteConfig(labelConfig);
+                                                deleteLabelDir(labelConfig.label);
                                             }
                                         } catch (Exception e) {
                                             e.printStackTrace();
@@ -229,6 +237,8 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
                 long startsTime = labelConfig.scheduledTime - SensorSDK.getInstance().getRemoteTime();
                 mgr.setExact(AlarmManager.RTC_WAKEUP, System.currentTimeMillis() + startsTime, pi);
             }
+
+            startButton.setEnabled(false);
         }
     }
 
@@ -254,6 +264,24 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
         return filesList;
     }
 
+    private void deleteLabelDir(String label) {
+        try {
+            File directory = new File(
+                    mContext.getFilesDir().getAbsolutePath() +
+                            File.separator +
+                            FOLDER_NAME +
+                            File.separator +
+                            label);
+            if (directory.exists()) {
+                for (File f : directory.listFiles()) {
+                    f.delete();
+                }
+                directory.delete();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
     private void sendData(ViewHolder holder, int type, boolean showDialog) {
         if (showDialog) {
@@ -282,7 +310,7 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
         });
 
         if (type == CREATE_CSV_FILE) {
-            firebase.exportToCSV(labelConfigs.get(holder.getAdapterPosition()).label);
+            firebase.exportToCSV(labelConfigs.get(holder.getAdapterPosition()).label, labelConfigs.get(holder.getAdapterPosition()).labelId);
         } else if (type == SEND_DATA_TO_FIREBASE) {
             AlertDialog.Builder aDialogBuilder = new AlertDialog.Builder(mContext);
             AlertDialog aDialog = aDialogBuilder.create();
@@ -302,10 +330,12 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
                 @Override
                 public void onClick(DialogInterface dialogInt, int which) {
                     aDialog.dismiss();
-                    firebase.uploadCSVFile(labelConfigs.get(holder.getAdapterPosition()).label);
+                    firebase.uploadCSVFile(labelConfigs.get(holder.getAdapterPosition()).label, labelConfigs.get(holder.getAdapterPosition()).labelId);
                 }
             });
             aDialog.show();
+        } else if (type == SEND_DATA_TO_HIAAC) {
+            sendFilesToServer(getCsvFiles(labelConfigs.get(holder.getAdapterPosition()).label), holder);
         }
     }
 
@@ -352,6 +382,7 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
         });
     }
 
+    private int filesToUpload = 0;
     private void sendFilesToServer(List<File> files, ViewHolder holder) {
         log.d("sendFilesToServer - " + files);
         MultipartBody.Part experimentPart =
@@ -360,6 +391,7 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
                 MultipartBody.Part.createFormData("name", labelConfigs.get(holder.getAdapterPosition()).activity);
         MultipartBody.Part subjectPart =
                 MultipartBody.Part.createFormData("subject", labelConfigs.get(holder.getAdapterPosition()).userId);
+        filesToUpload = files.size();
         files.forEach((file) -> {
             MultipartBody.Part filePart = filePart = MultipartBody.Part.createFormData(
                     "file", file.getName(),
@@ -368,20 +400,33 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
             ClientAPI apiClient = new ClientAPI();
             ApiInterface apiInterface = apiClient.getClient(Tools.SERVER_HOST, Tools.SERVER_PORT).create(ApiInterface.class);
             Call<StatusResponse> call = apiInterface.uploadFile(filePart, experimentPart, subjectPart, namePart);
-            call.enqueue(uploadCallback());
+            call.enqueue(uploadCallback(file, holder));
+
         });
     }
 
-    private Callback<StatusResponse> uploadCallback() {
+    private synchronized void updateFilesUpdated(ViewHolder holder) {
+        filesToUpload--;
+        if (filesToUpload <= 0) {
+            AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
+            builder.setTitle("Success");
+            builder.setIcon(R.drawable.ic_baseline_success);
+            AlertDialog dl = builder.create();
+            dl.show();
+            holder.getShareButton().setEnabled(true);
+        }
+    }
+
+    private Callback<StatusResponse> uploadCallback(final File file, final ViewHolder holder) {
         return new Callback<StatusResponse>() {
             @Override
             public void onResponse(Call<StatusResponse> call, Response<StatusResponse> response) {
-                log.d("RESPONSE BODY " + response.body());
-                log.d("RESPONSE FULL " + response.raw());
+                updateFilesUpdated(holder);
             }
 
             @Override
             public void onFailure(Call<StatusResponse> call, Throwable t) {
+                updateFilesUpdated(holder);
                 t.printStackTrace();
                 log.d("FAIL " + t);
                 call.cancel();
@@ -414,12 +459,14 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
                     DataTrack dt = new DataTrack();
                     String label = labelConfigs.get(holder.getAdapterPosition()).label;
                     int stopTime = labelConfigs.get(holder.getAdapterPosition()).stopTime;
+                    int labelId = labelConfigs.get(holder.getAdapterPosition()).labelId;
 
                     dt.setDeviceLocation(labelConfigs.get(holder.getAdapterPosition()).deviceLocation);
                     dt.setUserId(labelConfigs.get(holder.getAdapterPosition()).userId);
                     dt.setSendFilesToServer(labelConfigs.get(holder.getAdapterPosition()).sendToServer);
                     dt.setActivity(labelConfigs.get(holder.getAdapterPosition()).activity);
                     dt.setStopTime(stopTime);
+                    dt.setLabelId(labelId);
                     dt.setLabel(label);
                     dt.addSensorList(sensorFrequencyMap.get(label));
 
@@ -512,7 +559,7 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
 
         holder.getStartButton().setEnabled(false);
 
-        execService.setRemoteTime(System.currentTimeMillis() + (1000*60*60));
+        //execService.setRemoteTime(System.currentTimeMillis() + (1000*60*60));
 
         if (execService.isRunning() == null) {
             AlertDialog.Builder timer = new AlertDialog.Builder(mContext);
@@ -570,11 +617,13 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
                     DataTrack dt = new DataTrack();
                     String label = labelConfigs.get(holder.getAdapterPosition()).label;
                     int stopTime = labelConfigs.get(holder.getAdapterPosition()).stopTime;
+                    int labelId = labelConfigs.get(holder.getAdapterPosition()).labelId;
 
                     dt.setDeviceLocation(labelConfigs.get(holder.getAdapterPosition()).deviceLocation);
                     dt.setUserId(labelConfigs.get(holder.getAdapterPosition()).userId);
                     dt.setSendFilesToServer(labelConfigs.get(holder.getAdapterPosition()).sendToServer);
                     dt.setActivity(labelConfigs.get(holder.getAdapterPosition()).activity);
+                    dt.setLabelId(labelId);
                     dt.setStopTime(stopTime);
                     dt.setLabel(label);
                     dt.addSensorList(sensorFrequencyMap.get(label));

@@ -141,10 +141,12 @@ public class ExecutionController {
         private DataTrack dataTrack;
         private LinkedList<LabeledData> labeledData;
         private long collectedData = 0;
+        private long startTime, endTime;
 
         public MySensorListener(DataTrack data) {
             this.dataTrack = data;
             labeledData = new LinkedList<LabeledData>();
+            this.startTime = System.currentTimeMillis();
         }
 
         public List<LabeledData> getLabeledDataList() {
@@ -163,6 +165,12 @@ public class ExecutionController {
         @Override
         public void onSensorStopped(SensorBase sensor) {
             log.d("Sensor STOPED");
+            this.endTime = System.currentTimeMillis();
+            if (labeledData.size() > 0) {
+                log.d("Inserting last datas after sensor's stop");
+                dbView.insertLabeledData(labeledData);
+                labeledData.clear();
+            }
         }
 
         @Override
@@ -172,7 +180,7 @@ public class ExecutionController {
                         && ((sensor.getValuesArray().length == 1)
                             || (sensor.getValuesArray().length > 1 && sensor.getValuesArray()[1] != 0.0))) {
                     //log.d(dataTrack.getLabel() + " Active Threads: " + Thread.activeCount() + "  - " + num++ + " - " + sensor.toString());
-                    LabeledData data = new LabeledData(dataTrack.getLabel(), sensor, dataTrack.getDeviceLocation(), dataTrack.getUserId(), dataTrack.getActivity());
+                    LabeledData data = new LabeledData(dataTrack.getLabel(), sensor, dataTrack.getDeviceLocation(), dataTrack.getUserId(), dataTrack.getActivity(), dataTrack.getLabelId());
                     labeledData.add(data);
                     collectedData++;
 

@@ -6,6 +6,7 @@ import androidx.room.Delete;
 import androidx.room.Insert;
 import androidx.room.OnConflictStrategy;
 import androidx.room.Query;
+import androidx.room.Transaction;
 import androidx.room.Update;
 
 import java.util.List;
@@ -52,9 +53,10 @@ public interface LabelConfigDao {
     @Update
     void updateLabeledData(List<LabeledData> dt);
 
-    @Query("SELECT * from LabeledData where `label-name`=:label ORDER BY `sensor-name`, `sensor-timestamp` LIMIT 300000 OFFSET :offset")
-    List<LabeledData> getLabeledData(String label, long offset);
+    @Transaction @Query("SELECT * from LabeledData where `label-id`=:labelId ORDER BY `sensor-name`, `sensor-timestamp` LIMIT 300000 OFFSET :offset")
+    List<LabeledData> getLabeledData(int labelId, long offset);
 
-    @Query("SELECT * from LabeledData where `label-name`=:label and `data-used`=0 ORDER BY `sensor-name`, `sensor-timestamp` LIMIT 300000 OFFSET 0")
-    List<LabeledData> getLabeledDataCsv(String label);
+    //@Query("SELECT * from LabeledData where `label-id`=:labelId and `data-used`=0 ORDER BY `sensor-name`, `sensor-timestamp` LIMIT 300000 OFFSET 0")
+    @Transaction @Query("SELECT * from LabeledData where `label-id`=:labelId and `data-used`=0 ORDER BY `sensor-name`, `sensor-timestamp` LIMIT 300000 OFFSET 0")
+    List<LabeledData> getLabeledDataCsv(int labelId);
 }

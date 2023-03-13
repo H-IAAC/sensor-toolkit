@@ -9,6 +9,7 @@ public class DataTrack {
 
     private List<SensorFrequency> sensorList;
     private String label;
+    private int labelId;
     private int stopTime;
     private String mDeviceLocation;
     private String mUserId;
@@ -64,6 +65,14 @@ public class DataTrack {
         return stopTime;
     }
 
+    public void setLabelId(int lId) {
+        this.labelId = lId;
+    }
+
+    public int getLabelId() {
+        return labelId;
+    }
+
     public String getLabel() {
         return label;
     }
@@ -80,7 +89,7 @@ public class DataTrack {
     public boolean equals(Object obj) {
         if (obj instanceof DataTrack) {
             DataTrack dt = (DataTrack) obj;
-            if (dt.getLabel().equals(getLabel())) {
+            if (dt.getLabel().equals(getLabel()) && dt.getLabelId() == getLabelId()) {
                 return true;
             }
         }

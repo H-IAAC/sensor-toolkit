@@ -12,6 +12,10 @@ public class LabelConfig {
     public String label;
 
     @NonNull
+    @ColumnInfo(name = "label-id")
+    public int labelId;
+
+    @NonNull
     @ColumnInfo(name = "stop-time")
     public int stopTime;
 
@@ -43,5 +47,6 @@ public class LabelConfig {
         this.sendToServer = sendToServer;
         this.activity = activity;
         this.scheduledTime = scheduledTime;
+        this.labelId = label.hashCode() + deviceLocation.hashCode() + userId.hashCode();
     }
 }
