@@ -39,8 +39,11 @@ public class SensorFrequencyViewAdapter extends RecyclerView.Adapter<SensorFrequ
             Arrays.asList(  0,
                             1,
                             10,
+                            20,
+                            30,
                             40,
                             50,
+                            100,
                             500,
                             1000
                         )
@@ -105,7 +108,6 @@ public class SensorFrequencyViewAdapter extends RecyclerView.Adapter<SensorFrequ
 
             @Override
             public void onNothingSelected(AdapterView<?> parent) {
-
             }
         });
 

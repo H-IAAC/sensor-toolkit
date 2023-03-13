@@ -310,7 +310,7 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
         });
 
         if (type == CREATE_CSV_FILE) {
-            firebase.exportToCSV(labelConfigs.get(holder.getAdapterPosition()).label);
+            firebase.exportToCSV(labelConfigs.get(holder.getAdapterPosition()).label, labelConfigs.get(holder.getAdapterPosition()).labelId);
         } else if (type == SEND_DATA_TO_FIREBASE) {
             AlertDialog.Builder aDialogBuilder = new AlertDialog.Builder(mContext);
             AlertDialog aDialog = aDialogBuilder.create();
@@ -330,7 +330,7 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
                 @Override
                 public void onClick(DialogInterface dialogInt, int which) {
                     aDialog.dismiss();
-                    firebase.uploadCSVFile(labelConfigs.get(holder.getAdapterPosition()).label);
+                    firebase.uploadCSVFile(labelConfigs.get(holder.getAdapterPosition()).label, labelConfigs.get(holder.getAdapterPosition()).labelId);
                 }
             });
             aDialog.show();
@@ -459,12 +459,14 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
                     DataTrack dt = new DataTrack();
                     String label = labelConfigs.get(holder.getAdapterPosition()).label;
                     int stopTime = labelConfigs.get(holder.getAdapterPosition()).stopTime;
+                    int labelId = labelConfigs.get(holder.getAdapterPosition()).labelId;
 
                     dt.setDeviceLocation(labelConfigs.get(holder.getAdapterPosition()).deviceLocation);
                     dt.setUserId(labelConfigs.get(holder.getAdapterPosition()).userId);
                     dt.setSendFilesToServer(labelConfigs.get(holder.getAdapterPosition()).sendToServer);
                     dt.setActivity(labelConfigs.get(holder.getAdapterPosition()).activity);
                     dt.setStopTime(stopTime);
+                    dt.setLabelId(labelId);
                     dt.setLabel(label);
                     dt.addSensorList(sensorFrequencyMap.get(label));
 
@@ -615,11 +617,13 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
                     DataTrack dt = new DataTrack();
                     String label = labelConfigs.get(holder.getAdapterPosition()).label;
                     int stopTime = labelConfigs.get(holder.getAdapterPosition()).stopTime;
+                    int labelId = labelConfigs.get(holder.getAdapterPosition()).labelId;
 
                     dt.setDeviceLocation(labelConfigs.get(holder.getAdapterPosition()).deviceLocation);
                     dt.setUserId(labelConfigs.get(holder.getAdapterPosition()).userId);
                     dt.setSendFilesToServer(labelConfigs.get(holder.getAdapterPosition()).sendToServer);
                     dt.setActivity(labelConfigs.get(holder.getAdapterPosition()).activity);
+                    dt.setLabelId(labelId);
                     dt.setStopTime(stopTime);
                     dt.setLabel(label);
                     dt.addSensorList(sensorFrequencyMap.get(label));

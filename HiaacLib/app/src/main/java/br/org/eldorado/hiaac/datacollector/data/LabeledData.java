@@ -2,11 +2,17 @@ package br.org.eldorado.hiaac.datacollector.data;
 
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
+import androidx.room.Index;
 import androidx.room.PrimaryKey;
 import com.opencsv.bean.CsvNumber;
 import br.org.eldorado.sensoragent.model.SensorBase;
 
-@Entity
+@Entity(indices = {
+        @Index(value = {"label-id"}),
+        @Index(value = {"data-used"}),
+        @Index(value = {"sensor-name"}),
+        @Index(value = {"sensor-timestamp"})
+})
 public class LabeledData {
 
     @PrimaryKey(autoGenerate = true)
@@ -14,6 +20,9 @@ public class LabeledData {
 
     @ColumnInfo(name = "label-name")
     private String label;
+
+    @ColumnInfo(name = "label-id")
+    private int labelId;
 
     @ColumnInfo(name = "device-position")
     private String devicePosition;
@@ -47,7 +56,7 @@ public class LabeledData {
 
     private SensorBase sensor;
 
-    public LabeledData(String label, SensorBase sensor, String devicePosition, String userId, String activity) {
+    public LabeledData(String label, SensorBase sensor, String devicePosition, String userId, String activity, int labelId) {
         this.sensor = sensor;
         this.label = label;
         this.sensorName = sensor.getName();
@@ -59,6 +68,15 @@ public class LabeledData {
         this.devicePosition = devicePosition;
         this.userId = userId;
         this.activity = activity;
+        this.labelId = labelId;
+    }
+
+    public int getLabelId() {
+        return labelId;
+    }
+
+    public void setLabelId(int labelId) {
+        this.labelId = labelId;
     }
 
     public String getUserId() {

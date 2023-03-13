@@ -74,11 +74,11 @@ public class LabelConfigRepository {
             return null;})).execute(data);
     }
 
-    public List<LabeledData> getLabeledData(String label, int type, long offset) {
+    public List<LabeledData> getLabeledData(int labelId, int type, long offset) {
         if (type == TYPE_FIREBASE) {
-            return mLabelConfigDao.getLabeledData(label, offset);
+            return mLabelConfigDao.getLabeledData(labelId, offset);
         } else {
-            return mLabelConfigDao.getLabeledDataCsv(label);
+            return mLabelConfigDao.getLabeledDataCsv(labelId);
         }
     }
 

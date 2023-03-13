@@ -144,7 +144,12 @@ public class DataCollectorActivity extends AppCompatActivity {
                                     long timeInMillis = response.body().get("currentTimeMillis").getAsLong();
                                     SensorSDK.getInstance().setRemoteTime(timeInMillis +
                                             (response.raw().receivedResponseAtMillis() - response.raw().sentRequestAtMillis())/2);
-                                    serverTimeTxt.setText(getString(R.string.server_time) + " " + df.format(new Date(timeInMillis)));
+                                    runOnUiThread(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            serverTimeTxt.setText(getString(R.string.server_time) + " " + df.format(new Date(timeInMillis)));
+                                        }
+                                    });
                                 }
                                 @Override
                                 public void onFailure(Call<JsonObject> call, Throwable t) {
@@ -157,7 +162,12 @@ public class DataCollectorActivity extends AppCompatActivity {
                             long timeInMillis = SensorSDK.getInstance().getRemoteTime();
                             date.setTime(timeInMillis);
                             String time = df.format(date);
-                            serverTimeTxt.setText(getString(R.string.server_time) + " " + time);
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    serverTimeTxt.setText(getString(R.string.server_time) + " " + time);
+                                }
+                            });
                             long next = (60000 - timeInMillis % 60000);
                             Thread.sleep(Math.max(next, next-50));
                         }

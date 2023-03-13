@@ -53,13 +53,13 @@ public class FirebaseUploadController {
         this.listener = l;
     }
 
-    public void uploadCSVFile(String labelName) {
+    public void uploadCSVFile(String labelName, int labelId) {
         new Thread(new Runnable() {
             @Override
             public void run() {
                 /* Create the CSV file if there are data for that and upload to firebase
                  *  If the upload is successful, delete the data from database */
-                List<LabeledData> labeledData = dbView.getLabeledData(labelName, LabelConfigRepository.TYPE_FIREBASE, 0);
+                List<LabeledData> labeledData = dbView.getLabeledData(labelId, LabelConfigRepository.TYPE_FIREBASE, 0);
                 if (labeledData == null || labeledData.size() == 0) {
                     fireListener(ERROR, mContext.getString(R.string.error_no_data_upload_firebase));
                     return;
@@ -75,7 +75,7 @@ public class FirebaseUploadController {
                 File csvFile = createCSVFile(labeledData);
                 labeledData.clear();
                 long offset = labeledData.size();
-                while ((labeledData = dbView.getLabeledData(labelName, LabelConfigRepository.TYPE_FIREBASE, offset)).size() > 0) {
+                while ((labeledData = dbView.getLabeledData(labelId, LabelConfigRepository.TYPE_FIREBASE, offset)).size() > 0) {
                     appendDataToCsvFile(csvFile, labeledData, 1);
                     offset += labeledData.size();
                     labeledData.clear();
@@ -150,25 +150,33 @@ public class FirebaseUploadController {
         }).start();
     }
 
-    public void exportToCSV(String label) {
+    public void exportToCSV(String label, int labelId) {
         new Thread(new Runnable() {
             @Override
             public void run() {
+                //log.d("STARTING EXPORT DATA TO CSV ");
                 long start = System.currentTimeMillis();
-                List<LabeledData> labeledData = dbView.getLabeledData(label, LabelConfigRepository.TYPE_CSV, 0);
+                List<LabeledData> labeledData = dbView.getLabeledData(labelId, LabelConfigRepository.TYPE_CSV, 0);
+                //log.d("GOT DATA ");
                 if (labeledData == null || labeledData.size() == 0) {
                     fireListener(ERROR, mContext.getString(R.string.error_no_data_create_csc));
                     return;
                 }
+                //log.d("BEFORE FIRELISTENER " + labeledData.size());
                 fireListener(ON_PROGRESS, mContext.getString(R.string.creating_csv_file));
                 File csvFile = createCSVFile(labeledData);
+                //log.d("FILE CREATED ");
                 labeledData.clear();
-                while ((labeledData = dbView.getLabeledData(label, LabelConfigRepository.TYPE_CSV, 0)).size() > 0) {
+                //log.d("STARTING APPENDING DATA " + labeledData.size());
+                int index = 0;
+                while ((labeledData = dbView.getLabeledData(labelId, LabelConfigRepository.TYPE_CSV, 0)).size() > 0) {
+                    //log.d("APPENDING DATA INDEX " + index + " SIZE " + labeledData.size());
                     appendDataToCsvFile(csvFile, labeledData, 1);
                     labeledData.clear();
+                    //log.d("APPENDING DATA INDEX " + (index++) + " FINISHED ");
                 }
                 long end = System.currentTimeMillis();
-                log.d("CSV FILE CREATED IN " + ((end-start)/1000)/60 + "m" + ((end-start)/1000)%60+"s");
+                //log.d("CSV FILE CREATED IN " + ((end-start)/1000)/60 + "m" + ((end-start)/1000)%60+"s");
                 fireListener(SUCCESS, mContext.getString(R.string.success_csv_file));
             }
         }).start();
@@ -190,7 +198,7 @@ public class FirebaseUploadController {
                     dt.setIsDataUsed(1);
                 }
                 dbView.updateLabeledData(data);
-                Thread.sleep(1000);
+                Thread.sleep(100);
             } catch (Exception e) {
                 e.printStackTrace();
             } finally {
