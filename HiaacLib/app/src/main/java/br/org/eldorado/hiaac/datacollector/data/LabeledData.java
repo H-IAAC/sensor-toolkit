@@ -167,7 +167,7 @@ public class LabeledData {
     }
 
     public String[] getCSVHeaders() {
-        return new String[]{"Label", "Sensor Name", "Power Consumption (mAh)", "Sensor Frequency (Hz)",
+        return new String[]{"Experiment Name", "Sensor Name", "Power Consumption (mAh)", "Sensor Frequency (Hz)",
                             "Timestamp", "Value 1", "Value 2", "Value 3"};
     }
 

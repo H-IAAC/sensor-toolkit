@@ -166,11 +166,6 @@ public class ExecutionController {
         public void onSensorStopped(SensorBase sensor) {
             log.d("Sensor STOPED");
             this.endTime = System.currentTimeMillis();
-            if (labeledData.size() > 0) {
-                log.d("Inserting last datas after sensor's stop");
-                dbView.insertLabeledData(labeledData);
-                labeledData.clear();
-            }
         }
 
         @Override

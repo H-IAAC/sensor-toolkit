@@ -15,6 +15,14 @@ public interface ApiInterface {
     Call<StatusResponse> uploadFile(@Part MultipartBody.Part file, @Part MultipartBody.Part experiment,
                                     @Part MultipartBody.Part subject, @Part MultipartBody.Part name);
 
+    @Multipart
+    @POST("/api/config")
+    Call<StatusResponse> uploadConfigFile(@Part MultipartBody.Part file, @Part MultipartBody.Part experiment,
+                                    @Part MultipartBody.Part subject, @Part MultipartBody.Part activity, @Part MultipartBody.Part name);
+
     @GET("/api/timestamp")
     Call<JsonObject> getServerTime();
+
+//    @GET("/api/timestamp")
+//    Call<JsonObject> getServerTime();
 }

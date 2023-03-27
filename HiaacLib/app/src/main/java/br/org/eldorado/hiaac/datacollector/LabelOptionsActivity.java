@@ -1,5 +1,6 @@
 package br.org.eldorado.hiaac.datacollector;
 
+import static br.org.eldorado.hiaac.datacollector.DataCollectorActivity.FOLDER_NAME;
 import static br.org.eldorado.hiaac.datacollector.DataCollectorActivity.LABEL_CONFIG_ACTIVITY_ID;
 import static br.org.eldorado.hiaac.datacollector.DataCollectorActivity.LABEL_CONFIG_ACTIVITY_TYPE;
 import static br.org.eldorado.hiaac.datacollector.DataCollectorActivity.NEW_LABEL_CONFIG_ACTIVITY;
@@ -31,6 +32,14 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.gson.Gson;
+
+import java.io.File;
+import java.io.PrintWriter;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.StandardOpenOption;
+import java.sql.Date;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -39,11 +48,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import br.org.eldorado.hiaac.R;
+import br.org.eldorado.hiaac.datacollector.api.ApiInterface;
+import br.org.eldorado.hiaac.datacollector.api.ClientAPI;
+import br.org.eldorado.hiaac.datacollector.api.StatusResponse;
 import br.org.eldorado.hiaac.datacollector.data.LabelConfig;
 import br.org.eldorado.hiaac.datacollector.data.LabelConfigViewModel;
 import br.org.eldorado.hiaac.datacollector.data.SensorFrequency;
 import br.org.eldorado.hiaac.datacollector.util.Log;
 import br.org.eldorado.hiaac.datacollector.util.Tools;
+import br.org.eldorado.hiaac.datacollector.view.adapter.LabelRecyclerViewAdapter;
 import br.org.eldorado.hiaac.datacollector.view.adapter.SensorFrequencyViewAdapter;
 import br.org.eldorado.sensoragent.model.Accelerometer;
 import br.org.eldorado.sensoragent.model.AmbientTemperature;
@@ -55,6 +68,12 @@ import br.org.eldorado.sensoragent.model.MagneticField;
 import br.org.eldorado.sensoragent.model.Proximity;
 import br.org.eldorado.sensoragent.model.SensorBase;
 import br.org.eldorado.sensorsdk.SensorSDK;
+import okhttp3.MediaType;
+import okhttp3.MultipartBody;
+import okhttp3.RequestBody;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class LabelOptionsActivity extends AppCompatActivity {
     public static final int MINUTE = 60;
@@ -105,9 +124,14 @@ public class LabelOptionsActivity extends AppCompatActivity {
                 }
             };
 
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        }
         log = new Log(TAG);
         setContentView(R.layout.activity_label_options);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
@@ -236,14 +260,19 @@ public class LabelOptionsActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    @Override
+    public boolean onSupportNavigateUp() {
+        closeActivity();
+        return true;
+    }
+
     private void deleteCurrentConfig() {
         if (mCurrentConfig != null) {
             mLabelConfigViewModel.deleteConfig(mCurrentConfig);
             if (mSensorFrequencies != null) {
                 mLabelConfigViewModel.deleteAllSensorFrequencies(mSensorFrequencies);
             }
-            Intent intent = new Intent(getApplicationContext(), DataCollectorActivity.class);
-            startActivity(intent);
+            closeActivity();
         }
     }
 
@@ -404,6 +433,111 @@ public class LabelOptionsActivity extends AppCompatActivity {
         mLabelConfigViewModel.insertAllSensorFrequencies(
                 getSensorFrequenciesFromSelectedSensorFrequencies(label)
         );
+
+        if (false) {
+            closeActivity();
+        } else {
+            SaveConfigDialogFragment saveDialogFragment = new SaveConfigDialogFragment(
+                    new SaveConfigListener() {
+                        @Override
+                        public void onConfirmClick() {
+                            try {
+                                Gson gson = new Gson();
+                                String json = gson.toJson(newConfig);
+                                File directory = new File(
+                                        getApplicationContext().getFilesDir().getAbsolutePath() +
+                                                File.separator +
+                                                FOLDER_NAME +
+                                                File.separator);
+                                if (!directory.exists()) {
+                                    directory.mkdirs();
+                                }
+
+                                File configJson = new File(
+                                        getApplicationContext().getFilesDir().getAbsolutePath() +
+                                                File.separator +
+                                                FOLDER_NAME +
+                                                File.separator +
+                                                newConfig.userId+"_"+newConfig.label+"_"+newConfig.activity+"_"+newConfig.deviceLocation+".json");
+                                PrintWriter writer = new PrintWriter(configJson.getAbsolutePath(), "UTF-8");
+                                writer.print(json);
+                                writer.close();
+
+                                sendConfigurationToServer(configJson, newConfig);
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        }
+
+                        @Override
+                        public void onNegativeConfirm() {
+                            closeActivity();
+                        }
+                    }
+            );
+            saveDialogFragment.show(getSupportFragmentManager().beginTransaction(),
+                    SaveConfigDialogFragment.class.toString());
+        }
+    }
+
+    private void sendConfigurationToServer(File config, LabelConfig cfg) {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                log.d("sendConfigurationToServer ");
+                MultipartBody.Part experimentPart =
+                        MultipartBody.Part.createFormData("experiment", cfg.label);
+                MultipartBody.Part namePart =
+                        MultipartBody.Part.createFormData("name", cfg.label);
+                MultipartBody.Part subjectPart =
+                        MultipartBody.Part.createFormData("subject", cfg.userId);
+                MultipartBody.Part activityPart =
+                        MultipartBody.Part.createFormData("activity", cfg.activity);
+
+                MultipartBody.Part filePart = filePart = MultipartBody.Part.createFormData(
+                        "file", config.getName(),
+                        RequestBody.create(MediaType.parse("multipart/form-data"), config));
+
+                ClientAPI apiClient = new ClientAPI();
+                ApiInterface apiInterface = apiClient.getClient(Tools.SERVER_HOST, Tools.SERVER_PORT).create(ApiInterface.class);
+                Call<StatusResponse> call = apiInterface.uploadConfigFile(filePart, experimentPart, subjectPart, activityPart, namePart);
+                call.enqueue(uploadCallback(config));
+            }
+        }).start();
+    }
+
+    private Callback<StatusResponse> uploadCallback(final File file) {
+        return new Callback<StatusResponse>() {
+            @Override
+            public void onResponse(Call<StatusResponse> call, Response<StatusResponse> response) {
+                try {
+                    log.d("SUCCESS");
+                    file.delete();
+                    closeActivity();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    closeActivity();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<StatusResponse> call, Throwable t) {
+                t.printStackTrace();
+                log.d("FAIL " + t);
+                call.cancel();
+                try {
+                    file.delete();
+                    closeActivity();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    closeActivity();
+                }
+            }
+        };
+    }
+
+    private void closeActivity() {
+        this.finish();
         Intent intent = new Intent(getApplicationContext(), DataCollectorActivity.class);
         startActivity(intent);
     }
@@ -432,7 +566,41 @@ public class LabelOptionsActivity extends AppCompatActivity {
         }
     }
 
+    public static class SaveConfigDialogFragment extends DialogFragment {
+        private SaveConfigListener mListener;
+
+        public SaveConfigDialogFragment(SaveConfigListener listener) {
+            this.mListener = listener;
+        }
+
+        @NonNull
+        @Override
+        public Dialog onCreateDialog(@Nullable Bundle savedInstanceState) {
+            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+            builder.setMessage(R.string.delete_config_confirmation)
+                    .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            mListener.onConfirmClick();
+                        }
+                    })
+                    .setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            mListener.onNegativeConfirm();
+                        }
+                    });
+
+            return builder.create();
+        }
+    }
+
     public interface DeleteDialogListener {
         void onConfirmClick();
+    }
+
+    public interface SaveConfigListener {
+        void onConfirmClick();
+        void onNegativeConfirm();
     }
 }

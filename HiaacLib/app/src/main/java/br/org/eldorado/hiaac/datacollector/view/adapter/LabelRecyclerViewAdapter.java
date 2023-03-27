@@ -393,6 +393,7 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
                 MultipartBody.Part.createFormData("subject", labelConfigs.get(holder.getAdapterPosition()).userId);
         filesToUpload = files.size();
         files.forEach((file) -> {
+            //if (file.getName().equals(holder.get))
             MultipartBody.Part filePart = filePart = MultipartBody.Part.createFormData(
                     "file", file.getName(),
                     RequestBody.create(MediaType.parse("multipart/form-data"), file));
