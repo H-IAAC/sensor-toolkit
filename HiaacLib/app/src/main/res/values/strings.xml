@@ -22,7 +22,7 @@
     <string name="error_no_data_upload_firebase">There was any data to upload to Firebase server!</string>
     <string name="dont_use_gps">Don\'t use GPS</string>
     <string name="gps_ok">Ok, I understand</string>
-    <string name="gps_permission_description">To use GPS sensor, application needs the Bacground permission. If you want to use GPS, please select the Always Use permission.</string>
+    <string name="gps_permission_description">To use GPS sensor, application needs the Background permission. If you want to use GPS, please select the Always Use permission.</string>
     <string name="sensor_not_available">This Sensor is not available on this device!</string>
     <string name="dialog_alert_title">ALERT!</string>
 
@@ -41,7 +41,7 @@
     <string name="delete_label">Delete label</string>
     <string name="stops_at">Stops at:</string>
     <string name="device_location">Device Location:</string>
-    <string name="user_id">User ID:</string>
+    <string name="user_id">User Id</string>
     <string name="send_files_to_server">Send files to server</string>
     <string name="delete_config_confirmation">Would you to delete this configuration?</string>
     <string name="delete_config_title">Delete Configuration</string>
@@ -52,7 +52,7 @@
     <string name="activity_title_empty">Activity is empty</string>
     <string name="user_id_empty">User ID is empty</string>
     <string name="schedule_time">Schedule:</string>
-    <string name="schedule_time_hint">Automatic start at this time</string>
+    <string name="schedule_time_hint">Automatic start time</string>
 
     <string-array name="device_location_items">
         <item>Cabeça</item>
