@@ -16,14 +16,27 @@
             android:id="@+id/label_title"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_marginLeft="5sp"
             android:layout_marginTop="8dp"
-            android:layout_marginBottom="8dp"
             android:text="@string/label"
             android:textSize="24sp"
-            card_view:layout_constraintBottom_toBottomOf="parent"
             card_view:layout_constraintEnd_toStartOf="@+id/label_timer"
             card_view:layout_constraintStart_toStartOf="parent"
-            card_view:layout_constraintTop_toTopOf="parent"
+            card_view:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/label_device_location"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginBottom="4dp"
+            android:text="@string/label"
+            android:textSize="18sp"
+            card_view:layout_constraintBottom_toBottomOf="parent"
+            card_view:layout_constraintEnd_toStartOf="@+id/label_timer"
+            card_view:layout_constraintHorizontal_bias="1.0"
+            card_view:layout_constraintStart_toStartOf="parent"
+            card_view:layout_constraintTop_toBottomOf="@+id/label_title"
             card_view:layout_constraintVertical_bias="0.0" />
 
         <ImageView
@@ -50,27 +63,27 @@
             android:id="@+id/label_button_container"
             android:layout_width="0dp"
             android:layout_height="0dp"
-            android:layout_marginStart="32dp"
+            android:layout_marginStart="16dp"
             android:layout_marginEnd="32dp"
             android:orientation="vertical"
             card_view:layout_constraintBottom_toBottomOf="parent"
             card_view:layout_constraintEnd_toEndOf="parent"
             card_view:layout_constraintStart_toStartOf="parent"
-            card_view:layout_constraintTop_toBottomOf="@+id/label_title">
+            card_view:layout_constraintTop_toBottomOf="@+id/label_device_location">
 
             <LinearLayout
                 android:id="@+id/animated_button_panel"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
-                android:visibility="gone" >
+                android:visibility="gone">
 
                 <Button
                     android:id="@+id/start_sampling_button"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:backgroundTint="@android:color/holo_green_light"
-                    android:text="@string/start"/>
+                    android:text="@string/start" />
 
                 <Space
                     android:layout_width="wrap_content"
@@ -109,7 +122,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="10sp"
-                    android:src="@drawable/ic_baseline_share_24"/>
+                    android:src="@drawable/ic_baseline_share_24" />
 
                 <Space
                     android:layout_width="wrap_content"
@@ -121,7 +134,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="10sp"
-                    android:src="@drawable/ic_baseline_delete_24"/>
+                    android:src="@drawable/ic_baseline_delete_24" />
             </LinearLayout>
 
             <Space
@@ -143,17 +156,17 @@
                 android:layout_width="match_parent"
                 android:layout_height="210dp"
                 android:orientation="vertical"
+                android:visibility="gone"
                 card_view:layout_constraintBottom_toBottomOf="parent"
                 card_view:layout_constraintEnd_toEndOf="parent"
                 card_view:layout_constraintStart_toStartOf="parent"
-                card_view:layout_constraintTop_toBottomOf="@+id/label_button_container"
-                android:visibility="gone" >
+                card_view:layout_constraintTop_toBottomOf="@+id/label_button_container">
 
                 <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/csvfiles_reclyclerView"
-                    android:nestedScrollingEnabled="false"
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"/>
+                    android:layout_height="match_parent"
+                    android:nestedScrollingEnabled="false" />
             </LinearLayout>
 
         </br.org.eldorado.hiaac.datacollector.layout.AnimatedLinearLayout>
