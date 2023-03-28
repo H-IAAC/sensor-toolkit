@@ -184,7 +184,7 @@ public class FirebaseUploadController {
 
     private void appendDataToCsvFile(File csvFile, List<LabeledData> data, int type) {
         try {
-            log.d("Appending data " + data.get(0).getCSVFormattedString()[1] + " - " + data.get(0).getCSVFormattedString()[4] + " " + data.size());
+            log.d("Appending data " + data.get(0).getCSVFormattedString()[1] + " - " + data.get(0).getCSVFormattedString()[3] + " " + data.size());
             CSVWriter writer = null;
             Locale l = Locale.getDefault();
             try {
@@ -240,6 +240,7 @@ public class FirebaseUploadController {
                         data.get(0).getLabel() +
                         File.separator +
                         data.get(0).getUserId() + "_" +
+                        data.get(0).getLabel() + "_" +
                         data.get(0).getActivity() + "_" +
                         data.get(0).getDevicePosition() + "__" +
                         df.format(new Date(System.currentTimeMillis())) +

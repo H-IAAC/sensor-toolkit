@@ -53,6 +53,7 @@ public class DataCollectorActivity extends AppCompatActivity {
     public static final String LABEL_CONFIG_ACTIVITY_ID = "label_config_id";
     public static final String FOLDER_NAME = "datacollector";
 
+    private static boolean isActivityVisible;
     private FloatingActionButton mAddButton;
     private LabelConfigViewModel mLabelConfigViewModel;
     private TextView serverTimeTxt;
@@ -62,6 +63,7 @@ public class DataCollectorActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        isActivityVisible = true;
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         }
@@ -120,6 +122,18 @@ public class DataCollectorActivity extends AppCompatActivity {
     }
 
     @Override
+    protected void onResume() {
+        super.onResume();
+        isActivityVisible = true;
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        isActivityVisible = false;
+    }
+
+    @Override
     protected void onDestroy() {
         super.onDestroy();
         if (br != null) {
@@ -144,12 +158,14 @@ public class DataCollectorActivity extends AppCompatActivity {
                                     long timeInMillis = response.body().get("currentTimeMillis").getAsLong();
                                     SensorSDK.getInstance().setRemoteTime(timeInMillis +
                                             (response.raw().receivedResponseAtMillis() - response.raw().sentRequestAtMillis())/2);
-                                    runOnUiThread(new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            serverTimeTxt.setText(getString(R.string.server_time) + " " + df.format(new Date(timeInMillis)));
-                                        }
-                                    });
+                                    if (isActivityVisible) {
+                                        runOnUiThread(new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                serverTimeTxt.setText(getString(R.string.server_time) + " " + df.format(new Date(timeInMillis)));
+                                            }
+                                        });
+                                    }
                                 }
                                 @Override
                                 public void onFailure(Call<JsonObject> call, Throwable t) {
@@ -162,12 +178,14 @@ public class DataCollectorActivity extends AppCompatActivity {
                             long timeInMillis = SensorSDK.getInstance().getRemoteTime();
                             date.setTime(timeInMillis);
                             String time = df.format(date);
-                            runOnUiThread(new Runnable() {
-                                @Override
-                                public void run() {
-                                    serverTimeTxt.setText(getString(R.string.server_time) + " " + time);
-                                }
-                            });
+                            if (isActivityVisible) {
+                                runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        serverTimeTxt.setText(getString(R.string.server_time) + " " + time);
+                                    }
+                                });
+                            }
                             long next = (60000 - timeInMillis % 60000);
                             Thread.sleep(Math.max(next, next-50));
                         }

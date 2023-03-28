@@ -1,6 +1,6 @@
 <resources>
     <string name="app_name">HIAAC</string>
-    <string name="app_version">Version v1.5</string>
+    <string name="app_version">Version v1.7</string>
     <string name="action_settings">Settings</string>
     <string name="next">Next</string>
     <string name="previous">Previous</string>
@@ -37,13 +37,16 @@
     <string name="stop">Stop</string>
     <string name="edit">Edit</string>
     <string name="label_title">Experiment title</string>
+    <string name="choose_experiment">Choose an experiment</string>
     <string name="activity_title">Activity</string>
     <string name="delete_label">Delete label</string>
+    <string name="load_config">Load Config</string>
     <string name="stops_at">Stops at:</string>
     <string name="device_location">Device Location:</string>
     <string name="user_id">User Id</string>
     <string name="send_files_to_server">Send files to server</string>
-    <string name="delete_config_confirmation">Would you to delete this configuration?</string>
+    <string name="delete_config_confirmation">Would you like to delete this configuration?</string>
+    <string name="save_config_on_server_confirmation">Would you like to save this configuration on server?</string>
     <string name="delete_config_title">Delete Configuration</string>
     <string name="yes">Yes</string>
     <string name="no">No</string>

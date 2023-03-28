@@ -1,5 +1,6 @@
 package br.org.eldorado.hiaac.datacollector;
 
+import static br.org.eldorado.hiaac.datacollector.DataCollectorActivity.FOLDER_NAME;
 import static br.org.eldorado.hiaac.datacollector.DataCollectorActivity.LABEL_CONFIG_ACTIVITY_ID;
 import static br.org.eldorado.hiaac.datacollector.DataCollectorActivity.LABEL_CONFIG_ACTIVITY_TYPE;
 import static br.org.eldorado.hiaac.datacollector.DataCollectorActivity.NEW_LABEL_CONFIG_ACTIVITY;
@@ -31,6 +32,17 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+
+import java.io.File;
+import java.io.PrintWriter;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.StandardOpenOption;
+import java.sql.Date;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -39,11 +51,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import br.org.eldorado.hiaac.R;
+import br.org.eldorado.hiaac.datacollector.api.ApiInterface;
+import br.org.eldorado.hiaac.datacollector.api.ClientAPI;
+import br.org.eldorado.hiaac.datacollector.api.StatusResponse;
 import br.org.eldorado.hiaac.datacollector.data.LabelConfig;
 import br.org.eldorado.hiaac.datacollector.data.LabelConfigViewModel;
 import br.org.eldorado.hiaac.datacollector.data.SensorFrequency;
 import br.org.eldorado.hiaac.datacollector.util.Log;
 import br.org.eldorado.hiaac.datacollector.util.Tools;
+import br.org.eldorado.hiaac.datacollector.view.adapter.LabelRecyclerViewAdapter;
 import br.org.eldorado.hiaac.datacollector.view.adapter.SensorFrequencyViewAdapter;
 import br.org.eldorado.sensoragent.model.Accelerometer;
 import br.org.eldorado.sensoragent.model.AmbientTemperature;
@@ -55,6 +71,12 @@ import br.org.eldorado.sensoragent.model.MagneticField;
 import br.org.eldorado.sensoragent.model.Proximity;
 import br.org.eldorado.sensoragent.model.SensorBase;
 import br.org.eldorado.sensorsdk.SensorSDK;
+import okhttp3.MediaType;
+import okhttp3.MultipartBody;
+import okhttp3.RequestBody;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class LabelOptionsActivity extends AppCompatActivity {
     public static final int MINUTE = 60;
@@ -96,6 +118,7 @@ public class LabelOptionsActivity extends AppCompatActivity {
     private EditText mUserIdTxt;
     private static final String TAG = "LabelOptionsActivity";
     private Log log;
+    private boolean isConfigLoaded;
 
     private SensorFrequencyViewAdapter.SensorFrequencyChangeListener mSensorFrequencyChangeListener =
             new SensorFrequencyViewAdapter.SensorFrequencyChangeListener() {
@@ -105,14 +128,20 @@ public class LabelOptionsActivity extends AppCompatActivity {
                 }
             };
 
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        }
         log = new Log(TAG);
         setContentView(R.layout.activity_label_options);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         mLabelTile = findViewById(R.id.edit_label_name);
         mActivityTxt = findViewById(R.id.activity_txt);
+        isConfigLoaded = false;
 
         mScheduleTimeTxt = findViewById(R.id.txtScheduleTime);
         mScheduleTimeTxt.setOnClickListener(new View.OnClickListener() {
@@ -208,6 +237,7 @@ public class LabelOptionsActivity extends AppCompatActivity {
 
         if (mIsUpdating) {
             menu.getItem(0).setVisible(true);
+            menu.getItem(1).setVisible(false);
         }
 
         return true;
@@ -232,18 +262,26 @@ public class LabelOptionsActivity extends AppCompatActivity {
         } else if (item.getItemId() == R.id.save_label_button) {
             onSaveButtonClick();
             return true;
+        } else if (item.getItemId() == R.id.load_config_button) {
+            getAllExperiments();
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public boolean onSupportNavigateUp() {
+        closeActivity();
+        return true;
     }
 
     private void deleteCurrentConfig() {
         if (mCurrentConfig != null) {
             mLabelConfigViewModel.deleteConfig(mCurrentConfig);
+            mLabelConfigViewModel.deleteSensorsFromLabel(mCurrentConfig);
             if (mSensorFrequencies != null) {
                 mLabelConfigViewModel.deleteAllSensorFrequencies(mSensorFrequencies);
             }
-            Intent intent = new Intent(getApplicationContext(), DataCollectorActivity.class);
-            startActivity(intent);
+            closeActivity();
         }
     }
 
@@ -404,6 +442,211 @@ public class LabelOptionsActivity extends AppCompatActivity {
         mLabelConfigViewModel.insertAllSensorFrequencies(
                 getSensorFrequenciesFromSelectedSensorFrequencies(label)
         );
+
+        if (isConfigLoaded) {
+            closeActivity();
+        } else {
+            SaveConfigDialogFragment saveDialogFragment = new SaveConfigDialogFragment(
+                    new SaveConfigListener() {
+                        @Override
+                        public void onConfirmClick() {
+                            try {
+                                Gson gson = new Gson();
+                                String json = gson.toJson(newConfig);
+                                String jsonSensors = gson.toJson(mSelectedSensors);
+                                json = "{\"main\":"+json+",\"sensors\":"+jsonSensors +"}";
+                                File directory = new File(
+                                        getApplicationContext().getFilesDir().getAbsolutePath() +
+                                                File.separator +
+                                                FOLDER_NAME +
+                                                File.separator);
+                                if (!directory.exists()) {
+                                    directory.mkdirs();
+                                }
+
+                                File configJson = new File(
+                                        getApplicationContext().getFilesDir().getAbsolutePath() +
+                                                File.separator +
+                                                FOLDER_NAME +
+                                                File.separator +
+                                                newConfig.userId+"_"+newConfig.label+"_"+newConfig.activity+"_"+newConfig.deviceLocation+".json");
+                                PrintWriter writer = new PrintWriter(configJson.getAbsolutePath(), "UTF-8");
+                                writer.println(json);
+                                //writer.println(jsonSensors);
+                                writer.close();
+
+                                sendConfigurationToServer(configJson, newConfig);
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        }
+
+                        @Override
+                        public void onNegativeConfirm() {
+                            closeActivity();
+                        }
+                    }
+            );
+            saveDialogFragment.show(getSupportFragmentManager().beginTransaction(),
+                    SaveConfigDialogFragment.class.toString());
+        }
+    }
+
+    private void sendConfigurationToServer(File config, LabelConfig cfg) {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                log.d("sendConfigurationToServer ");
+                MultipartBody.Part experimentPart =
+                        MultipartBody.Part.createFormData("experiment", cfg.label);
+                MultipartBody.Part subjectPart =
+                        MultipartBody.Part.createFormData("subject", cfg.userId);
+                MultipartBody.Part activityPart =
+                        MultipartBody.Part.createFormData("activity", cfg.activity);
+
+                MultipartBody.Part filePart = filePart = MultipartBody.Part.createFormData(
+                        "file", config.getName(),
+                        RequestBody.create(MediaType.parse("multipart/form-data"), config));
+
+                ClientAPI apiClient = new ClientAPI();
+                ApiInterface apiInterface = apiClient.getClient(Tools.SERVER_HOST, Tools.SERVER_PORT).create(ApiInterface.class);
+                Call<StatusResponse> call = apiInterface.uploadConfigFile(filePart, experimentPart, subjectPart, activityPart);
+                call.enqueue(uploadCallback(config));
+            }
+        }).start();
+    }
+
+    private void getAllExperiments() {
+        ClientAPI api = new ClientAPI();
+        ApiInterface apiInterface = api.getClient(Tools.SERVER_HOST, Tools.SERVER_PORT).create(ApiInterface.class);
+        Call<JsonObject> call = apiInterface.getAllExperiments();
+        call.enqueue(new Callback<JsonObject>() {
+            @Override
+            public void onResponse(Call<JsonObject> call, Response<JsonObject> response) {
+                JsonObject res = new Gson().fromJson(response.body(), JsonObject.class);
+                List<String> experiments = new ArrayList<String>();
+                for (JsonElement el : res.get("experiment").getAsJsonArray()) {
+                    JsonObject exp = el.getAsJsonObject();
+                    experiments.add(exp.get("experiment").getAsString()+"_"+exp.get("activity").getAsString()+"_"+exp.get("user").getAsString());
+                }
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        AlertDialog.Builder builder = new AlertDialog.Builder(LabelOptionsActivity.this);
+                        builder.setTitle(R.string.choose_experiment);
+                        builder.setItems(experiments.toArray(new String[0]), new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                String[] exp = experiments.get(which).split("_");
+                                Call<JsonObject> call = apiInterface.getExperimentConfig(exp[0], exp[2], exp[1]);
+                                loadServerConfig(call);
+                            }
+                        });
+                        builder.show();
+                    }
+                });
+            }
+            @Override
+            public void onFailure(Call<JsonObject> call, Throwable t) {
+                t.printStackTrace();
+                call.cancel();
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        AlertDialog.Builder builder = new AlertDialog.Builder(LabelOptionsActivity.this);
+                        builder.setTitle("Error");
+                        builder.setMessage(t.getMessage());
+                        builder.show();
+                    }
+                });
+            }
+        });
+    }
+
+    private void loadServerConfig(Call<JsonObject> call) {
+        try {
+            call.enqueue(new Callback<JsonObject>() {
+                @Override
+                public void onResponse(Call<JsonObject> call, Response<JsonObject> response) {
+
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            JsonObject config = new Gson().fromJson(response.body(), JsonObject.class);
+                            if (config.get("main") == null || config.get("sensors") == null ) {
+                                Exception t = new Exception("No configuration found for this experiment!");
+                                onFailure(call, t);
+                                return;
+                            }
+                            isConfigLoaded = true;
+
+                            mCurrentConfig = new Gson().fromJson(config.get("main").getAsJsonObject().toString(), LabelConfig.class);
+                            updateFields();
+                            mLabelConfigViewModel.deleteSensorsFromLabel(mCurrentConfig);
+                            JsonArray sensors = new Gson().fromJson(config.get("sensors").getAsJsonArray().toString(), JsonArray.class);
+                            for (int i = 0; i < sensors.size(); i++) {
+                                JsonObject sensor = sensors.get(i).getAsJsonObject();
+                                mSelectedSensors.get(i).setFrequency(sensor.get("frequency").getAsInt());
+                                mSelectedSensors.get(i).setSelected(sensor.get("isSelected").getAsBoolean());
+                            }
+                            mSensorFrequencyViewAdapter.setSelectedSensors(mSelectedSensors);
+                            mLabelConfigViewModel.insertAllSensorFrequencies(getSensorFrequenciesFromSelectedSensorFrequencies(mCurrentConfig.label));
+
+                        }
+                    });
+                }
+                @Override
+                public void onFailure(Call<JsonObject> call, Throwable t) {
+                    t.printStackTrace();
+                    call.cancel();
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            AlertDialog.Builder builder = new AlertDialog.Builder(LabelOptionsActivity.this);
+                            builder.setTitle("Error");
+                            builder.setMessage(t.getMessage());
+                            builder.show();
+                        }
+                    });
+                }
+            });
+        } catch (Exception e) {
+
+        }
+    }
+
+    private Callback<StatusResponse> uploadCallback(final File file) {
+        return new Callback<StatusResponse>() {
+            @Override
+            public void onResponse(Call<StatusResponse> call, Response<StatusResponse> response) {
+                try {
+                    log.d(response.code()+"");
+                    file.delete();
+                    closeActivity();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    closeActivity();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<StatusResponse> call, Throwable t) {
+                t.printStackTrace();
+                log.d("FAIL " + t);
+                call.cancel();
+                try {
+                    file.delete();
+                    closeActivity();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    closeActivity();
+                }
+            }
+        };
+    }
+
+    private void closeActivity() {
+        this.finish();
         Intent intent = new Intent(getApplicationContext(), DataCollectorActivity.class);
         startActivity(intent);
     }
@@ -432,7 +675,41 @@ public class LabelOptionsActivity extends AppCompatActivity {
         }
     }
 
+    public static class SaveConfigDialogFragment extends DialogFragment {
+        private SaveConfigListener mListener;
+
+        public SaveConfigDialogFragment(SaveConfigListener listener) {
+            this.mListener = listener;
+        }
+
+        @NonNull
+        @Override
+        public Dialog onCreateDialog(@Nullable Bundle savedInstanceState) {
+            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+            builder.setMessage(R.string.save_config_on_server_confirmation)
+                    .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            mListener.onConfirmClick();
+                        }
+                    })
+                    .setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            mListener.onNegativeConfirm();
+                        }
+                    });
+
+            return builder.create();
+        }
+    }
+
     public interface DeleteDialogListener {
         void onConfirmClick();
+    }
+
+    public interface SaveConfigListener {
+        void onConfirmClick();
+        void onNegativeConfirm();
     }
 }

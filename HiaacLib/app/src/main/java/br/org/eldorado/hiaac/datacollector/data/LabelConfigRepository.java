@@ -34,6 +34,13 @@ public class LabelConfigRepository {
         return mLabelConfigDao.getAllSensorsFromLabel(label);
     }
 
+    void deleteSensorFromLabel(LabelConfig label) {
+        new LabelConfigAsyncTask(mLabelConfigDao, (labelConfig -> {
+            mLabelConfigDao.deleteSensorFromLabel(label.label);
+            return null;})).execute(label);
+
+    }
+
     LiveData<List<SensorFrequency>> getAllSensorFrequencies() {
         return mLabelConfigDao.getAllSensorFrequencies();
     }
