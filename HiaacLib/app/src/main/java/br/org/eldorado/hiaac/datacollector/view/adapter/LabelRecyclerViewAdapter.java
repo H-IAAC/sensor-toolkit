@@ -88,6 +88,7 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
     private ProgressDialog sendDataDialog;
     private LabelConfigViewModel mLabelConfigViewModel;
     private Map<String, ViewHolder> holdersMap = new HashMap<>();
+    private boolean deleteButtonClicked;
 
     public LabelRecyclerViewAdapter(Context context) {
         mInflater = LayoutInflater.from(context);
@@ -163,6 +164,7 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
         });
 
         ImageView deleteButton = holder.getDeleteButton();
+        deleteButtonClicked = false;
         deleteButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -180,14 +182,16 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
                 aDialog.setButton(DialogInterface.BUTTON_POSITIVE, mContext.getString(R.string.yes), new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInt, int which) {
+                        deleteButtonClicked = true;
                         aDialog.dismiss();
                         mLabelConfigViewModel.getLabelConfigById(labelTitle)
                                 .observe((LifecycleOwner) mContext, new Observer<LabelConfig>() {
                                     @Override
                                     public void onChanged(LabelConfig labelConfig) {
                                         try {
-                                            if (labelConfig != null) {
+                                            if (deleteButtonClicked && labelConfig != null) {
                                                 mLabelConfigViewModel.deleteConfig(labelConfig);
+                                                mLabelConfigViewModel.deleteSensorsFromLabel(labelConfig);
                                                 deleteLabelDir(labelConfig.label);
                                             }
                                         } catch (Exception e) {
@@ -343,6 +347,7 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
         ((Activity)mContext).runOnUiThread(new Runnable() {
             @Override
             public void run() {
+                if (holder.getAdapterPosition() == -1 || holder.getAdapterPosition() >= labelConfigs.size()) return;
                 if (dialog != null) {
                     dialog.cancel();
                     AlertDialog.Builder builder = new AlertDialog.Builder(mContext);

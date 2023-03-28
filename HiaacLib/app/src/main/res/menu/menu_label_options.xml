@@ -10,6 +10,12 @@
         android:visible="false"
         app:showAsAction="always" />
     <item
+        android:id="@+id/load_config_button"
+        android:icon="@android:drawable/stat_sys_download"
+        android:title="@string/load_config"
+        android:visible="true"
+        app:showAsAction="always" />
+    <item
         android:id="@+id/save_label_button"
         android:icon="@drawable/ic_baseline_check_24"
         android:title="@string/delete_label"
