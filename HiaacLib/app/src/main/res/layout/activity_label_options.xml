@@ -26,25 +26,25 @@
                 android:id="@+id/edit_label_name"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:ems="10"
                 android:hint="@string/label_title"
-                android:inputType="textPersonName" />
+                android:maxLength="15"
+                android:digits="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz 0123456789" />
 
             <EditText
                 android:id="@+id/activity_txt"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:ems="10"
                 android:hint="@string/activity_title"
-                android:inputType="textPersonName" />
+                android:maxLength="15"
+                android:digits="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz 0123456789" />
 
             <EditText
                 android:id="@+id/user_id_txt"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:ems="10"
                 android:hint="@string/user_id"
-                android:inputType="textPersonName" />
+                android:maxLength="15"
+                android:digits="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz 0123456789" />
         </LinearLayout>
 
         <LinearLayout
