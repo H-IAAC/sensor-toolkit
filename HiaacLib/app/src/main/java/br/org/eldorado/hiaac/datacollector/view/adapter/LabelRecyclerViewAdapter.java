@@ -140,6 +140,8 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
                 }
             }
         });
+        holder.getLabelDeviceLocation().setText("("+labelConfig.deviceLocation+")");
+
         holder.getLabelTimer().setText(
                 Tools.getFormatedTime(labelConfigs.get(holder.getAdapterPosition()).stopTime, Tools.CHRONOMETER));
 
@@ -667,6 +669,7 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
         private boolean isOpened;
 
         private TextView labelTitle;
+        private TextView labelDeviceLocation;
         private TextView labelTimer;
         private AnimatedLinearLayout buttonContainer;
         private Button startButton;
@@ -682,6 +685,7 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
             started = false;
             isOpened = false;
             labelTitle = itemView.findViewById(R.id.label_title);
+            labelDeviceLocation = itemView.findViewById(R.id.label_device_location);
             labelTimer = itemView.findViewById(R.id.label_timer);
             buttonContainer = itemView.findViewById(R.id.label_button_container);
             startButton = itemView.findViewById(R.id.start_sampling_button);
@@ -724,6 +728,10 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
 
         public TextView getLabelTitle() {
             return labelTitle;
+        }
+
+        public TextView getLabelDeviceLocation() {
+            return labelDeviceLocation;
         }
 
         public TextView getLabelTimer() {
