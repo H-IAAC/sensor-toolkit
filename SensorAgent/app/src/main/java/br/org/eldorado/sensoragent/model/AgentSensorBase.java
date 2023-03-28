@@ -13,6 +13,7 @@ import android.os.Looper;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.os.SystemClock;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
@@ -185,6 +186,7 @@ public class AgentSensorBase
                 }
             });
         } else {
+            Toast.makeText(SensorAgentContext.getInstance().getContext(), "Missing GPS Permission", Toast.LENGTH_LONG).show();
             log.d("requestGPSUpdates - no GPS permission ");
         }
     }
