@@ -22,6 +22,7 @@ import br.org.eldorado.sensoragent.model.SensorBase;
 public class Tools {
     public static final String SERVER_HOST = "vm.hiaac.ic.unicamp.br";
     public static final String SERVER_PORT = "8081";
+    //public static final String SERVER_PORT = "7999";
     public static final int CHRONOMETER = 1;
 
     public enum pixelType {
