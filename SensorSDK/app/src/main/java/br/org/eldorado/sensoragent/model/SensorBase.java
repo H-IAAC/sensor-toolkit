@@ -9,7 +9,7 @@ import br.org.eldorado.sensorsdk.listener.SensorSDKListener;
 import br.org.eldorado.sensorsdk.util.Log;
 
 
-public class SensorBase implements Parcelable {
+public class SensorBase implements Parcelable, Cloneable {
     public static final int TYPE_ACCELEROMETER = Sensor.TYPE_ACCELEROMETER;
     public static final int TYPE_AMBIENT_TEMPERATUR = Sensor.TYPE_AMBIENT_TEMPERATURE;
     public static final int TYPE_GYROSCOPE = Sensor.TYPE_GYROSCOPE;
@@ -50,6 +50,16 @@ public class SensorBase implements Parcelable {
     public void registerListener(SensorSDKListener l) {
         this.listener = l;
         this.controller.getInformation(this);
+    }
+
+    public boolean isValidValues() {
+        int zeros = 0;
+        for (int i = 0; i < values.length; i++) {
+            if (values[i] == 0f) {
+                zeros++;
+            }
+        }
+        return zeros != values.length;
     }
 
     public void setFrequency(int f) {
@@ -97,10 +107,18 @@ public class SensorBase implements Parcelable {
             isStarted = false;
             fireListener(ON_STOPPED);
             return;
+        } else if (values.length != s.getValuesArray().length) {
+            values = new float[s.getValuesArray().length];
         }
         this.timestamp = s.getTimestamp();
         this.power = s.getPower();
-        this.values = s.getValuesArray();
+        for (int i = 0; i < values.length; i++) {
+            this.values[i] = s.getValuesArray()[i];
+        }
+        //this.values = s.getValuesArray();
+        if (values.length == 3 && values[0] == 0f && values[1] == 0f && values[2] == 0f) {
+            System.out.println("INVALID " + getName() + " " + values[0] + " " + values[1] + " " + values[2]);
+        }
         //log.i("Update information " + toString());
         if (!isStarted) {
             //isStarted = true;
@@ -136,16 +154,22 @@ public class SensorBase implements Parcelable {
 
     private void fireListener(int type) {
         if (listener != null) {
-            switch (type) {
-                case ON_STARTED:
-                    listener.onSensorStarted(this);
-                    break;
-                case ON_STOPPED:
-                    listener.onSensorStopped(this);
-                    break;
-                case ON_CHANGED:
-                    listener.onSensorChanged(this);
-                    break;
+            try {
+                switch (type) {
+                    case ON_STARTED:
+                        listener.onSensorStarted((SensorBase)this.clone());
+                        break;
+                    case ON_STOPPED:
+                        listener.onSensorStopped((SensorBase)this.clone());
+                        break;
+                    case ON_CHANGED:
+                        listener.onSensorChanged((SensorBase) this.clone());
+                        break;
+                }
+            } catch (CloneNotSupportedException ex) {
+                ex.printStackTrace();
+            } catch (Exception e) {
+                e.printStackTrace();
             }
         }
     }

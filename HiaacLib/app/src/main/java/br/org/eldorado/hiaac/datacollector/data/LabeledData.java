@@ -6,6 +6,7 @@ import androidx.room.Index;
 import androidx.room.PrimaryKey;
 import com.opencsv.bean.CsvNumber;
 import br.org.eldorado.sensoragent.model.SensorBase;
+import br.org.eldorado.sensorsdk.SensorSDK;
 
 @Entity(indices = {
         @Index(value = {"label-id"}),
@@ -60,7 +61,8 @@ public class LabeledData {
         this.sensor = sensor;
         this.label = label;
         this.sensorName = sensor.getName();
-        this.timestamp = sensor.getTimestamp();
+        //this.timestamp = sensor.getTimestamp();
+        this.timestamp = SensorSDK.getInstance().getRemoteTime();
         this.frequency = sensor.getFrequency();
         this.sensorValues = sensor.getValuesString();
         this.power = sensor.getPower();

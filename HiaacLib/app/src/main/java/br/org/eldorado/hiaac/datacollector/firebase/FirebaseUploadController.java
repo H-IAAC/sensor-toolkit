@@ -154,29 +154,23 @@ public class FirebaseUploadController {
         new Thread(new Runnable() {
             @Override
             public void run() {
-                //log.d("STARTING EXPORT DATA TO CSV ");
                 long start = System.currentTimeMillis();
+                log.d("Starting creating csv file");
                 List<LabeledData> labeledData = dbView.getLabeledData(labelId, LabelConfigRepository.TYPE_CSV, 0);
-                //log.d("GOT DATA ");
                 if (labeledData == null || labeledData.size() == 0) {
                     fireListener(ERROR, mContext.getString(R.string.error_no_data_create_csc));
                     return;
                 }
-                //log.d("BEFORE FIRELISTENER " + labeledData.size());
                 fireListener(ON_PROGRESS, mContext.getString(R.string.creating_csv_file));
                 File csvFile = createCSVFile(labeledData);
-                //log.d("FILE CREATED ");
                 labeledData.clear();
-                //log.d("STARTING APPENDING DATA " + labeledData.size());
                 int index = 0;
                 while ((labeledData = dbView.getLabeledData(labelId, LabelConfigRepository.TYPE_CSV, 0)).size() > 0) {
-                    //log.d("APPENDING DATA INDEX " + index + " SIZE " + labeledData.size());
                     appendDataToCsvFile(csvFile, labeledData, 1);
                     labeledData.clear();
-                    //log.d("APPENDING DATA INDEX " + (index++) + " FINISHED ");
                 }
                 long end = System.currentTimeMillis();
-                //log.d("CSV FILE CREATED IN " + ((end-start)/1000)/60 + "m" + ((end-start)/1000)%60+"s");
+                log.d("Csv file created. Time consumed: " + ((end-start)/1000)/60 + "m" + ((end-start)/1000)%60+"s");
                 fireListener(SUCCESS, mContext.getString(R.string.success_csv_file));
             }
         }).start();
@@ -189,7 +183,7 @@ public class FirebaseUploadController {
             Locale l = Locale.getDefault();
             try {
                 Locale.setDefault(new Locale("pt", "BR"));
-                writer = new CSVWriter(new FileWriter(csvFile),
+                writer = new CSVWriter(new FileWriter(csvFile, true),
                                       ';',
                                        CSVWriter.NO_QUOTE_CHARACTER,
                                        CSVWriter.DEFAULT_ESCAPE_CHARACTER,

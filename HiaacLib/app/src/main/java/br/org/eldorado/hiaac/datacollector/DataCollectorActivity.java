@@ -149,8 +149,8 @@ public class DataCollectorActivity extends AppCompatActivity {
                     int resync = 0;
                     Date date = new Date(System.currentTimeMillis());
                     while (true) {
-                        /** Resync with server every 5 minutes */
-                        if (resync++ % 5 == 0) {
+                        /** Resync with server every 3 minutes */
+                        if (resync++ % 3 == 0) {
                             Call<JsonObject> call = apiInterface.getServerTime();
                             call.enqueue(new Callback<JsonObject>() {
                                 @Override

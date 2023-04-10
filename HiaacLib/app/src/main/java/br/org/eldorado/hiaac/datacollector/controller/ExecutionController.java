@@ -83,6 +83,7 @@ public class ExecutionController {
                 //labeledDataList.addAll(((MySensorListener)sensorFrequency.sensor.getListener()).getLabeledDataList());
                 if (sensorFrequency.sensor.getListener() != null) {
                     log.d("Collected data from " + sensorFrequency.sensor.getName() + ": " + ((MySensorListener) sensorFrequency.sensor.getListener()).getCollectedData());
+                    log.d("Invalid data from " + sensorFrequency.sensor.getName() + ": " + ((MySensorListener) sensorFrequency.sensor.getListener()).getInvalidData());
                     dbView.insertLabeledData(((MySensorListener) sensorFrequency.sensor.getListener()).getLabeledDataList());
                     totalData += ((MySensorListener) sensorFrequency.sensor.getListener()).getCollectedData();
                 }
@@ -142,6 +143,7 @@ public class ExecutionController {
         private LinkedList<LabeledData> labeledData;
         private long collectedData = 0;
         private long startTime, endTime;
+        private long invalidData = 0;
 
         public MySensorListener(DataTrack data) {
             this.dataTrack = data;
@@ -151,6 +153,10 @@ public class ExecutionController {
 
         public List<LabeledData> getLabeledDataList() {
             return labeledData == null ? new LinkedList<LabeledData>() : labeledData;
+        }
+
+        public long getInvalidData() {
+            return invalidData;
         }
 
         public long getCollectedData() {
@@ -171,9 +177,7 @@ public class ExecutionController {
         @Override
         public void onSensorChanged(SensorBase sensor) {
             try {
-                if (sensor.getValuesArray()[0] != 0.0
-                        && ((sensor.getValuesArray().length == 1)
-                            || (sensor.getValuesArray().length > 1 && sensor.getValuesArray()[1] != 0.0))) {
+                if (sensor.isValidValues()) {
                     //log.d(dataTrack.getLabel() + " Active Threads: " + Thread.activeCount() + "  - " + num++ + " - " + sensor.toString());
                     LabeledData data = new LabeledData(dataTrack.getLabel(), sensor, dataTrack.getDeviceLocation(), dataTrack.getUserId(), dataTrack.getActivity(), dataTrack.getLabelId());
                     labeledData.add(data);
@@ -183,6 +187,9 @@ public class ExecutionController {
                         dbView.insertLabeledData((LinkedList<LabeledData>)labeledData.clone());
                         labeledData.clear();
                     }
+                } else {
+                    invalidData++;
+                    log.d("Invalid Data Collected\n" + sensor.toString());
                 }
             } catch (Exception e) {
                 if (labeledData.size() > 0) {
