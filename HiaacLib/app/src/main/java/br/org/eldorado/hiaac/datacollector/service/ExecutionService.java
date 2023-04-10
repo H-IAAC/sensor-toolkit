@@ -7,7 +7,6 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.ServiceInfo;
 import android.graphics.Color;
 import android.media.RingtoneManager;
 import android.net.Uri;
@@ -15,7 +14,6 @@ import android.os.Binder;
 import android.os.Build;
 import android.os.IBinder;
 import androidx.annotation.Nullable;
-import androidx.annotation.RequiresApi;
 import androidx.core.app.NotificationCompat;
 import br.org.eldorado.hiaac.datacollector.DataCollectorActivity;
 import br.org.eldorado.hiaac.R;
@@ -88,6 +86,10 @@ public class ExecutionService extends Service {
             ctrl.setListener(l);
             ctrl.startExecution(dataTrack);
         }
+    }
+
+    public void changeExecutionServiceListener(ExecutionServiceListener l) {
+        ExecutionController.getInstance().setListener(l);
     }
 
     public void setRemoteTime(long time) {

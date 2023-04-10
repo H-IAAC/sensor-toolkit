@@ -26,6 +26,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.view.menu.ActionMenuItemView;
 import androidx.fragment.app.DialogFragment;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
@@ -39,10 +40,6 @@ import com.google.gson.JsonObject;
 
 import java.io.File;
 import java.io.PrintWriter;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.StandardOpenOption;
-import java.sql.Date;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -59,7 +56,6 @@ import br.org.eldorado.hiaac.datacollector.data.LabelConfigViewModel;
 import br.org.eldorado.hiaac.datacollector.data.SensorFrequency;
 import br.org.eldorado.hiaac.datacollector.util.Log;
 import br.org.eldorado.hiaac.datacollector.util.Tools;
-import br.org.eldorado.hiaac.datacollector.view.adapter.LabelRecyclerViewAdapter;
 import br.org.eldorado.hiaac.datacollector.view.adapter.SensorFrequencyViewAdapter;
 import br.org.eldorado.sensoragent.model.Accelerometer;
 import br.org.eldorado.sensoragent.model.AmbientTemperature;
@@ -116,6 +112,7 @@ public class LabelOptionsActivity extends AppCompatActivity {
     private Spinner mDeviceLocation;
     private CheckBox mSendFilesToServer;
     private EditText mUserIdTxt;
+    private ActionMenuItemView mLoadConfigBtn;
     private static final String TAG = "LabelOptionsActivity";
     private Log log;
     private boolean isConfigLoaded;
@@ -172,6 +169,7 @@ public class LabelOptionsActivity extends AppCompatActivity {
         mStopTimeSpinner = findViewById(R.id.stops_at_spinner);
         mDeviceLocation = findViewById(R.id.device_location_spinner);
         mUserIdTxt = findViewById(R.id.user_id_txt);
+        mLoadConfigBtn = findViewById(R.id.load_config_button);
         mSendFilesToServer = findViewById(R.id.send_files_to_server_checkbox);
         mLabelConfigViewModel = ViewModelProvider.AndroidViewModelFactory
                 .getInstance(getApplication()).create(LabelConfigViewModel.class);
@@ -204,8 +202,11 @@ public class LabelOptionsActivity extends AppCompatActivity {
                 break;
             case UPDATE_LABEL_CONFIG_ACTIVITY:
                 mIsUpdating = true;
-                String lableId = extras.getString(LABEL_CONFIG_ACTIVITY_ID);
-                mLabelConfigViewModel.getLabelConfigById(lableId)
+                mLabelTile.setEnabled(false);
+                mActivityTxt.setEnabled(false);
+                mUserIdTxt.setEnabled(false);
+                String labelId = extras.getString(LABEL_CONFIG_ACTIVITY_ID);
+                mLabelConfigViewModel.getLabelConfigById(labelId)
                         .observe(this, new Observer<LabelConfig>() {
                             @Override
                             public void onChanged(LabelConfig labelConfig) {
@@ -263,6 +264,7 @@ public class LabelOptionsActivity extends AppCompatActivity {
             onSaveButtonClick();
             return true;
         } else if (item.getItemId() == R.id.load_config_button) {
+            item.setEnabled(false);
             getAllExperiments();
         }
         return super.onOptionsItemSelected(item);
@@ -427,7 +429,7 @@ public class LabelOptionsActivity extends AppCompatActivity {
         int stopTime = stopTimeOptions[spinnerPosition];
         LabelConfig newConfig = new LabelConfig(label, stopTime, deviceLocation, userId, mSendFilesToServer.isChecked(), activity, scheduledTime);
         if (mIsUpdating && mCurrentConfig != null) {
-            if (label == mCurrentConfig.label) {
+            if (label.equals(mCurrentConfig.label)) {
                 mLabelConfigViewModel.updateConfig(newConfig);
             } else {
                 mLabelConfigViewModel.deleteConfig(mCurrentConfig);
@@ -472,7 +474,6 @@ public class LabelOptionsActivity extends AppCompatActivity {
                                                 newConfig.userId+"_"+newConfig.label+"_"+newConfig.activity+"_"+newConfig.deviceLocation+".json");
                                 PrintWriter writer = new PrintWriter(configJson.getAbsolutePath(), "UTF-8");
                                 writer.println(json);
-                                //writer.println(jsonSensors);
                                 writer.close();
 
                                 sendConfigurationToServer(configJson, newConfig);
@@ -527,7 +528,9 @@ public class LabelOptionsActivity extends AppCompatActivity {
                 List<String> experiments = new ArrayList<String>();
                 for (JsonElement el : res.get("experiment").getAsJsonArray()) {
                     JsonObject exp = el.getAsJsonObject();
-                    experiments.add(exp.get("experiment").getAsString()+"_"+exp.get("activity").getAsString()+"_"+exp.get("user").getAsString());
+                    if (exp.get("configAvailable") == null || exp.get("configAvailable").getAsBoolean()) {
+                        experiments.add(exp.get("experiment").getAsString()+"_"+exp.get("activity").getAsString()+"_"+exp.get("user").getAsString());
+                    }
                 }
                 runOnUiThread(new Runnable() {
                     @Override
@@ -557,6 +560,7 @@ public class LabelOptionsActivity extends AppCompatActivity {
                         builder.setTitle("Error");
                         builder.setMessage(t.getMessage());
                         builder.show();
+                        mLoadConfigBtn.setEnabled(true);
                     }
                 });
             }
@@ -572,6 +576,10 @@ public class LabelOptionsActivity extends AppCompatActivity {
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
+                            if (mLoadConfigBtn == null) {
+                                mLoadConfigBtn = findViewById(R.id.load_config_button);
+                            }
+                            mLoadConfigBtn.setEnabled(true);
                             JsonObject config = new Gson().fromJson(response.body(), JsonObject.class);
                             if (config.get("main") == null || config.get("sensors") == null ) {
                                 Exception t = new Exception("No configuration found for this experiment!");
@@ -584,14 +592,20 @@ public class LabelOptionsActivity extends AppCompatActivity {
                             updateFields();
                             mLabelConfigViewModel.deleteSensorsFromLabel(mCurrentConfig);
                             JsonArray sensors = new Gson().fromJson(config.get("sensors").getAsJsonArray().toString(), JsonArray.class);
+                            boolean checkGPSPermission = false;
                             for (int i = 0; i < sensors.size(); i++) {
                                 JsonObject sensor = sensors.get(i).getAsJsonObject();
                                 mSelectedSensors.get(i).setFrequency(sensor.get("frequency").getAsInt());
                                 mSelectedSensors.get(i).setSelected(sensor.get("isSelected").getAsBoolean());
+                                if (mSelectedSensors.get(i).getSensor().equalsIgnoreCase("gps")) {
+                                    checkGPSPermission = true;
+                                }
                             }
                             mSensorFrequencyViewAdapter.setSelectedSensors(mSelectedSensors);
                             mLabelConfigViewModel.insertAllSensorFrequencies(getSensorFrequenciesFromSelectedSensorFrequencies(mCurrentConfig.label));
-
+                            if (checkGPSPermission) {
+                                mSensorFrequencyViewAdapter.checkGPSPermission();
+                            }
                         }
                     });
                 }
@@ -606,12 +620,13 @@ public class LabelOptionsActivity extends AppCompatActivity {
                             builder.setTitle("Error");
                             builder.setMessage(t.getMessage());
                             builder.show();
+                            mLoadConfigBtn.setEnabled(true);
                         }
                     });
                 }
             });
         } catch (Exception e) {
-
+            e.printStackTrace();
         }
     }
 
@@ -687,18 +702,8 @@ public class LabelOptionsActivity extends AppCompatActivity {
         public Dialog onCreateDialog(@Nullable Bundle savedInstanceState) {
             AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
             builder.setMessage(R.string.save_config_on_server_confirmation)
-                    .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            mListener.onConfirmClick();
-                        }
-                    })
-                    .setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            mListener.onNegativeConfirm();
-                        }
-                    });
+                    .setPositiveButton(R.string.yes, (dialog, which) -> mListener.onConfirmClick())
+                    .setNegativeButton(R.string.no, (dialog, which) -> mListener.onNegativeConfirm());
 
             return builder.create();
         }

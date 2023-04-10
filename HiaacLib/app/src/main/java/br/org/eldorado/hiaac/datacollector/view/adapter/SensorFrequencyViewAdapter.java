@@ -12,6 +12,7 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.Spinner;
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
@@ -118,6 +119,9 @@ public class SensorFrequencyViewAdapter extends RecyclerView.Adapter<SensorFrequ
                 handleCheckBox(holder, selectedSensorFrequency, frequencyContainer);
             }
         });
+        if (checkBox.getText().equals("GPS")) {
+            gpsHolder = holder;
+        }
     }
 
     private int getFrequencySpinnerPositionForSelected(SensorFrequencyViewAdapter.SelectedSensorFrequency selectedSensorFrequency) {
@@ -151,28 +155,8 @@ public class SensorFrequencyViewAdapter extends RecyclerView.Adapter<SensorFrequ
     private void handleCheckBox(ViewHolder holder, SelectedSensorFrequency selectedSensorFrequency, AnimatedLinearLayout frequencyContainer) {
         if (GPS.TAG.equals(holder.getSelectSensorCheckBox().getText())) {
             // Check if we have GPS permission
-            gpsHolder = holder;
-            CheckBox gpsCheckBox = holder.getSelectSensorCheckBox();
-            boolean show = ActivityCompat.shouldShowRequestPermissionRationale((Activity)mContext, Manifest.permission.ACCESS_BACKGROUND_LOCATION);
-            if (show) {
-                AlertDialog alert = new AlertDialog.Builder(mContext).setMessage(mContext.getString(R.string.gps_permission_description))
-                        .setCancelable(false)
-                        .setPositiveButton(mContext.getString(R.string.gps_ok), new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                requestGPSPermission();
-                            }
-                        }).setNegativeButton(mContext.getString(R.string.dont_use_gps), new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                updateGPS(PackageManager.PERMISSION_DENIED);
-                            }
-                        }).create();
-                alert.setTitle(mContext.getString(R.string.dialog_alert_title));
-                alert.show();
-            } else {
-                requestGPSPermission();
-            }
+            //gpsHolder = holder;
+            checkGPSPermission();
         } else {
             if (holder.getSelectSensorCheckBox().isChecked()
                     && checkSensorAvailability(selectedSensorFrequency.sensor)) {
@@ -184,6 +168,30 @@ public class SensorFrequencyViewAdapter extends RecyclerView.Adapter<SensorFrequ
                 frequencyContainer.close();
             }
             notifySensorFrequencyChanged();
+        }
+    }
+
+    public void checkGPSPermission() {
+        CheckBox gpsCheckBox = gpsHolder.getSelectSensorCheckBox();
+        boolean show = ActivityCompat.shouldShowRequestPermissionRationale((Activity)mContext, Manifest.permission.ACCESS_BACKGROUND_LOCATION);
+        if (show) {
+            AlertDialog alert = new AlertDialog.Builder(mContext).setMessage(mContext.getString(R.string.gps_permission_description))
+                    .setCancelable(false)
+                    .setPositiveButton(mContext.getString(R.string.gps_ok), new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            requestGPSPermission();
+                        }
+                    }).setNegativeButton(mContext.getString(R.string.dont_use_gps), new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            updateGPS(PackageManager.PERMISSION_DENIED);
+                        }
+                    }).create();
+            alert.setTitle(mContext.getString(R.string.dialog_alert_title));
+            alert.show();
+        } else {
+            requestGPSPermission();
         }
     }
 

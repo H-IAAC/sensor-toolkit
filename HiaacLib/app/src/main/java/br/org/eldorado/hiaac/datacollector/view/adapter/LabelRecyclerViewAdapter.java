@@ -35,10 +35,6 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.attribute.BasicFileAttributes;
-import java.nio.file.attribute.FileAttributeView;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -477,85 +473,7 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
                     dt.setLabelId(labelId);
                     dt.setLabel(label);
                     dt.addSensorList(sensorFrequencyMap.get(label));
-
-                    execService.startExecution(new ExecutionServiceListenerAdapter(dt) {
-                        @Override
-                        public void onRunning(long remainingTime) {
-                            // update clock ui
-                            ((Activity)mContext).runOnUiThread(new Runnable() {
-                                @Override
-                                public void run() {
-                                    String labelTimer = Tools.getFormatedTime((int)remainingTime/1000, Tools.CHRONOMETER);
-                                    holder.getLabelTimer().setText(labelTimer);
-                                }
-                            });
-                        }
-
-                        @Override
-                        public void onStopped() {
-                            // Enable buttons
-                            try {
-                                ((Activity) mContext).runOnUiThread(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        /*execService.stopSelf();
-                                        execService.stopForeground(true);*/
-                                        holder.getEditButton().setEnabled(true);
-                                        holder.getStartButton().setEnabled(true);
-                                        holder.getStopButton().setEnabled(false);
-                                        holder.getLabelTimer().setText(
-                                                Tools.getFormatedTime(labelConfigs.get(holder.getAdapterPosition()).stopTime, Tools.CHRONOMETER));
-
-                                        AlertDialog.Builder timer = new AlertDialog.Builder(mContext);
-                                        AlertDialog createCSVDialog;
-                                        createCSVDialog = timer.create();
-                                        createCSVDialog.setMessage(mContext.getString(R.string.before_create_csv_file));
-                                        createCSVDialog.setCancelable(false);
-                                        createCSVDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
-                                            @Override
-                                            public void onCancel(DialogInterface dialog) {
-                                                sendData(holder, CREATE_CSV_FILE, true);
-                                            }
-                                        });
-                                        CountDownTimer countDown = new CountDownTimer(5000, 1000) {
-                                            @Override
-                                            public void onTick(long timeRemaining) {
-                                            }
-
-                                            @Override
-                                            public void onFinish() {
-                                                /*createCSVDialog.setCancelable(true);
-                                                createCSVDialog.setMessage("OK");*/
-                                                createCSVDialog.dismiss();
-                                                sendData(holder, CREATE_CSV_FILE, true);
-                                            }
-                                        };
-                                        createCSVDialog.show();
-                                        TextView messageView = (TextView) createCSVDialog.findViewById(android.R.id.message);
-                                        messageView.setGravity(Gravity.CENTER);
-                                        messageView.setTextSize(26);
-                                        countDown.start();
-                                        holder.setStarted(false);
-                                    }
-                                });
-                            } catch (WindowManager.BadTokenException e) {
-                                log.e("App is not running");
-                            }
-                        }
-
-                        @Override
-                        public void onStarted() {
-                            // Disable buttons
-                            ((Activity)mContext).runOnUiThread(new Runnable() {
-                                @Override
-                                public void run() {
-                                    holder.getEditButton().setEnabled(false);
-                                    holder.getStartButton().setEnabled(false);
-                                    holder.getStopButton().setEnabled(true);
-                                }
-                            });
-                        }
-                    });
+                    execService.startExecution(new MyExecutionListener(dt, holder));
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -636,10 +554,12 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
                     dt.setLabel(label);
                     dt.addSensorList(sensorFrequencyMap.get(label));
                     if (dt.equals(execService.isRunning())) {
+                        log.d("Experiment already running " + dt.getLabel());
                         holder.getEditButton().setEnabled(false);
                         holder.getStartButton().setEnabled(false);
                         holder.getStopButton().setEnabled(true);
-                        startExecution(holder);
+                        execService.changeExecutionServiceListener(new MyExecutionListener(dt, holder));
+                        //startExecution(holder);
                     } else {
                         sendData(holder, CREATE_CSV_FILE, false);
                     }
@@ -764,6 +684,92 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
 
         public ImageView getDeleteButton() {
             return deleteButton;
+        }
+    }
+
+    private class MyExecutionListener extends ExecutionServiceListenerAdapter {
+
+        private ViewHolder holder;
+        public MyExecutionListener(DataTrack dt, ViewHolder h) {
+            super(dt);
+            this.holder = h;
+        }
+
+        @Override
+        public void onRunning(long remainingTime) {
+            // update clock ui
+            ((Activity)mContext).runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    String labelTimer = Tools.getFormatedTime((int)remainingTime/1000, Tools.CHRONOMETER);
+                    holder.getLabelTimer().setText(labelTimer);
+                }
+            });
+        }
+
+        @Override
+        public void onStopped() {
+            // Enable buttons
+            try {
+                ((Activity) mContext).runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                                        /*execService.stopSelf();
+                                        execService.stopForeground(true);*/
+                        holder.getEditButton().setEnabled(true);
+                        holder.getStartButton().setEnabled(true);
+                        holder.getStopButton().setEnabled(false);
+                        holder.getLabelTimer().setText(
+                                Tools.getFormatedTime(labelConfigs.get(holder.getAdapterPosition()).stopTime, Tools.CHRONOMETER));
+
+                        AlertDialog.Builder timer = new AlertDialog.Builder(mContext);
+                        AlertDialog createCSVDialog;
+                        createCSVDialog = timer.create();
+                        createCSVDialog.setMessage(mContext.getString(R.string.before_create_csv_file));
+                        createCSVDialog.setCancelable(false);
+                        createCSVDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
+                            @Override
+                            public void onCancel(DialogInterface dialog) {
+                                sendData(holder, CREATE_CSV_FILE, true);
+                            }
+                        });
+                        CountDownTimer countDown = new CountDownTimer(5000, 1000) {
+                            @Override
+                            public void onTick(long timeRemaining) {
+                            }
+
+                            @Override
+                            public void onFinish() {
+                                                /*createCSVDialog.setCancelable(true);
+                                                createCSVDialog.setMessage("OK");*/
+                                createCSVDialog.dismiss();
+                                sendData(holder, CREATE_CSV_FILE, true);
+                            }
+                        };
+                        createCSVDialog.show();
+                        TextView messageView = (TextView) createCSVDialog.findViewById(android.R.id.message);
+                        messageView.setGravity(Gravity.CENTER);
+                        messageView.setTextSize(26);
+                        countDown.start();
+                        holder.setStarted(false);
+                    }
+                });
+            } catch (WindowManager.BadTokenException e) {
+                log.e("App is not running");
+            }
+        }
+
+        @Override
+        public void onStarted() {
+            // Disable buttons
+            ((Activity)mContext).runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    holder.getEditButton().setEnabled(false);
+                    holder.getStartButton().setEnabled(false);
+                    holder.getStopButton().setEnabled(true);
+                }
+            });
         }
     }
 }
