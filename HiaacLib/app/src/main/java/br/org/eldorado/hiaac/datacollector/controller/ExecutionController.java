@@ -82,8 +82,9 @@ public class ExecutionController {
                 sensorFrequency.sensor.stopSensor();
                 //labeledDataList.addAll(((MySensorListener)sensorFrequency.sensor.getListener()).getLabeledDataList());
                 if (sensorFrequency.sensor.getListener() != null) {
-                    log.d("Collected data from " + sensorFrequency.sensor.getName() + ": " + ((MySensorListener) sensorFrequency.sensor.getListener()).getCollectedData());
-                    log.d("Invalid data from " + sensorFrequency.sensor.getName() + ": " + ((MySensorListener) sensorFrequency.sensor.getListener()).getInvalidData());
+                    log.d("Total data collected from " + sensorFrequency.sensor.getName() + ": " + ((MySensorListener) sensorFrequency.sensor.getListener()).getTotalData());
+                    log.d("\tValid data from " + sensorFrequency.sensor.getName() + ": " + ((MySensorListener) sensorFrequency.sensor.getListener()).getCollectedData());
+                    log.d("\tInvalid data from " + sensorFrequency.sensor.getName() + ": " + ((MySensorListener) sensorFrequency.sensor.getListener()).getInvalidData());
                     dbView.insertLabeledData(((MySensorListener) sensorFrequency.sensor.getListener()).getLabeledDataList());
                     totalData += ((MySensorListener) sensorFrequency.sensor.getListener()).getCollectedData();
                 }
@@ -93,7 +94,7 @@ public class ExecutionController {
                 service.stopSelf();
                 service = null;
             }
-            log.d("Total data collected: " + totalData);
+            log.d("Total data collected for exp " + dataTrack.getLabel() + ": " + totalData);
             //dbView.insertLabeledData(labeledDataList);
             listener.onStopped();
         }
@@ -141,9 +142,11 @@ public class ExecutionController {
 
         private DataTrack dataTrack;
         private LinkedList<LabeledData> labeledData;
-        private long collectedData = 0;
         private long startTime, endTime;
+        private long collectedData = 0;
         private long invalidData = 0;
+        // Valid + Invalid data
+        private long totalData = 0;
 
         public MySensorListener(DataTrack data) {
             this.dataTrack = data;
@@ -157,6 +160,10 @@ public class ExecutionController {
 
         public long getInvalidData() {
             return invalidData;
+        }
+
+        public long getTotalData() {
+            return totalData;
         }
 
         public long getCollectedData() {
@@ -177,6 +184,7 @@ public class ExecutionController {
         @Override
         public void onSensorChanged(SensorBase sensor) {
             try {
+                totalData++;
                 if (sensor.isValidValues()) {
                     //log.d(dataTrack.getLabel() + " Active Threads: " + Thread.activeCount() + "  - " + num++ + " - " + sensor.toString());
                     LabeledData data = new LabeledData(dataTrack.getLabel(), sensor, dataTrack.getDeviceLocation(), dataTrack.getUserId(), dataTrack.getActivity(), dataTrack.getLabelId());
@@ -184,12 +192,13 @@ public class ExecutionController {
                     collectedData++;
 
                     if (labeledData.size() > 50000) {
+                        log.d("Collected data so far for " + dataTrack.getLabel() + " - " + sensor.getName() + "\n\tValid: " + collectedData + "\n\tInvalid: " + invalidData);
                         dbView.insertLabeledData((LinkedList<LabeledData>)labeledData.clone());
                         labeledData.clear();
                     }
                 } else {
                     invalidData++;
-                    log.d("Invalid Data Collected\n" + sensor.toString());
+                    //log.d("Invalid Data Collected\n" + sensor.toString());
                 }
             } catch (Exception e) {
                 if (labeledData.size() > 0) {

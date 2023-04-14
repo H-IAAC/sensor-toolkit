@@ -237,7 +237,8 @@ public class FirebaseUploadController {
                         data.get(0).getLabel() + "_" +
                         data.get(0).getActivity() + "_" +
                         data.get(0).getDevicePosition() + "__" +
-                        df.format(new Date(System.currentTimeMillis())) +
+                        df.format(new Date(data.get(0).getTimestamp())) +
+                        //df.format(new Date(System.currentTimeMillis())) +
                         ".csv");
         appendDataToCsvFile(csvFile, data, 0);
         return csvFile;

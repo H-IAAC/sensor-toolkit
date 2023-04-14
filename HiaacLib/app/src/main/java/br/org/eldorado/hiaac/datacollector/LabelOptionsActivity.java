@@ -28,6 +28,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.view.menu.ActionMenuItemView;
 import androidx.fragment.app.DialogFragment;
+import androidx.lifecycle.LifecycleOwner;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -91,6 +92,7 @@ public class LabelOptionsActivity extends AppCompatActivity {
             10 * MINUTE,
             30 * MINUTE,
             1 * HOUR,
+            6 * HOUR,
             12 * HOUR,
             24 * HOUR,
             3 * DAY,
@@ -428,6 +430,7 @@ public class LabelOptionsActivity extends AppCompatActivity {
         String deviceLocation = mDeviceLocation.getSelectedItem().toString();
         int stopTime = stopTimeOptions[spinnerPosition];
         LabelConfig newConfig = new LabelConfig(label, stopTime, deviceLocation, userId, mSendFilesToServer.isChecked(), activity, scheduledTime);
+
         if (mIsUpdating && mCurrentConfig != null) {
             if (label.equals(mCurrentConfig.label)) {
                 mLabelConfigViewModel.updateConfig(newConfig);
@@ -435,9 +438,30 @@ public class LabelOptionsActivity extends AppCompatActivity {
                 mLabelConfigViewModel.deleteConfig(mCurrentConfig);
                 mLabelConfigViewModel.insertNewConfig(newConfig);
             }
+            finishSaveProcess(newConfig, newConfig.label);
         } else {
-            mLabelConfigViewModel.insertNewConfig(newConfig);
+            obs = new Observer<LabelConfig>() {
+                @Override
+                public void onChanged(LabelConfig labelConfig) {
+                    if (labelConfig == null) {
+                        mLabelConfigViewModel.insertNewConfig(newConfig);
+                    } else {
+                        mLabelConfigViewModel.updateConfig(newConfig);
+                    }
+                    mLabelConfigViewModel.getLabelConfigById(newConfig.label).removeObserver(obs);
+                    finishSaveProcess(newConfig, newConfig.label);
+                }
+            };
+            mLabelConfigViewModel.getLabelConfigById(newConfig.label).observe(this, obs);
         }
+
+    }
+
+    private Observer<LabelConfig> obs = null;
+    private boolean isFinishing = false;
+    private void finishSaveProcess(LabelConfig newConfig, String label) {
+        if (isFinishing) return;
+        isFinishing = true;
         if (mSensorFrequencies != null) {
             mLabelConfigViewModel.deleteAllSensorFrequencies(mSensorFrequencies);
         }
@@ -471,7 +495,7 @@ public class LabelOptionsActivity extends AppCompatActivity {
                                                 File.separator +
                                                 FOLDER_NAME +
                                                 File.separator +
-                                                newConfig.userId+"_"+newConfig.label+"_"+newConfig.activity+"_"+newConfig.deviceLocation+".json");
+                                                newConfig.userId+"_"+newConfig.label+"_"+newConfig.activity+".json");
                                 PrintWriter writer = new PrintWriter(configJson.getAbsolutePath(), "UTF-8");
                                 writer.println(json);
                                 writer.close();

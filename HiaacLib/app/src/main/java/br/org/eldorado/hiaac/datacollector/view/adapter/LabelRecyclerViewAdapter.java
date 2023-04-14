@@ -409,11 +409,16 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
         });
     }
 
-    private synchronized void updateFilesUpdated(ViewHolder holder) {
+    private synchronized void updateFilesUpdated(ViewHolder holder, String errorMessage) {
         filesToUpload--;
         if (filesToUpload <= 0) {
             AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
-            builder.setTitle("Success");
+            if (errorMessage != null) {
+                builder.setTitle("Error");
+                builder.setMessage(errorMessage);
+            } else {
+                builder.setTitle("Success");
+            }
             builder.setIcon(R.drawable.ic_baseline_success);
             AlertDialog dl = builder.create();
             dl.show();
@@ -425,12 +430,17 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
         return new Callback<StatusResponse>() {
             @Override
             public void onResponse(Call<StatusResponse> call, Response<StatusResponse> response) {
-                updateFilesUpdated(holder);
+                if (response.body().getStatus().equals("200")) {
+                    updateFilesUpdated(holder, null);
+                } else {
+                    onFailure(call, new Exception("File: " + file.getName() + " -\n" + response.body().toString()));
+                }
             }
 
             @Override
             public void onFailure(Call<StatusResponse> call, Throwable t) {
-                updateFilesUpdated(holder);
+                filesToUpload = 0;
+                updateFilesUpdated(holder, t.getMessage());
                 t.printStackTrace();
                 log.d("FAIL " + t);
                 call.cancel();
