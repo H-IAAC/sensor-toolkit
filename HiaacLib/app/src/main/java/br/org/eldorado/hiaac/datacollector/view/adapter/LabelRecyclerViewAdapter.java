@@ -430,7 +430,7 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
         return new Callback<StatusResponse>() {
             @Override
             public void onResponse(Call<StatusResponse> call, Response<StatusResponse> response) {
-                if (response.body().getStatus().equals("200")) {
+                if (response.body().getStatus().equals("200") || response.body().getStatus().equalsIgnoreCase("success")) {
                     updateFilesUpdated(holder, null);
                 } else {
                     onFailure(call, new Exception("File: " + file.getName() + " -\n" + response.body().toString()));
@@ -492,7 +492,7 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
             @Override
             public void onServiceDisconnected(ComponentName name) {}
         };
-
+        log.d("startExecution - disabling start button");
         holder.getStartButton().setEnabled(false);
 
         //execService.setRemoteTime(System.currentTimeMillis() + (1000*60*60));
@@ -775,6 +775,7 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
             ((Activity)mContext).runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
+                    log.d("MyExecutionListener - disbling buttons");
                     holder.getEditButton().setEnabled(false);
                     holder.getStartButton().setEnabled(false);
                     holder.getStopButton().setEnabled(true);

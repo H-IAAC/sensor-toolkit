@@ -82,7 +82,7 @@ public class SensorFrequencyViewAdapter extends RecyclerView.Adapter<SensorFrequ
         ArrayAdapter<String> adapter = new ArrayAdapter<>(frequenciesSpinner.getContext(),
                 R.layout.custom_spinner, list);
         frequenciesSpinner.setAdapter(adapter);
-        if (selectedSensorFrequency.isSelected) {
+        if (selectedSensorFrequency.isSelected()) {
             frequencyContainer.expand(60);
             checkBox.setChecked(true);
         }
@@ -111,7 +111,7 @@ public class SensorFrequencyViewAdapter extends RecyclerView.Adapter<SensorFrequ
             public void onNothingSelected(AdapterView<?> parent) {
             }
         });
-
+        checkBox.setChecked(selectedSensorFrequency.isSelected());
         checkBox.setText(selectedSensorFrequency.sensor);
         checkBox.setOnClickListener(new View.OnClickListener() {
             @Override

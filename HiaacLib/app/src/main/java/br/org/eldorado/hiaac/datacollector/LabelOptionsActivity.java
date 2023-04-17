@@ -388,7 +388,7 @@ public class LabelOptionsActivity extends AppCompatActivity {
                 sensorFrequencies.add(sensorFrequency);
             }
         }
-
+        log.d("LISTA DE SENSORES " + sensorFrequencies);
         return sensorFrequencies;
     }
 
@@ -423,6 +423,23 @@ public class LabelOptionsActivity extends AppCompatActivity {
         if (userId.isEmpty()) {
             Toast.makeText(getApplicationContext(),
                     R.string.user_id_empty, Toast.LENGTH_LONG).show();
+            return;
+        }
+        int selectedSensors = 0;
+        for (SensorFrequencyViewAdapter.SelectedSensorFrequency mSensor : mSelectedSensors) {
+            if (mSensor.isSelected()) {
+                selectedSensors++;
+                if (mSensor.getFrequency() == 0) {
+                    Toast.makeText(getApplicationContext(),
+                            getString(R.string.frequency_not_set, mSensor.getSensor()), Toast.LENGTH_LONG).show();
+                    return;
+                }
+            }
+        }
+
+        if (selectedSensors == 0) {
+            Toast.makeText(getApplicationContext(),
+                    R.string.any_sensor_selected, Toast.LENGTH_LONG).show();
             return;
         }
 
@@ -465,9 +482,13 @@ public class LabelOptionsActivity extends AppCompatActivity {
         if (mSensorFrequencies != null) {
             mLabelConfigViewModel.deleteAllSensorFrequencies(mSensorFrequencies);
         }
+        try {
+            Thread.sleep(100);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         mLabelConfigViewModel.insertAllSensorFrequencies(
-                getSensorFrequenciesFromSelectedSensorFrequencies(label)
-        );
+                getSensorFrequenciesFromSelectedSensorFrequencies(label));
 
         if (isConfigLoaded) {
             closeActivity();
@@ -550,6 +571,7 @@ public class LabelOptionsActivity extends AppCompatActivity {
             public void onResponse(Call<JsonObject> call, Response<JsonObject> response) {
                 JsonObject res = new Gson().fromJson(response.body(), JsonObject.class);
                 List<String> experiments = new ArrayList<String>();
+
                 for (JsonElement el : res.get("experiment").getAsJsonArray()) {
                     JsonObject exp = el.getAsJsonObject();
                     if (exp.get("configAvailable") == null || exp.get("configAvailable").getAsBoolean()) {
@@ -619,12 +641,20 @@ public class LabelOptionsActivity extends AppCompatActivity {
                             boolean checkGPSPermission = false;
                             for (int i = 0; i < sensors.size(); i++) {
                                 JsonObject sensor = sensors.get(i).getAsJsonObject();
-                                mSelectedSensors.get(i).setFrequency(sensor.get("frequency").getAsInt());
-                                mSelectedSensors.get(i).setSelected(sensor.get("isSelected").getAsBoolean());
-                                if (mSelectedSensors.get(i).getSensor().equalsIgnoreCase("gps")) {
-                                    checkGPSPermission = true;
+                                if (sensor.get("isSelected").getAsBoolean()) {
+                                    for (SensorFrequencyViewAdapter.SelectedSensorFrequency mSensor : mSelectedSensors) {
+                                        if (mSensor.getSensor().equalsIgnoreCase(sensor.get("sensor").getAsString())) {
+                                            mSensor.setFrequency(sensor.get("frequency").getAsInt());
+                                            mSensor.setSelected(sensor.get("isSelected").getAsBoolean());
+                                            if (mSensor.getSensor().equalsIgnoreCase("gps")) {
+                                                checkGPSPermission = true;
+                                            }
+                                            break;
+                                        }
+                                    }
                                 }
                             }
+                            //log.d(sensors.toString());
                             mSensorFrequencyViewAdapter.setSelectedSensors(mSelectedSensors);
                             mLabelConfigViewModel.insertAllSensorFrequencies(getSensorFrequenciesFromSelectedSensorFrequencies(mCurrentConfig.label));
                             if (checkGPSPermission) {

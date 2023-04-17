@@ -54,6 +54,8 @@
     <string name="label_title_empty">Experiment tile is empty</string>
     <string name="activity_title_empty">Activity is empty</string>
     <string name="user_id_empty">User ID is empty</string>
+    <string name="frequency_not_set">The frequency of %1$s was not set!</string>
+    <string name="any_sensor_selected">You should select at least 1 sensor</string>
     <string name="schedule_time">Schedule:</string>
     <string name="schedule_time_hint">Automatic start time</string>
 
