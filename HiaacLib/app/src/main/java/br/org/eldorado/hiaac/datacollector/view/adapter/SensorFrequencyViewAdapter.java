@@ -196,10 +196,11 @@ public class SensorFrequencyViewAdapter extends RecyclerView.Adapter<SensorFrequ
     }
 
     public boolean checkSensorAvailability(String sensorName) {
+        if (sensorName.equalsIgnoreCase("gps")) return true;
         boolean isAvailable = true;
         if (!SensorSDK.getInstance().checkSensorAvailability(Tools.getSensorFromTitleName(sensorName).getType())) {
             AlertDialog alert = new AlertDialog.Builder(mContext)
-                    .setMessage(mContext.getString(R.string.sensor_not_available))
+                    .setMessage(mContext.getString(R.string.sensor_not_available, sensorName))
                     .setCancelable(true)
                     .create();
             alert.setTitle(mContext.getString(R.string.dialog_alert_title));
