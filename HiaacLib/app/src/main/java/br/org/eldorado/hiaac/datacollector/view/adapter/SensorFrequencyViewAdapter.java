@@ -195,7 +195,7 @@ public class SensorFrequencyViewAdapter extends RecyclerView.Adapter<SensorFrequ
         }
     }
 
-    private boolean checkSensorAvailability(String sensorName) {
+    public boolean checkSensorAvailability(String sensorName) {
         boolean isAvailable = true;
         if (!SensorSDK.getInstance().checkSensorAvailability(Tools.getSensorFromTitleName(sensorName).getType())) {
             AlertDialog alert = new AlertDialog.Builder(mContext)

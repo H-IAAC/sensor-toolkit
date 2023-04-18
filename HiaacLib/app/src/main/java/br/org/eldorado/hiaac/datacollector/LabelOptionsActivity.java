@@ -641,7 +641,7 @@ public class LabelOptionsActivity extends AppCompatActivity {
                             boolean checkGPSPermission = false;
                             for (int i = 0; i < sensors.size(); i++) {
                                 JsonObject sensor = sensors.get(i).getAsJsonObject();
-                                if (sensor.get("isSelected").getAsBoolean()) {
+                                if (sensor.get("isSelected").getAsBoolean() && mSensorFrequencyViewAdapter.checkSensorAvailability(sensor.get("sensor").getAsString())) {
                                     for (SensorFrequencyViewAdapter.SelectedSensorFrequency mSensor : mSelectedSensors) {
                                         if (mSensor.getSensor().equalsIgnoreCase(sensor.get("sensor").getAsString())) {
                                             mSensor.setFrequency(sensor.get("frequency").getAsInt());

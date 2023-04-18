@@ -59,7 +59,7 @@ public class SensorBase implements Parcelable, Cloneable {
                 zeros++;
             }
         }
-        return zeros != values.length;
+        return (zeros != values.length) || type == TYPE_PROXIMITY;
     }
 
     public void setFrequency(int f) {
