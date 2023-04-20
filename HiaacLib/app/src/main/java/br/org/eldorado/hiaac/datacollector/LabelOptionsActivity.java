@@ -91,6 +91,7 @@ public class LabelOptionsActivity extends AppCompatActivity {
             10 * MINUTE,
             30 * MINUTE,
             1 * HOUR,
+            6 * HOUR,
             12 * HOUR,
             24 * HOUR,
             3 * DAY,
@@ -264,7 +265,6 @@ public class LabelOptionsActivity extends AppCompatActivity {
             onSaveButtonClick();
             return true;
         } else if (item.getItemId() == R.id.load_config_button) {
-            item.setEnabled(false);
             getAllExperiments();
         }
         return super.onOptionsItemSelected(item);
@@ -279,9 +279,10 @@ public class LabelOptionsActivity extends AppCompatActivity {
     private void deleteCurrentConfig() {
         if (mCurrentConfig != null) {
             mLabelConfigViewModel.deleteConfig(mCurrentConfig);
-            mLabelConfigViewModel.deleteSensorsFromLabel(mCurrentConfig);
             if (mSensorFrequencies != null) {
                 mLabelConfigViewModel.deleteAllSensorFrequencies(mSensorFrequencies);
+            } else {
+                mLabelConfigViewModel.deleteSensorsFromLabel(mCurrentConfig);
             }
             closeActivity();
         }
@@ -386,7 +387,7 @@ public class LabelOptionsActivity extends AppCompatActivity {
                 sensorFrequencies.add(sensorFrequency);
             }
         }
-
+        log.d("LISTA DE SENSORES " + sensorFrequencies);
         return sensorFrequencies;
     }
 
@@ -423,11 +424,29 @@ public class LabelOptionsActivity extends AppCompatActivity {
                     R.string.user_id_empty, Toast.LENGTH_LONG).show();
             return;
         }
+        int selectedSensors = 0;
+        for (SensorFrequencyViewAdapter.SelectedSensorFrequency mSensor : mSelectedSensors) {
+            if (mSensor.isSelected()) {
+                selectedSensors++;
+                if (mSensor.getFrequency() == 0) {
+                    Toast.makeText(getApplicationContext(),
+                            getString(R.string.frequency_not_set, mSensor.getSensor()), Toast.LENGTH_LONG).show();
+                    return;
+                }
+            }
+        }
+
+        if (selectedSensors == 0) {
+            Toast.makeText(getApplicationContext(),
+                    R.string.any_sensor_selected, Toast.LENGTH_LONG).show();
+            return;
+        }
 
         int spinnerPosition = mStopTimeSpinner.getSelectedItemPosition();
         String deviceLocation = mDeviceLocation.getSelectedItem().toString();
         int stopTime = stopTimeOptions[spinnerPosition];
         LabelConfig newConfig = new LabelConfig(label, stopTime, deviceLocation, userId, mSendFilesToServer.isChecked(), activity, scheduledTime);
+
         if (mIsUpdating && mCurrentConfig != null) {
             if (label.equals(mCurrentConfig.label)) {
                 mLabelConfigViewModel.updateConfig(newConfig);
@@ -435,15 +454,32 @@ public class LabelOptionsActivity extends AppCompatActivity {
                 mLabelConfigViewModel.deleteConfig(mCurrentConfig);
                 mLabelConfigViewModel.insertNewConfig(newConfig);
             }
+            finishSaveProcess(newConfig, newConfig.label);
         } else {
-            mLabelConfigViewModel.insertNewConfig(newConfig);
+            obs = new Observer<LabelConfig>() {
+                @Override
+                public void onChanged(LabelConfig labelConfig) {
+                    if (labelConfig == null) {
+                        mLabelConfigViewModel.insertNewConfig(newConfig);
+                    } else {
+                        mLabelConfigViewModel.updateConfig(newConfig);
+                    }
+                    mLabelConfigViewModel.getLabelConfigById(newConfig.label).removeObserver(obs);
+                    finishSaveProcess(newConfig, newConfig.label);
+                }
+            };
+            mLabelConfigViewModel.getLabelConfigById(newConfig.label).observe(this, obs);
         }
-        if (mSensorFrequencies != null) {
-            mLabelConfigViewModel.deleteAllSensorFrequencies(mSensorFrequencies);
-        }
-        mLabelConfigViewModel.insertAllSensorFrequencies(
-                getSensorFrequenciesFromSelectedSensorFrequencies(label)
-        );
+
+    }
+
+    private Observer<LabelConfig> obs = null;
+    private boolean isFinishing = false;
+    private void finishSaveProcess(LabelConfig newConfig, String label) {
+        if (isFinishing) return;
+        isFinishing = true;
+
+        mLabelConfigViewModel.insertAllSensorFrequencies(getSensorFrequenciesFromSelectedSensorFrequencies(label));
 
         if (isConfigLoaded) {
             closeActivity();
@@ -471,7 +507,7 @@ public class LabelOptionsActivity extends AppCompatActivity {
                                                 File.separator +
                                                 FOLDER_NAME +
                                                 File.separator +
-                                                newConfig.userId+"_"+newConfig.label+"_"+newConfig.activity+"_"+newConfig.deviceLocation+".json");
+                                                newConfig.userId+"_"+newConfig.label+"_"+newConfig.activity+".json");
                                 PrintWriter writer = new PrintWriter(configJson.getAbsolutePath(), "UTF-8");
                                 writer.println(json);
                                 writer.close();
@@ -518,6 +554,11 @@ public class LabelOptionsActivity extends AppCompatActivity {
     }
 
     private void getAllExperiments() {
+        log.d("getAllExperiments from server");
+        if (mLoadConfigBtn == null) {
+            mLoadConfigBtn = findViewById(R.id.load_config_button);
+        }
+        mLoadConfigBtn.setEnabled(false);
         ClientAPI api = new ClientAPI();
         ApiInterface apiInterface = api.getClient(Tools.SERVER_HOST, Tools.SERVER_PORT).create(ApiInterface.class);
         Call<JsonObject> call = apiInterface.getAllExperiments();
@@ -526,6 +567,7 @@ public class LabelOptionsActivity extends AppCompatActivity {
             public void onResponse(Call<JsonObject> call, Response<JsonObject> response) {
                 JsonObject res = new Gson().fromJson(response.body(), JsonObject.class);
                 List<String> experiments = new ArrayList<String>();
+
                 for (JsonElement el : res.get("experiment").getAsJsonArray()) {
                     JsonObject exp = el.getAsJsonObject();
                     if (exp.get("configAvailable") == null || exp.get("configAvailable").getAsBoolean()) {
@@ -595,12 +637,20 @@ public class LabelOptionsActivity extends AppCompatActivity {
                             boolean checkGPSPermission = false;
                             for (int i = 0; i < sensors.size(); i++) {
                                 JsonObject sensor = sensors.get(i).getAsJsonObject();
-                                mSelectedSensors.get(i).setFrequency(sensor.get("frequency").getAsInt());
-                                mSelectedSensors.get(i).setSelected(sensor.get("isSelected").getAsBoolean());
-                                if (mSelectedSensors.get(i).getSensor().equalsIgnoreCase("gps")) {
-                                    checkGPSPermission = true;
+                                if (sensor.get("isSelected").getAsBoolean() && mSensorFrequencyViewAdapter.checkSensorAvailability(sensor.get("sensor").getAsString())) {
+                                    for (SensorFrequencyViewAdapter.SelectedSensorFrequency mSensor : mSelectedSensors) {
+                                        if (mSensor.getSensor().equalsIgnoreCase(sensor.get("sensor").getAsString())) {
+                                            mSensor.setFrequency(sensor.get("frequency").getAsInt());
+                                            mSensor.setSelected(sensor.get("isSelected").getAsBoolean());
+                                            if (mSensor.getSensor().equalsIgnoreCase("gps")) {
+                                                checkGPSPermission = true;
+                                            }
+                                            break;
+                                        }
+                                    }
                                 }
                             }
+                            //log.d(sensors.toString());
                             mSensorFrequencyViewAdapter.setSelectedSensors(mSelectedSensors);
                             mLabelConfigViewModel.insertAllSensorFrequencies(getSensorFrequenciesFromSelectedSensorFrequencies(mCurrentConfig.label));
                             if (checkGPSPermission) {
@@ -620,6 +670,9 @@ public class LabelOptionsActivity extends AppCompatActivity {
                             builder.setTitle("Error");
                             builder.setMessage(t.getMessage());
                             builder.show();
+                            if (mLoadConfigBtn == null) {
+                                mLoadConfigBtn = findViewById(R.id.load_config_button);
+                            }
                             mLoadConfigBtn.setEnabled(true);
                         }
                     });

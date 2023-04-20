@@ -7,7 +7,7 @@ import androidx.room.Room;
 import androidx.room.RoomDatabase;
 import androidx.room.TypeConverters;
 
-@Database(entities = {LabelConfig.class, SensorFrequency.class, LabeledData.class}, version = 1, exportSchema = false)
+@Database(entities = {LabelConfig.class, SensorFrequency.class, LabeledData.class, ExperimentStatistics.class}, version = 3, exportSchema = false)
 @TypeConverters({SensorConverters.class})
 public abstract class AppDatabase extends RoomDatabase {
     private static final String DATABASE_NAME = "main_db";

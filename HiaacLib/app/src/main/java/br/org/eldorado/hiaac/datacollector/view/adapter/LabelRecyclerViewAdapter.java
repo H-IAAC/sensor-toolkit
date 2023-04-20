@@ -188,6 +188,7 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
                                     public void onChanged(LabelConfig labelConfig) {
                                         try {
                                             if (deleteButtonClicked && labelConfig != null) {
+                                                deleteButtonClicked = false;
                                                 mLabelConfigViewModel.deleteConfig(labelConfig);
                                                 mLabelConfigViewModel.deleteSensorsFromLabel(labelConfig);
                                                 deleteLabelDir(labelConfig.label);
@@ -391,12 +392,11 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
         MultipartBody.Part experimentPart =
                 MultipartBody.Part.createFormData("experiment", labelConfigs.get(holder.getAdapterPosition()).label);
         MultipartBody.Part namePart =
-                MultipartBody.Part.createFormData("name", labelConfigs.get(holder.getAdapterPosition()).activity);
+                MultipartBody.Part.createFormData("activity", labelConfigs.get(holder.getAdapterPosition()).activity);
         MultipartBody.Part subjectPart =
                 MultipartBody.Part.createFormData("subject", labelConfigs.get(holder.getAdapterPosition()).userId);
         filesToUpload = files.size();
         files.forEach((file) -> {
-            //if (file.getName().equals(holder.get))
             MultipartBody.Part filePart = filePart = MultipartBody.Part.createFormData(
                     "file", file.getName(),
                     RequestBody.create(MediaType.parse("multipart/form-data"), file));
@@ -409,11 +409,16 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
         });
     }
 
-    private synchronized void updateFilesUpdated(ViewHolder holder) {
+    private synchronized void updateFilesUpdated(ViewHolder holder, String errorMessage) {
         filesToUpload--;
         if (filesToUpload <= 0) {
             AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
-            builder.setTitle("Success");
+            if (errorMessage != null) {
+                builder.setTitle("Error");
+                builder.setMessage(errorMessage);
+            } else {
+                builder.setTitle("Success");
+            }
             builder.setIcon(R.drawable.ic_baseline_success);
             AlertDialog dl = builder.create();
             dl.show();
@@ -425,12 +430,17 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
         return new Callback<StatusResponse>() {
             @Override
             public void onResponse(Call<StatusResponse> call, Response<StatusResponse> response) {
-                updateFilesUpdated(holder);
+                if (response.body().getStatus().equals("200") || response.body().getStatus().equalsIgnoreCase("success")) {
+                    updateFilesUpdated(holder, null);
+                } else {
+                    onFailure(call, new Exception("File: " + file.getName() + " -\n" + response.body().toString()));
+                }
             }
 
             @Override
             public void onFailure(Call<StatusResponse> call, Throwable t) {
-                updateFilesUpdated(holder);
+                filesToUpload = 0;
+                updateFilesUpdated(holder, t.getMessage());
                 t.printStackTrace();
                 log.d("FAIL " + t);
                 call.cancel();
@@ -482,7 +492,7 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
             @Override
             public void onServiceDisconnected(ComponentName name) {}
         };
-
+        log.d("startExecution - disabling start button");
         holder.getStartButton().setEnabled(false);
 
         //execService.setRemoteTime(System.currentTimeMillis() + (1000*60*60));
@@ -696,6 +706,24 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
         }
 
         @Override
+        public void onError(String message) {
+            ((Activity)mContext).runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    log.d("MyExecutionListener - onError");
+                    holder.getEditButton().setEnabled(true);
+                    holder.getStartButton().setEnabled(true);
+                    holder.getStopButton().setEnabled(true);
+                    AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
+                    builder.setTitle("Error");
+                    builder.setMessage(message);
+                    AlertDialog dl = builder.create();
+                    dl.show();
+                }
+            });
+        }
+
+        @Override
         public void onRunning(long remainingTime) {
             // update clock ui
             ((Activity)mContext).runOnUiThread(new Runnable() {
@@ -765,6 +793,7 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
             ((Activity)mContext).runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
+                    log.d("MyExecutionListener - disbling buttons");
                     holder.getEditButton().setEnabled(false);
                     holder.getStartButton().setEnabled(false);
                     holder.getStopButton().setEnabled(true);

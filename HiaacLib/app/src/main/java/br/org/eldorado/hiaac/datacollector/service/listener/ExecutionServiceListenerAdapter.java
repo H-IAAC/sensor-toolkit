@@ -22,4 +22,7 @@ public class ExecutionServiceListenerAdapter implements ExecutionServiceListener
 
     @Override
     public void onStarted() {}
+
+    @Override
+    public void onError(String message){}
 }

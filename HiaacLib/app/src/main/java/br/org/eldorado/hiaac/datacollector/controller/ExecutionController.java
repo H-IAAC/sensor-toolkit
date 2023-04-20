@@ -3,9 +3,11 @@ package br.org.eldorado.hiaac.datacollector.controller;
 import android.os.CountDownTimer;
 import androidx.lifecycle.ViewModelProvider;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
+import br.org.eldorado.hiaac.datacollector.data.ExperimentStatistics;
 import br.org.eldorado.hiaac.datacollector.data.LabelConfigViewModel;
 import br.org.eldorado.hiaac.datacollector.data.LabeledData;
 import br.org.eldorado.hiaac.datacollector.data.SensorFrequency;
@@ -63,6 +65,8 @@ public class ExecutionController {
                 listener.onStarted();
             }
         } catch (Exception e) {
+            isRunning = false;
+            listener.onError(e.getMessage());
             e.printStackTrace();
         }
     }
@@ -78,22 +82,36 @@ public class ExecutionController {
             isRunning = false;
             timer.cancel();
             long totalData = 0;
+            List<ExperimentStatistics> statistics = new ArrayList<ExperimentStatistics>();
             for (SensorFrequency sensorFrequency : dataTrack.getSensorList()) {
                 sensorFrequency.sensor.stopSensor();
                 //labeledDataList.addAll(((MySensorListener)sensorFrequency.sensor.getListener()).getLabeledDataList());
                 if (sensorFrequency.sensor.getListener() != null) {
-                    log.d("Collected data from " + sensorFrequency.sensor.getName() + ": " + ((MySensorListener) sensorFrequency.sensor.getListener()).getCollectedData());
-                    log.d("Invalid data from " + sensorFrequency.sensor.getName() + ": " + ((MySensorListener) sensorFrequency.sensor.getListener()).getInvalidData());
+                    ExperimentStatistics st = new ExperimentStatistics();
+                    st.setExperimentId(dataTrack.getLabelId());
+                    st.setSensorName(sensorFrequency.sensor.getName());
+                    st.setSensorFrequency(sensorFrequency.sensor.getFrequency());
+                    st.setStartTime(((MySensorListener) sensorFrequency.sensor.getListener()).getStartTime());
+                    st.setEndTime(((MySensorListener) sensorFrequency.sensor.getListener()).getEndTime());
+                    st.setCollectedData(((MySensorListener) sensorFrequency.sensor.getListener()).getCollectedData());
+                    st.setInvalidData(((MySensorListener) sensorFrequency.sensor.getListener()).getInvalidData());
+                    st.setTimestampAverage(0);
+                    statistics.add(st);
+                    log.d("Total data collected from " + sensorFrequency.sensor.getName() + ": " + ((MySensorListener) sensorFrequency.sensor.getListener()).getTotalData());
+                    log.d("\tValid data from " + sensorFrequency.sensor.getName() + ": " + ((MySensorListener) sensorFrequency.sensor.getListener()).getCollectedData());
+                    log.d("\tInvalid data from " + sensorFrequency.sensor.getName() + ": " + ((MySensorListener) sensorFrequency.sensor.getListener()).getInvalidData());
                     dbView.insertLabeledData(((MySensorListener) sensorFrequency.sensor.getListener()).getLabeledDataList());
                     totalData += ((MySensorListener) sensorFrequency.sensor.getListener()).getCollectedData();
                 }
             }
+            dbView.deleteExperimentsStatistics(dataTrack.getLabelId());
+            dbView.insertExperimentStatistics(statistics);
             if (service != null) {
                 service.stopForeground(true);
                 service.stopSelf();
                 service = null;
             }
-            log.d("Total data collected: " + totalData);
+            log.d("Total data collected for exp " + dataTrack.getLabel() + ": " + totalData);
             //dbView.insertLabeledData(labeledDataList);
             listener.onStopped();
         }
@@ -141,9 +159,11 @@ public class ExecutionController {
 
         private DataTrack dataTrack;
         private LinkedList<LabeledData> labeledData;
+        private long startTime, endTime, timestampAverage;
         private long collectedData = 0;
-        private long startTime, endTime;
         private long invalidData = 0;
+        // Valid + Invalid data
+        private long totalData = 0;
 
         public MySensorListener(DataTrack data) {
             this.dataTrack = data;
@@ -155,8 +175,20 @@ public class ExecutionController {
             return labeledData == null ? new LinkedList<LabeledData>() : labeledData;
         }
 
+        public long getStartTime() {
+            return startTime;
+        }
+
+        public long getEndTime() {
+            return endTime;
+        }
+
         public long getInvalidData() {
             return invalidData;
+        }
+
+        public long getTotalData() {
+            return totalData;
         }
 
         public long getCollectedData() {
@@ -177,6 +209,7 @@ public class ExecutionController {
         @Override
         public void onSensorChanged(SensorBase sensor) {
             try {
+                totalData++;
                 if (sensor.isValidValues()) {
                     //log.d(dataTrack.getLabel() + " Active Threads: " + Thread.activeCount() + "  - " + num++ + " - " + sensor.toString());
                     LabeledData data = new LabeledData(dataTrack.getLabel(), sensor, dataTrack.getDeviceLocation(), dataTrack.getUserId(), dataTrack.getActivity(), dataTrack.getLabelId());
@@ -184,12 +217,13 @@ public class ExecutionController {
                     collectedData++;
 
                     if (labeledData.size() > 50000) {
+                        log.d("Collected data so far for " + dataTrack.getLabel() + " - " + sensor.getName() + "\n\tValid: " + collectedData + "\n\tInvalid: " + invalidData);
                         dbView.insertLabeledData((LinkedList<LabeledData>)labeledData.clone());
                         labeledData.clear();
                     }
                 } else {
                     invalidData++;
-                    log.d("Invalid Data Collected\n" + sensor.toString());
+                    //log.d("Invalid Data Collected\n" + sensor.toString());
                 }
             } catch (Exception e) {
                 if (labeledData.size() > 0) {

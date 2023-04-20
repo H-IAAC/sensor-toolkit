@@ -29,4 +29,10 @@ public class SensorFrequency {
     public String getLabel_id() {
         return label_id;
     }
+
+    @NonNull
+    @Override
+    public String toString() {
+        return label_id + " " + sensor.getName() + " " + frequency;
+    }
 }

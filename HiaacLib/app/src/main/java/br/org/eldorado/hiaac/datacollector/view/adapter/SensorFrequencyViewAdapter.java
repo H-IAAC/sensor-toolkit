@@ -82,7 +82,7 @@ public class SensorFrequencyViewAdapter extends RecyclerView.Adapter<SensorFrequ
         ArrayAdapter<String> adapter = new ArrayAdapter<>(frequenciesSpinner.getContext(),
                 R.layout.custom_spinner, list);
         frequenciesSpinner.setAdapter(adapter);
-        if (selectedSensorFrequency.isSelected) {
+        if (selectedSensorFrequency.isSelected()) {
             frequencyContainer.expand(60);
             checkBox.setChecked(true);
         }
@@ -111,7 +111,7 @@ public class SensorFrequencyViewAdapter extends RecyclerView.Adapter<SensorFrequ
             public void onNothingSelected(AdapterView<?> parent) {
             }
         });
-
+        checkBox.setChecked(selectedSensorFrequency.isSelected());
         checkBox.setText(selectedSensorFrequency.sensor);
         checkBox.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -195,11 +195,12 @@ public class SensorFrequencyViewAdapter extends RecyclerView.Adapter<SensorFrequ
         }
     }
 
-    private boolean checkSensorAvailability(String sensorName) {
+    public boolean checkSensorAvailability(String sensorName) {
+        if (sensorName.equalsIgnoreCase("gps")) return true;
         boolean isAvailable = true;
         if (!SensorSDK.getInstance().checkSensorAvailability(Tools.getSensorFromTitleName(sensorName).getType())) {
             AlertDialog alert = new AlertDialog.Builder(mContext)
-                    .setMessage(mContext.getString(R.string.sensor_not_available))
+                    .setMessage(mContext.getString(R.string.sensor_not_available, sensorName))
                     .setCancelable(true)
                     .create();
             alert.setTitle(mContext.getString(R.string.dialog_alert_title));

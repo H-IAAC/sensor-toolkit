@@ -125,6 +125,7 @@ public class DataCollectorActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         isActivityVisible = true;
+        setRemoteTimeText(SensorSDK.getInstance().getRemoteTime());
     }
 
     @Override
@@ -158,14 +159,15 @@ public class DataCollectorActivity extends AppCompatActivity {
                                     long timeInMillis = response.body().get("currentTimeMillis").getAsLong();
                                     SensorSDK.getInstance().setRemoteTime(timeInMillis +
                                             (response.raw().receivedResponseAtMillis() - response.raw().sentRequestAtMillis())/2);
-                                    if (isActivityVisible) {
+                                    setRemoteTimeText(SensorSDK.getInstance().getRemoteTime());
+                                    /*if (isActivityVisible) {
                                         runOnUiThread(new Runnable() {
                                             @Override
                                             public void run() {
                                                 serverTimeTxt.setText(getString(R.string.server_time) + " " + df.format(new Date(timeInMillis)));
                                             }
                                         });
-                                    }
+                                    }*/
                                 }
                                 @Override
                                 public void onFailure(Call<JsonObject> call, Throwable t) {
@@ -176,7 +178,8 @@ public class DataCollectorActivity extends AppCompatActivity {
                             Thread.sleep(2000);
                         } else {
                             long timeInMillis = SensorSDK.getInstance().getRemoteTime();
-                            date.setTime(timeInMillis);
+                            setRemoteTimeText(timeInMillis);
+                            /*date.setTime(timeInMillis);
                             String time = df.format(date);
                             if (isActivityVisible) {
                                 runOnUiThread(new Runnable() {
@@ -185,7 +188,7 @@ public class DataCollectorActivity extends AppCompatActivity {
                                         serverTimeTxt.setText(getString(R.string.server_time) + " " + time);
                                     }
                                 });
-                            }
+                            }*/
                             long next = (60000 - timeInMillis % 60000);
                             Thread.sleep(Math.max(next, next-50));
                         }
@@ -195,6 +198,19 @@ public class DataCollectorActivity extends AppCompatActivity {
                 }
             }
         }).start();
+    }
+
+    private void setRemoteTimeText(long timeInMillis) {
+        if (isActivityVisible) {
+            Date date = new Date(timeInMillis);
+            String time = df.format(date);
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    serverTimeTxt.setText(getString(R.string.server_time) + " " + time);
+                }
+            });
+        }
     }
 
     @Override

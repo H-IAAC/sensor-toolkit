@@ -1,6 +1,7 @@
 package br.org.eldorado.hiaac.datacollector.data;
 
 import android.app.Application;
+
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import java.util.List;
@@ -59,6 +60,14 @@ public class LabelConfigViewModel extends AndroidViewModel {
 
     public void insertLabeledData(List<LabeledData> labeledData) {
         mRepository.insertLabeledData(labeledData);
+    }
+
+    public void insertExperimentStatistics(List<ExperimentStatistics> statistics) {
+        mRepository.insertExperimentStatistics(statistics);
+    }
+
+    public void deleteExperimentsStatistics(long expId) {
+        mRepository.deleteExperimentStatistics(expId);
     }
 
     public List<LabeledData> getLabeledData(int labelId, int type, long offset) {
