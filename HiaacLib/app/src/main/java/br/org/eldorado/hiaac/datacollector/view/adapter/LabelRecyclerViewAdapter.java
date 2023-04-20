@@ -188,6 +188,7 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
                                     public void onChanged(LabelConfig labelConfig) {
                                         try {
                                             if (deleteButtonClicked && labelConfig != null) {
+                                                deleteButtonClicked = false;
                                                 mLabelConfigViewModel.deleteConfig(labelConfig);
                                                 mLabelConfigViewModel.deleteSensorsFromLabel(labelConfig);
                                                 deleteLabelDir(labelConfig.label);
@@ -702,6 +703,24 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
         public MyExecutionListener(DataTrack dt, ViewHolder h) {
             super(dt);
             this.holder = h;
+        }
+
+        @Override
+        public void onError(String message) {
+            ((Activity)mContext).runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    log.d("MyExecutionListener - onError");
+                    holder.getEditButton().setEnabled(true);
+                    holder.getStartButton().setEnabled(true);
+                    holder.getStopButton().setEnabled(true);
+                    AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
+                    builder.setTitle("Error");
+                    builder.setMessage(message);
+                    AlertDialog dl = builder.create();
+                    dl.show();
+                }
+            });
         }
 
         @Override

@@ -4,6 +4,7 @@ import android.app.Application;
 import android.os.AsyncTask;
 import androidx.lifecycle.LiveData;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.function.Function;
@@ -65,12 +66,14 @@ public class LabelConfigRepository {
 
     public void insertAllSensorFrequencies(List<SensorFrequency> frequencies) {
         new SensorFrequencyAsyncTask(mLabelConfigDao, (sensorFrequencies -> {
+            mLabelConfigDao.deleteSensorFromLabel(sensorFrequencies.get(0).getLabel_id());
             mLabelConfigDao.insertAllSensorFrequencies(sensorFrequencies);
             return null;})).execute(frequencies);
     }
 
     public void deleteAllSensorFrequencies(List<SensorFrequency> frequencies) {
-        new SensorFrequencyAsyncTask(mLabelConfigDao, (sensorFrequencies -> {
+        new SensorFrequencyAsyncTask(mLabelConfigDao,
+                (sensorFrequencies -> {
             mLabelConfigDao.deleteAllSensorFrequencies(sensorFrequencies);
             return null;})).execute(frequencies);
     }
@@ -79,6 +82,24 @@ public class LabelConfigRepository {
         new LabeledDataAsyncTask(mLabelConfigDao, (labeledData -> {
             mLabelConfigDao.insertLabeledData(labeledData);
             return null;})).execute(data);
+    }
+
+    public void insertExperimentStatistics(List<ExperimentStatistics> data) {
+        new ExperimentStatisticsAsyncTask(mLabelConfigDao, (statistics -> {
+            mLabelConfigDao.insertExperimentStatistics(statistics);
+            return null;})).execute(data);
+    }
+
+    public List<ExperimentStatistics> getExperimentStatisticsByExpId(long expId) {
+        return mLabelConfigDao.getStatisticsByExpId(expId);
+    }
+
+    public void deleteExperimentStatistics(long expId) {
+        List<ExperimentStatistics> st = new ArrayList<>();
+        new ExperimentStatisticsAsyncTask(mLabelConfigDao, (statistics -> {
+            mLabelConfigDao.deleteExperimentStatistics(expId);
+            return null;})).execute(st);
+
     }
 
     public List<LabeledData> getLabeledData(int labelId, int type, long offset) {
@@ -149,6 +170,23 @@ public class LabelConfigRepository {
 
         @Override
         protected Void doInBackground(List<LabeledData>... lists) {
+            mFunction.apply(lists[0]);
+            return null;
+        }
+    }
+
+    private static class ExperimentStatisticsAsyncTask extends AsyncTask<List<ExperimentStatistics>, Void, Void> {
+
+        private LabelConfigDao mAsyncTaskDao;
+        private Function<List<ExperimentStatistics>, Void> mFunction;
+
+        public ExperimentStatisticsAsyncTask(LabelConfigDao dao, Function<List<ExperimentStatistics>, Void> function) {
+            this.mAsyncTaskDao = dao;
+            this.mFunction = function;
+        }
+
+        @Override
+        protected Void doInBackground(List<ExperimentStatistics>... lists) {
             mFunction.apply(lists[0]);
             return null;
         }

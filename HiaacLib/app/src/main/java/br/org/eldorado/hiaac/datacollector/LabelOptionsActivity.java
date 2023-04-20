@@ -28,7 +28,6 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.view.menu.ActionMenuItemView;
 import androidx.fragment.app.DialogFragment;
-import androidx.lifecycle.LifecycleOwner;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -266,7 +265,6 @@ public class LabelOptionsActivity extends AppCompatActivity {
             onSaveButtonClick();
             return true;
         } else if (item.getItemId() == R.id.load_config_button) {
-            item.setEnabled(false);
             getAllExperiments();
         }
         return super.onOptionsItemSelected(item);
@@ -281,9 +279,10 @@ public class LabelOptionsActivity extends AppCompatActivity {
     private void deleteCurrentConfig() {
         if (mCurrentConfig != null) {
             mLabelConfigViewModel.deleteConfig(mCurrentConfig);
-            mLabelConfigViewModel.deleteSensorsFromLabel(mCurrentConfig);
             if (mSensorFrequencies != null) {
                 mLabelConfigViewModel.deleteAllSensorFrequencies(mSensorFrequencies);
+            } else {
+                mLabelConfigViewModel.deleteSensorsFromLabel(mCurrentConfig);
             }
             closeActivity();
         }
@@ -479,16 +478,8 @@ public class LabelOptionsActivity extends AppCompatActivity {
     private void finishSaveProcess(LabelConfig newConfig, String label) {
         if (isFinishing) return;
         isFinishing = true;
-        if (mSensorFrequencies != null) {
-            mLabelConfigViewModel.deleteAllSensorFrequencies(mSensorFrequencies);
-        }
-        try {
-            Thread.sleep(100);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        mLabelConfigViewModel.insertAllSensorFrequencies(
-                getSensorFrequenciesFromSelectedSensorFrequencies(label));
+
+        mLabelConfigViewModel.insertAllSensorFrequencies(getSensorFrequenciesFromSelectedSensorFrequencies(label));
 
         if (isConfigLoaded) {
             closeActivity();
@@ -563,6 +554,11 @@ public class LabelOptionsActivity extends AppCompatActivity {
     }
 
     private void getAllExperiments() {
+        log.d("getAllExperiments from server");
+        if (mLoadConfigBtn == null) {
+            mLoadConfigBtn = findViewById(R.id.load_config_button);
+        }
+        mLoadConfigBtn.setEnabled(false);
         ClientAPI api = new ClientAPI();
         ApiInterface apiInterface = api.getClient(Tools.SERVER_HOST, Tools.SERVER_PORT).create(ApiInterface.class);
         Call<JsonObject> call = apiInterface.getAllExperiments();
@@ -674,6 +670,9 @@ public class LabelOptionsActivity extends AppCompatActivity {
                             builder.setTitle("Error");
                             builder.setMessage(t.getMessage());
                             builder.show();
+                            if (mLoadConfigBtn == null) {
+                                mLoadConfigBtn = findViewById(R.id.load_config_button);
+                            }
                             mLoadConfigBtn.setEnabled(true);
                         }
                     });

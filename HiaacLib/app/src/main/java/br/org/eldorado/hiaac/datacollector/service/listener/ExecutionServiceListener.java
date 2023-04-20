@@ -8,4 +8,5 @@ public interface ExecutionServiceListener {
     void onRunning(long remainingTime);
     void onStopped();
     void onStarted();
+    void onError(String errorMessage);
 }
