@@ -90,7 +90,7 @@ public class LabelConfigRepository {
             return null;})).execute(data);
     }
 
-    public List<ExperimentStatistics> getExperimentStatisticsByExpId(long expId) {
+    public LiveData<List<ExperimentStatistics>> getExperimentStatisticsByExpId(long expId) {
         return mLabelConfigDao.getStatisticsByExpId(expId);
     }
 

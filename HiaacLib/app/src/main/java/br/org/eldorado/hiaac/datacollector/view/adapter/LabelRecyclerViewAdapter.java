@@ -16,6 +16,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.os.IBinder;
 import android.view.Gravity;
@@ -34,6 +35,8 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.gson.Gson;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -42,11 +45,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import br.org.eldorado.hiaac.datacollector.DataCollectorActivity;
 import br.org.eldorado.hiaac.datacollector.LabelOptionsActivity;
 import br.org.eldorado.hiaac.R;
+import br.org.eldorado.hiaac.datacollector.StatisticsActivity;
 import br.org.eldorado.hiaac.datacollector.api.ApiInterface;
 import br.org.eldorado.hiaac.datacollector.api.ClientAPI;
 import br.org.eldorado.hiaac.datacollector.api.StatusResponse;
+import br.org.eldorado.hiaac.datacollector.data.ExperimentStatistics;
 import br.org.eldorado.hiaac.datacollector.data.LabelConfig;
 import br.org.eldorado.hiaac.datacollector.data.LabelConfigViewModel;
 import br.org.eldorado.hiaac.datacollector.data.SensorFrequency;
@@ -158,6 +164,27 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
             public void onClick(View v) {
                 shareButton.setEnabled(false);
                 sendData(holder, SEND_DATA_TO_HIAAC,false);
+            }
+        });
+
+        ImageView statisticsButton = holder.getStatisticsButton();
+        mLabelConfigViewModel.getExperimentStatistics(labelConfig.labelId).observe((LifecycleOwner)mContext,
+                new Observer<List<ExperimentStatistics>>() {
+            @Override
+            public void onChanged(List<ExperimentStatistics> statistics) {
+                if (statistics != null && statistics.size() > 0) {
+                    statisticsButton.setVisibility(View.VISIBLE);
+                    statisticsButton.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            Intent intent = new Intent(statisticsButton.getContext(), StatisticsActivity.class);
+                            intent.putExtra("statistics", new Gson().toJson(statistics));
+                            statisticsButton.getContext().startActivity(intent);
+                        }
+                    });
+                } else {
+                    statisticsButton.setVisibility(View.GONE);
+                }
             }
         });
 
@@ -607,6 +634,7 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
         private Button editButton;
         private ImageView shareButton;
         private ImageView deleteButton;
+        private ImageView statisticsButton;
         private RecyclerView csvRecyclerView;
         private boolean started;
 
@@ -624,6 +652,7 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
             shareButton = itemView.findViewById(R.id.share_sampling_button);
             deleteButton = itemView.findViewById(R.id.delete_button);
             csvRecyclerView = itemView.findViewById(R.id.csvfiles_reclyclerView);
+            statisticsButton = itemView.findViewById(R.id.btn_statistics);
             csvRecyclerView.addOnItemTouchListener(new RecyclerView.OnItemTouchListener() {
                 @Override
                 public boolean onInterceptTouchEvent(@NonNull RecyclerView rv, @NonNull MotionEvent e) {
@@ -694,6 +723,10 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
 
         public ImageView getDeleteButton() {
             return deleteButton;
+        }
+
+        public ImageView getStatisticsButton() {
+            return statisticsButton;
         }
     }
 

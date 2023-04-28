@@ -57,12 +57,12 @@ public class LabeledData {
 
     private SensorBase sensor;
 
-    public LabeledData(String label, SensorBase sensor, String devicePosition, String userId, String activity, int labelId) {
+    public LabeledData(String label, SensorBase sensor, String devicePosition, String userId, String activity, int labelId, long timestamp) {
         this.sensor = sensor;
         this.label = label;
         this.sensorName = sensor.getName();
         //this.timestamp = sensor.getTimestamp();
-        this.timestamp = SensorSDK.getInstance().getRemoteTime();
+        this.timestamp = timestamp;
         this.frequency = sensor.getFrequency();
         this.sensorValues = sensor.getValuesString();
         this.power = sensor.getPower();

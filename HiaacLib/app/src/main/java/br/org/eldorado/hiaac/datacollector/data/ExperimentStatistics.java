@@ -4,8 +4,10 @@ import androidx.room.ColumnInfo;
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;
 
+import java.io.Serializable;
+
 @Entity
-public class ExperimentStatistics {
+public class ExperimentStatistics implements Serializable {
 
     @PrimaryKey(autoGenerate = true)
     private int id;
@@ -33,6 +35,12 @@ public class ExperimentStatistics {
 
     @ColumnInfo(name = "timestamp-average")
     private long timestampAverage;
+
+    @ColumnInfo(name = "max-timestamp-difference")
+    private long maxTimestampDifference;
+
+    @ColumnInfo(name = "min-timestamp-difference")
+    private long minTimestampDifference;
 
     @ColumnInfo(name = "timestamp-standard-variation")
     private long timestampStandardVariation;
@@ -107,6 +115,22 @@ public class ExperimentStatistics {
 
     public void setTimestampAverage(long timestampAverage) {
         this.timestampAverage = timestampAverage;
+    }
+
+    public long getMaxTimestampDifference() {
+        return maxTimestampDifference;
+    }
+
+    public void setMaxTimestampDifference(long maxTimestampDifference) {
+        this.maxTimestampDifference = maxTimestampDifference;
+    }
+
+    public long getMinTimestampDifference() {
+        return minTimestampDifference;
+    }
+
+    public void setMinTimestampDifference(long minTimestampDifference) {
+        this.minTimestampDifference = minTimestampDifference;
     }
 
     public long getTimestampStandardVariation() {

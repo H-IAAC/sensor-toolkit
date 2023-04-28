@@ -24,6 +24,10 @@
             android:screenOrientation="portrait"
             android:exported="false" />
         <activity
+            android:name=".datacollector.StatisticsActivity"
+            android:screenOrientation="portrait"
+            android:exported="false" />
+        <activity
             android:name=".datacollector.DataCollectorActivity"
             android:exported="true"
             android:screenOrientation="portrait"

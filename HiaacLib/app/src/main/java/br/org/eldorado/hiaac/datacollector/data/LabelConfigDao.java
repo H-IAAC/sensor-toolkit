@@ -67,7 +67,7 @@ public interface LabelConfigDao {
     void insertExperimentStatistics(List<ExperimentStatistics> experiments);
 
     @Query("SELECT * from ExperimentStatistics where `experiment-id`=:expId")
-    List<ExperimentStatistics> getStatisticsByExpId(long expId);
+    LiveData<List<ExperimentStatistics>> getStatisticsByExpId(long expId);
 
     @Query("DELETE from ExperimentStatistics where `experiment-id`=:expId")
     void deleteExperimentStatistics(long expId);
