@@ -114,6 +114,16 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
         return new ViewHolder(view);
     }
 
+    private void expandOption (LabelRecyclerViewAdapter.ViewHolder holder, View v) {
+        if (holder.isOpened) {
+            holder.getButtonContainer().close();
+            holder.setOpened(false);
+        } else {
+            resizeLabelPanel(holder);
+            holder.setOpened(true);
+        }
+    }
+
     public void onBindViewHolder(ViewHolder holder, int position) {
         log.d("CSVFilesRecyclerAdapter - ActiveThreads: " + Thread.activeCount());
         LabelConfig labelConfig = labelConfigs.get(holder.getAdapterPosition());
@@ -130,19 +140,10 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
         csvList.setLayoutManager(new LinearLayoutManager(mContext));
 
         holder.getLabelTitle().setText(labelTitle);
-        holder.getLabelTitle().setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (holder.isOpened) {
-                    holder.getButtonContainer().close();
-                    holder.setOpened(false);
-                } else {
-                    resizeLabelPanel(holder);
-                    holder.setOpened(true);
-                }
-            }
-        });
-        holder.getLabelDeviceLocation().setText("("+labelConfig.deviceLocation+")");
+        holder.getLabelTitle().setOnClickListener(v -> { expandOption(holder, v); });
+
+        holder.getLabelDeviceLocation().setText(labelConfig.activity + " - " + labelConfig.deviceLocation);
+        holder.getLabelDeviceLocation().setOnClickListener(v -> { expandOption(holder, v); });
 
         holder.getLabelTimer().setText(
                 Tools.getFormatedTime(labelConfigs.get(holder.getAdapterPosition()).stopTime, Tools.CHRONOMETER));
@@ -183,7 +184,7 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
                         }
                     });
                 } else {
-                    statisticsButton.setVisibility(View.GONE);
+                    statisticsButton.setVisibility(View.INVISIBLE);
                 }
             }
         });
