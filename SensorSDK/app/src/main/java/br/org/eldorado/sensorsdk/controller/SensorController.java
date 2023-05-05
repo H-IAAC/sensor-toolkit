@@ -173,7 +173,7 @@ public class SensorController {
         @Override
         public void onSensorStarted(int sensorType) throws RemoteException {
             SensorBase sensor = sensorMap.get(sensorType);
-            log.d("onSensorStarted " + sensor.getListener());
+            log.d("onSensorStarted " + sensor.getName() + " " + sensor.getFrequency());
             if (sensor != null && sensor.getListener() != null) {
                 try {
                     //Thread.sleep(1000);

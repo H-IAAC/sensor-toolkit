@@ -217,12 +217,12 @@ public class ExecutionController {
 
         @Override
         public void onSensorStarted(SensorBase sensor) {
-            log.d("Sensor STARTED");
+            log.d(sensor.getName() + " sensor STARTED");
         }
 
         @Override
         public void onSensorStopped(SensorBase sensor) {
-            log.d("Sensor STOPED");
+            log.d(sensor.getName() + " sensor STOPPED");
             this.endTime = System.currentTimeMillis();
             this.timestampAverage = (collectedData < 2 ? 0 : timestampAverage/(collectedData-1)) ;
         }

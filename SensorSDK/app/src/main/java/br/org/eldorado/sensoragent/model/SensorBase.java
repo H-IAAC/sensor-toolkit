@@ -59,7 +59,7 @@ public class SensorBase implements Parcelable, Cloneable {
                 zeros++;
             }
         }
-        return (zeros != values.length) || type == TYPE_PROXIMITY;
+        return (zeros != values.length) || type == TYPE_PROXIMITY  || type == TYPE_LUMINOSITY;
     }
 
     public void setFrequency(int f) {
@@ -103,7 +103,7 @@ public class SensorBase implements Parcelable, Cloneable {
     public void updateInformation(AgentSensorBase s) {
 
         if (s == null || s.getValuesArray() == null) {
-            log.i("Sensor not started");
+            log.i(getName() + " sensor not started");
             isStarted = false;
             fireListener(ON_STOPPED);
             return;
@@ -117,7 +117,7 @@ public class SensorBase implements Parcelable, Cloneable {
         }
         //this.values = s.getValuesArray();
         if (values.length == 3 && values[0] == 0f && values[1] == 0f && values[2] == 0f) {
-            System.out.println("INVALID " + getName() + " " + values[0] + " " + values[1] + " " + values[2]);
+            log.d("INVALID " + getName() + " " + values[0] + " " + values[1] + " " + values[2]);
         }
         //log.i("Update information " + toString());
         if (!isStarted) {
@@ -142,7 +142,7 @@ public class SensorBase implements Parcelable, Cloneable {
     }
 
     public void startSensor() {
-        log.i("Starting sensor isStarted: " + isStarted);
+        log.i(getName() + " sensor isStarted: " + isStarted);
         if (!isStarted) {
             controller.startSensor(this);
         }
