@@ -6,7 +6,7 @@
     <string name="previous">Previous</string>
 
     <string name="server_time">Server Time: </string>
-    <string name="csv_files">Created CSV Files</string>
+    <string name="csv_files">Created CSV Files:</string>
     <string name="creating_csv_file">Creating CSV File . . .</string>
     <string name="before_create_csv_file">Finishing getting data to create CSV file. Please wait . . .</string>
     <string name="starting_upload_file">Starting Upload . . .</string>
@@ -58,6 +58,17 @@
     <string name="any_sensor_selected">You should select at least 1 sensor</string>
     <string name="schedule_time">Schedule:</string>
     <string name="schedule_time_hint">Automatic start time</string>
+    <string name="statistics_title">Statistics</string>
+    <string name="statistics_period">Period:</string>
+    <string name="statistics_timeframe">Time frame:</string>
+    <string name="statistics_valid_data">Valid:</string>
+    <string name="statistics_invalid_data">Discarded:</string>
+    <string name="statistics_timestamp_average">Average:</string>
+    <string name="statistics_max_timestamp_difference">Max diff:</string>
+    <string name="statistics_min_timestamp_difference">Min diff:</string>
+    <string name="statistics_collect_timestamp">Time frame details:</string>
+    <string name="statistics_samples">Samples:</string>
+
 
     <string-array name="device_location_items">
         <item>Cabeça</item>
