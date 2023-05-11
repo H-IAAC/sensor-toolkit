@@ -174,7 +174,7 @@ public class ExecutionController {
             labeledData = new LinkedList<LabeledData>();
             this.startTime = System.currentTimeMillis();
             this.timestampAverage = 0;
-            this.lastTimestamp = SensorSDK.getInstance().getRemoteTime();
+            this.lastTimestamp = 0;
             this.maxTimestampDifference = 0;
             this.minTimestampDifference = Long.MAX_VALUE;
         }
@@ -236,7 +236,10 @@ public class ExecutionController {
 
                     long currentTimestamp = SensorSDK.getInstance().getRemoteTime();
                     if (collectedData > 0) {
-                        timestampAverage += (currentTimestamp - lastTimestamp);
+                        // Ignore 'timestampAverage' when checking the first collectedData
+                        if (lastTimestamp != 0)
+                            timestampAverage += (currentTimestamp - lastTimestamp);
+
                         maxTimestampDifference = Math.max((currentTimestamp - lastTimestamp), maxTimestampDifference);
                         minTimestampDifference = Math.min((currentTimestamp - lastTimestamp), minTimestampDifference);
                     }
@@ -259,8 +262,7 @@ public class ExecutionController {
                     dbView.insertLabeledData(labeledData);
                     labeledData.clear();
                 }
-                log.d("OnSensorChanged error");
-                e.printStackTrace();
+                log.d(sensor.getName() + " OnSensorChanged error: " + e.getMessage());
             }
         }
     }

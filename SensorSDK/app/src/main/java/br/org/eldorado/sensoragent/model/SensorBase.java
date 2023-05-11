@@ -45,6 +45,10 @@ public class SensorBase implements Parcelable, Cloneable {
         this.values = new float[1];
         this.isStarted = false;
         this.controller = SensorController.getInstance();
+
+        for (float value : values) {
+            value = Float.MIN_VALUE;
+        }
     }
 
     public void registerListener(SensorSDKListener l) {
@@ -53,13 +57,13 @@ public class SensorBase implements Parcelable, Cloneable {
     }
 
     public boolean isValidValues() {
-        int zeros = 0;
-        for (int i = 0; i < values.length; i++) {
-            if (values[i] == 0f) {
-                zeros++;
+        int unchangedValue = 0;
+        for (float value : values) {
+            if (value == Float.MIN_VALUE) {
+                unchangedValue++;
             }
         }
-        return (zeros != values.length) || type == TYPE_PROXIMITY  || type == TYPE_LUMINOSITY;
+        return (unchangedValue != values.length) || type == TYPE_PROXIMITY  || type == TYPE_LUMINOSITY;
     }
 
     public void setFrequency(int f) {
@@ -116,7 +120,7 @@ public class SensorBase implements Parcelable, Cloneable {
             this.values[i] = s.getValuesArray()[i];
         }
         //this.values = s.getValuesArray();
-        if (values.length == 3 && values[0] == 0f && values[1] == 0f && values[2] == 0f) {
+        if (values.length == 3 && values[0] == Float.MIN_VALUE && values[1] == Float.MIN_VALUE && values[2] == Float.MIN_VALUE) {
             log.d("INVALID " + getName() + " " + values[0] + " " + values[1] + " " + values[2]);
         }
         //log.i("Update information " + toString());
