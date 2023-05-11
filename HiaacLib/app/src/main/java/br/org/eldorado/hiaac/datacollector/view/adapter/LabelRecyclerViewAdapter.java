@@ -16,6 +16,8 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.content.res.ColorStateList;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.os.IBinder;
@@ -29,6 +31,9 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
+import androidx.cardview.widget.CardView;
+import androidx.core.content.ContextCompat;
+import androidx.core.content.res.ResourcesCompat;
 import androidx.lifecycle.LifecycleOwner;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
@@ -522,6 +527,7 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
         };
         log.d("startExecution - disabling start button");
         holder.getStartButton().setEnabled(false);
+        holder.getExpCard().setCardBackgroundColor(ContextCompat.getColor(mContext, R.color.inprogress));
 
         //execService.setRemoteTime(System.currentTimeMillis() + (1000*60*60));
 
@@ -626,6 +632,8 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
     public class ViewHolder extends RecyclerView.ViewHolder {
         private boolean isOpened;
 
+        private CardView expCard;
+        private ColorStateList expCardColor;
         private TextView labelTitle;
         private TextView labelDeviceLocation;
         private TextView labelTimer;
@@ -643,6 +651,8 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
             super(itemView);
             started = false;
             isOpened = false;
+            expCard = itemView.findViewById(R.id.exp_card);
+            expCardColor = expCard.getCardBackgroundColor();
             labelTitle = itemView.findViewById(R.id.label_title);
             labelDeviceLocation = itemView.findViewById(R.id.label_device_location);
             labelTimer = itemView.findViewById(R.id.label_timer);
@@ -706,6 +716,10 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
             return buttonContainer;
         }
 
+        public CardView getExpCard() { return expCard; };
+
+        public ColorStateList getExpCardColor() { return expCardColor; };
+
         public Button getStartButton() {
             return startButton;
         }
@@ -748,6 +762,7 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
                     holder.getEditButton().setEnabled(true);
                     holder.getStartButton().setEnabled(true);
                     holder.getStopButton().setEnabled(true);
+                    holder.getExpCard().setCardBackgroundColor(holder.getExpCardColor());
                     AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
                     builder.setTitle("Error");
                     builder.setMessage(message);
@@ -781,6 +796,7 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
                         holder.getEditButton().setEnabled(true);
                         holder.getStartButton().setEnabled(true);
                         holder.getStopButton().setEnabled(false);
+                        holder.getExpCard().setCardBackgroundColor(holder.getExpCardColor());
                         holder.getLabelTimer().setText(
                                 Tools.getFormatedTime(labelConfigs.get(holder.getAdapterPosition()).stopTime, Tools.CHRONOMETER));
 
@@ -831,6 +847,7 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
                     holder.getEditButton().setEnabled(false);
                     holder.getStartButton().setEnabled(false);
                     holder.getStopButton().setEnabled(true);
+                    holder.getExpCard().setCardBackgroundColor(ContextCompat.getColor(mContext, R.color.inprogress));
                 }
             });
         }
