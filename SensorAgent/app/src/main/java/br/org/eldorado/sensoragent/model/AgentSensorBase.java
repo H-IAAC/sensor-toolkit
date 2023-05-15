@@ -121,7 +121,7 @@ public class AgentSensorBase
     public void onAccuracyChanged(Sensor sensor, int accuracy) {}
 
     public void registerListener(Sensor sensor) {
-        log.i("Starting sensor");
+        log.i("Starting sensor: " + sensor.getName());
         sensorManager.registerListener(this, sensor, SensorManager.SENSOR_DELAY_FASTEST);
     }
 

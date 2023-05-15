@@ -14,6 +14,8 @@ import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.Spinner;
+import android.widget.Toast;
+
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 import androidx.recyclerview.widget.RecyclerView;
@@ -215,7 +217,7 @@ public class SensorFrequencyViewAdapter extends RecyclerView.Adapter<SensorFrequ
         log.d("requestGPSPermission");
         ActivityCompat.requestPermissions((Activity)mContext, new String[] {
                         Manifest.permission.ACCESS_FINE_LOCATION,
-                        Manifest.permission.ACCESS_COARSE_LOCATION},
+                        Manifest.permission.ACCESS_COARSE_LOCATION },
                 100);
     }
 
@@ -239,6 +241,7 @@ public class SensorFrequencyViewAdapter extends RecyclerView.Adapter<SensorFrequ
                 }
                 notifySensorFrequencyChanged();
             } else {
+                Toast.makeText(mContext, "GPS permission not granted", Toast.LENGTH_SHORT).show();
                 gpsCheckBox.setEnabled(false);
                 gpsCheckBox.setChecked(false);
                 mSelectedSensors.get(gpsHolder.getAdapterPosition()).setSelected(false);
