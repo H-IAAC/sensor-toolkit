@@ -22,6 +22,14 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent">
 
+            <TextView
+                android:id="@+id/edit_warn_txt"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:visibility="gone"
+                android:textColor="@color/red"
+                android:text="@string/not_editable_warn" />
+
             <EditText
                 android:id="@+id/edit_label_name"
                 android:layout_width="match_parent"
@@ -45,6 +53,7 @@
                 android:hint="@string/user_id"
                 android:maxLength="15"
                 android:digits="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz 0123456789" />
+
         </LinearLayout>
 
         <LinearLayout

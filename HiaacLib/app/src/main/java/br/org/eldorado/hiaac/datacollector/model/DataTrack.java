@@ -9,7 +9,7 @@ public class DataTrack {
 
     private List<SensorFrequency> sensorList;
     private String label;
-    private int labelId;
+    private long labelId;
     private int stopTime;
     private String mDeviceLocation;
     private String mUserId;
@@ -65,11 +65,11 @@ public class DataTrack {
         return stopTime;
     }
 
-    public void setLabelId(int lId) {
+    public void setLabelId(long lId) {
         this.labelId = lId;
     }
 
-    public int getLabelId() {
+    public long getLabelId() {
         return labelId;
     }
 

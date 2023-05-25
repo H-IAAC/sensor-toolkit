@@ -13,7 +13,7 @@ public class ExperimentStatistics implements Serializable {
     private int id;
 
     @ColumnInfo(name = "experiment-id")
-    private int experimentId;
+    private long experimentId;
 
     @ColumnInfo(name = "sensor-name")
     private String sensorName;
@@ -49,7 +49,7 @@ public class ExperimentStatistics implements Serializable {
         return id;
     }
 
-    public int getExperimentId() {
+    public long getExperimentId() {
         return experimentId;
     }
 
@@ -85,7 +85,7 @@ public class ExperimentStatistics implements Serializable {
         this.id = id;
     }
 
-    public void setExperimentId(int experimentId) {
+    public void setExperimentId(long experimentId) {
         this.experimentId = experimentId;
     }
 

@@ -5,6 +5,7 @@ import android.app.Application;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 public class LabelConfigViewModel extends AndroidViewModel {
     private LabelConfigRepository mRepository;
@@ -26,12 +27,12 @@ public class LabelConfigViewModel extends AndroidViewModel {
         return mAllSensorFrequencies;
     }
 
-    public LiveData<LabelConfig> getLabelConfigById(String id) {
+    public LiveData<LabelConfig> getLabelConfigById(long id) {
         return mRepository.getLabelConfigById(id);
     }
 
-    public void insertNewConfig(LabelConfig config) {
-        mRepository.insertNewConfig(config);
+    public long insertNewConfig(LabelConfig config) throws ExecutionException, InterruptedException {
+        return mRepository.insertNewConfig(config);
     }
 
     public void updateConfig(LabelConfig config) {
@@ -42,8 +43,8 @@ public class LabelConfigViewModel extends AndroidViewModel {
         mRepository.deleteConfig(config);
     }
 
-    public LiveData<List<SensorFrequency>> getAllSensorsFromLabel(String label) {
-        return mRepository.getAllSensorsFromLabel(label);
+    public LiveData<List<SensorFrequency>> getAllSensorsFromLabel(long id) {
+        return mRepository.getAllSensorsFromLabel(id);
     }
 
     public void deleteSensorsFromLabel(LabelConfig label) {
@@ -70,7 +71,7 @@ public class LabelConfigViewModel extends AndroidViewModel {
         mRepository.deleteExperimentStatistics(expId);
     }
 
-    public List<LabeledData> getLabeledData(int labelId, int type, long offset) {
+    public List<LabeledData> getLabeledData(long labelId, int type, long offset) {
         return mRepository.getLabeledData(labelId, type, offset);
     }
 

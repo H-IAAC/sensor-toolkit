@@ -8,12 +8,25 @@ import androidx.room.PrimaryKey;
 @Entity
 public class LabelConfig {
     @NonNull
-    @PrimaryKey
-    public String label;
+    @PrimaryKey(autoGenerate = true)
+    @ColumnInfo(name = "id")
+    public long id;
 
     @NonNull
-    @ColumnInfo(name = "label-id")
-    public int labelId;
+    @ColumnInfo(name = "experiment")
+    public String experiment;
+
+    @NonNull
+    @ColumnInfo(name = "activity")
+    public String activity;
+
+    @NonNull
+    @ColumnInfo(name = "user-id")
+    public String userId;
+
+    @NonNull
+    @ColumnInfo(name = "device-location")
+    public String deviceLocation;
 
     @NonNull
     @ColumnInfo(name = "stop-time")
@@ -24,29 +37,16 @@ public class LabelConfig {
     public long scheduledTime;
 
     @NonNull
-    @ColumnInfo(name = "device-location")
-    public String deviceLocation;
-
-    @NonNull
-    @ColumnInfo(name = "user-id")
-    public String userId;
-
-    @NonNull
-    @ColumnInfo(name = "activity")
-    public String activity;
-
-    @NonNull
     @ColumnInfo(name = "sendToServer")
     public boolean sendToServer;
 
-    public LabelConfig(@NonNull String label, int stopTime, String deviceLocation, String userId, boolean sendToServer, String activity, long scheduledTime) {
-        this.label = label;
-        this.stopTime = stopTime;
-        this.deviceLocation = deviceLocation;
-        this.userId = userId;
-        this.sendToServer = sendToServer;
+    public LabelConfig(@NonNull String experiment, int stopTime, String deviceLocation, String userId, boolean sendToServer, String activity, long scheduledTime) {
+        this.experiment = experiment;
         this.activity = activity;
+        this.userId = userId;
+        this.deviceLocation = deviceLocation;
+        this.stopTime = stopTime;
+        this.sendToServer = sendToServer;
         this.scheduledTime = scheduledTime;
-        this.labelId = label.hashCode() + deviceLocation.hashCode() + userId.hashCode();
     }
 }

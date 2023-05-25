@@ -23,7 +23,7 @@ public class LabeledData {
     private String label;
 
     @ColumnInfo(name = "label-id")
-    private int labelId;
+    private long labelId;
 
     @ColumnInfo(name = "device-position")
     private String devicePosition;
@@ -57,7 +57,7 @@ public class LabeledData {
 
     private SensorBase sensor;
 
-    public LabeledData(String label, SensorBase sensor, String devicePosition, String userId, String activity, int labelId, long timestamp) {
+    public LabeledData(String label, SensorBase sensor, String devicePosition, String userId, String activity, long labelId, long timestamp) {
         this.sensor = sensor;
         this.label = label;
         this.sensorName = sensor.getName();
@@ -73,7 +73,7 @@ public class LabeledData {
         this.labelId = labelId;
     }
 
-    public int getLabelId() {
+    public long getLabelId() {
         return labelId;
     }
 
