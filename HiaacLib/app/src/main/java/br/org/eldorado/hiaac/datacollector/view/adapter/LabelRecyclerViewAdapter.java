@@ -41,8 +41,10 @@ import com.google.gson.Gson;
 import java.io.File;
 import java.util.Calendar;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import br.org.eldorado.hiaac.datacollector.LabelOptionsActivity;
 import br.org.eldorado.hiaac.R;
@@ -81,6 +83,7 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
     private static final String TAG = "LabelRecyclerViewAdapter";
     private final LayoutInflater mInflater;
     private List<LabelConfig> labelConfigs;
+    private Set<Integer> labelsConflicts = new HashSet<>();
     private Map<Long, List<SensorFrequency>> sensorFrequencyMap;
     private Context mContext;
     private ExecutionService execService;
@@ -101,6 +104,20 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
     }
 
     public void setLabelConfigs(List<LabelConfig> labels) {
+        // Check if there is conflicts between the labels
+        labelsConflicts = new HashSet<>();
+        for (int i = 0; i < labels.size() - 1; ++i) {
+            for (int j = 1; j < labels.size(); ++j) {
+                if (i == j) continue;
+                if (labels.get(i).experiment.equals(labels.get(j).experiment) &&
+                    labels.get(i).activity.equals(labels.get(j).activity) &&
+                    labels.get(i).userId.equals(labels.get(j).userId)) {
+                    labelsConflicts.add(i);
+                    labelsConflicts.add(j);
+                }
+            }
+        }
+
         this.labelConfigs = labels;
         notifyDataSetChanged();
     }
@@ -144,9 +161,16 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
         holder.getLabelTitle().setText(labelTitle);
         holder.getLabelTitle().setOnClickListener(v -> { expandOption(holder, v); });
 
+        holder.getLabelActivity().setOnClickListener(v -> { expandOption(holder, v); });
+
         holder.getLabelActivity().setText(labelConfig.activity);
         holder.getLabelDeviceLocation().setText(labelConfig.userId + " - " + labelConfig.deviceLocation);
         holder.getLabelDeviceLocation().setOnClickListener(v -> { expandOption(holder, v); });
+
+        if (labelsConflicts.contains(position))
+            holder.getLabelConflict().setVisibility(View.VISIBLE);
+        else
+            holder.getLabelConflict().setVisibility(View.INVISIBLE);
 
         holder.getLabelTimer().setText(
                 Tools.getFormatedTime(labelConfigs.get(holder.getAdapterPosition()).stopTime, Tools.CHRONOMETER));
@@ -601,6 +625,7 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
         private ColorStateList expCardColor;
         private TextView labelTitle;
         private TextView labelActivity;
+        private TextView labelConflict;
         private TextView labelDeviceLocation;
         private TextView labelTimer;
         private AnimatedLinearLayout buttonContainer;
@@ -621,6 +646,7 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
             expCardColor = expCard.getCardBackgroundColor();
             labelTitle = itemView.findViewById(R.id.label_title);
             labelActivity = itemView.findViewById(R.id.label_activity);
+            labelConflict = itemView.findViewById(R.id.label_conflict);
             labelDeviceLocation = itemView.findViewById(R.id.label_device_location);
             labelTimer = itemView.findViewById(R.id.label_timer);
             buttonContainer = itemView.findViewById(R.id.label_button_container);
@@ -669,6 +695,10 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
 
         public TextView getLabelActivity() {
             return labelActivity;
+        }
+
+        public TextView getLabelConflict() {
+            return labelConflict;
         }
 
         public TextView getLabelDeviceLocation() {
