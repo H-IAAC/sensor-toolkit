@@ -1,6 +1,5 @@
 package br.org.eldorado.hiaac.datacollector.view.adapter;
 
-import static br.org.eldorado.hiaac.datacollector.DataCollectorActivity.FOLDER_NAME;
 import static br.org.eldorado.hiaac.datacollector.DataCollectorActivity.LABEL_CONFIG_ACTIVITY_ID;
 import static br.org.eldorado.hiaac.datacollector.DataCollectorActivity.LABEL_CONFIG_ACTIVITY_TYPE;
 import static br.org.eldorado.hiaac.datacollector.DataCollectorActivity.UPDATE_LABEL_CONFIG_ACTIVITY;
@@ -17,8 +16,6 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.res.ColorStateList;
-import android.graphics.Color;
-import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.os.IBinder;
 import android.view.Gravity;
@@ -33,7 +30,6 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.cardview.widget.CardView;
 import androidx.core.content.ContextCompat;
-import androidx.core.content.res.ResourcesCompat;
 import androidx.lifecycle.LifecycleOwner;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
@@ -43,14 +39,11 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.google.gson.Gson;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import br.org.eldorado.hiaac.datacollector.DataCollectorActivity;
 import br.org.eldorado.hiaac.datacollector.LabelOptionsActivity;
 import br.org.eldorado.hiaac.R;
 import br.org.eldorado.hiaac.datacollector.StatisticsActivity;
@@ -174,7 +167,7 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
             @Override
             public void onClick(View v) {
                 shareButton.setEnabled(false);
-                sendData(holder, SEND_DATA_TO_HIAAC,false);
+                sendData(holder, SEND_DATA_TO_HIAAC,false, "0");
             }
         });
 
@@ -291,7 +284,7 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
         }
     }
 
-    private void sendData(ViewHolder holder, int type, boolean showDialog) {
+    private void sendData(ViewHolder holder, int type, boolean showDialog, String dataUid) {
         if (showDialog) {
             sendDataDialog = ProgressDialog.show(mContext, "Export to CSV File", "Creating CSV", true);
         }
@@ -318,7 +311,7 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
         });
 
         if (type == CREATE_CSV_FILE) {
-            firebase.exportToCSV(labelConfigs.get(holder.getAdapterPosition()).experiment, labelConfigs.get(holder.getAdapterPosition()).id);
+            firebase.exportToCSV(dataUid, labelConfigs.get(holder.getAdapterPosition()).id);
         } else if (type == SEND_DATA_TO_FIREBASE) {
             AlertDialog.Builder aDialogBuilder = new AlertDialog.Builder(mContext);
             AlertDialog aDialog = aDialogBuilder.create();
@@ -454,7 +447,7 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
     }
 
     private void sendToFirebase(ViewHolder holder) {
-        sendData(holder, SEND_DATA_TO_FIREBASE, true);
+        sendData(holder, SEND_DATA_TO_FIREBASE, true, "0");
     }
 
     public ViewHolder getViewHolder(String label) {
@@ -478,16 +471,16 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
                     DataTrack dt = new DataTrack();
                     String label = labelConfigs.get(holder.getAdapterPosition()).experiment;
                     int stopTime = labelConfigs.get(holder.getAdapterPosition()).stopTime;
-                    long labelId = labelConfigs.get(holder.getAdapterPosition()).id;
+                    long configId = labelConfigs.get(holder.getAdapterPosition()).id;
 
                     dt.setDeviceLocation(labelConfigs.get(holder.getAdapterPosition()).deviceLocation);
                     dt.setUserId(labelConfigs.get(holder.getAdapterPosition()).userId);
                     dt.setSendFilesToServer(labelConfigs.get(holder.getAdapterPosition()).sendToServer);
                     dt.setActivity(labelConfigs.get(holder.getAdapterPosition()).activity);
                     dt.setStopTime(stopTime);
-                    dt.setLabelId(labelId);
+                    dt.setConfigId(configId);
                     dt.setLabel(label);
-                    dt.addSensorList(sensorFrequencyMap.get(labelId));
+                    dt.addSensorList(sensorFrequencyMap.get(configId));
                     execService.startExecution(new MyExecutionListener(dt, holder));
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -565,7 +558,7 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
                     dt.setUserId(labelConfigs.get(holder.getAdapterPosition()).userId);
                     dt.setSendFilesToServer(labelConfigs.get(holder.getAdapterPosition()).sendToServer);
                     dt.setActivity(labelConfigs.get(holder.getAdapterPosition()).activity);
-                    dt.setLabelId(labelId);
+                    dt.setConfigId(labelId);
                     dt.setStopTime(stopTime);
                     dt.setLabel(label);
                     dt.addSensorList(sensorFrequencyMap.get(label));
@@ -577,7 +570,7 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
                         execService.changeExecutionServiceListener(new MyExecutionListener(dt, holder));
                         //startExecution(holder);
                     } else {
-                        sendData(holder, CREATE_CSV_FILE, false);
+                        sendData(holder, CREATE_CSV_FILE, false, "0");
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -786,7 +779,7 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
                         createCSVDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
                             @Override
                             public void onCancel(DialogInterface dialog) {
-                                sendData(holder, CREATE_CSV_FILE, true);
+                                sendData(holder, CREATE_CSV_FILE, true, getDataTrack().getUid());
                             }
                         });
                         CountDownTimer countDown = new CountDownTimer(5000, 1000) {
@@ -799,7 +792,7 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
                                                 /*createCSVDialog.setCancelable(true);
                                                 createCSVDialog.setMessage("OK");*/
                                 createCSVDialog.dismiss();
-                                sendData(holder, CREATE_CSV_FILE, true);
+                                sendData(holder, CREATE_CSV_FILE, true, getDataTrack().getUid());
                             }
                         };
                         createCSVDialog.show();

@@ -12,8 +12,8 @@ public class ExperimentStatistics implements Serializable {
     @PrimaryKey(autoGenerate = true)
     private int id;
 
-    @ColumnInfo(name = "experiment-id")
-    private long experimentId;
+    @ColumnInfo(name = "config-id")
+    private long configId;
 
     @ColumnInfo(name = "sensor-name")
     private String sensorName;
@@ -49,8 +49,8 @@ public class ExperimentStatistics implements Serializable {
         return id;
     }
 
-    public long getExperimentId() {
-        return experimentId;
+    public long getConfigId() {
+        return configId;
     }
 
     public String getSensorName() {
@@ -85,8 +85,8 @@ public class ExperimentStatistics implements Serializable {
         this.id = id;
     }
 
-    public void setExperimentId(long experimentId) {
-        this.experimentId = experimentId;
+    public void setConfigId(long configId) {
+        this.configId = configId;
     }
 
     public void setSensorName(String sensorName) {

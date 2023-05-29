@@ -50,25 +50,25 @@ public interface LabelConfigDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     void insertLabeledData(List<LabeledData> data);
 
-    @Query("DELETE from LabeledData where `label-name`=:label")
-    void deleteLabeledData(String label);
+    @Query("DELETE from LabeledData where `config-id`=:configId")
+    void deleteLabeledData(long configId);
 
     @Update
     void updateLabeledData(List<LabeledData> dt);
 
-    @Transaction @Query("SELECT * from LabeledData where `label-id`=:labelId ORDER BY `sensor-name`, `sensor-timestamp` LIMIT 300000 OFFSET :offset")
-    List<LabeledData> getLabeledData(long labelId, long offset);
+    @Transaction @Query("SELECT * from LabeledData where `config-id`=:configId ORDER BY `sensor-name`, `sensor-timestamp` LIMIT 300000 OFFSET :offset")
+    List<LabeledData> getLabeledData(long configId, long offset);
 
     //@Query("SELECT * from LabeledData where `label-id`=:labelId and `data-used`=0 ORDER BY `sensor-name`, `sensor-timestamp` LIMIT 300000 OFFSET 0")
-    @Transaction @Query("SELECT * from LabeledData where `label-id`=:labelId and `data-used`=0 ORDER BY `sensor-name`, `sensor-timestamp` LIMIT 300000 OFFSET 0")
-    List<LabeledData> getLabeledDataCsv(long labelId);
+    @Transaction @Query("SELECT * from LabeledData where `config-id`=:configId and `data-used`=0 ORDER BY `sensor-name`, `sensor-timestamp` LIMIT 300000 OFFSET 0")
+    List<LabeledData> getLabeledDataCsv(long configId);
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     void insertExperimentStatistics(List<ExperimentStatistics> experiments);
 
-    @Query("SELECT * from ExperimentStatistics where `experiment-id`=:expId")
-    LiveData<List<ExperimentStatistics>> getStatisticsByExpId(long expId);
+    @Query("SELECT * from ExperimentStatistics where `config-id`=:configId")
+    LiveData<List<ExperimentStatistics>> getStatisticsByExpId(long configId);
 
-    @Query("DELETE from ExperimentStatistics where `experiment-id`=:expId")
-    void deleteExperimentStatistics(long expId);
+    @Query("DELETE from ExperimentStatistics where `config-id`=:configId")
+    void deleteExperimentStatistics(long configId);
 }

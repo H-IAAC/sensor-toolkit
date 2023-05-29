@@ -94,14 +94,14 @@ public class LabelConfigRepository {
             return null;})).execute(data);
     }
 
-    public LiveData<List<ExperimentStatistics>> getExperimentStatisticsByExpId(long expId) {
-        return mLabelConfigDao.getStatisticsByExpId(expId);
+    public LiveData<List<ExperimentStatistics>> getExperimentStatisticsByExpId(long configId) {
+        return mLabelConfigDao.getStatisticsByExpId(configId);
     }
 
-    public void deleteExperimentStatistics(long expId) {
+    public void deleteExperimentStatistics(long configId) {
         List<ExperimentStatistics> st = new ArrayList<>();
         new ExperimentStatisticsAsyncTask(mLabelConfigDao, (statistics -> {
-            mLabelConfigDao.deleteExperimentStatistics(expId);
+            mLabelConfigDao.deleteExperimentStatistics(configId);
             return null;})).execute(st);
 
     }
@@ -123,9 +123,32 @@ public class LabelConfigRepository {
         LinkedList<LabeledData> l = new LinkedList();
         l.add(label);
         new LabeledDataAsyncTask(mLabelConfigDao, (labeledData -> {
-            mLabelConfigDao.deleteLabeledData(label.getLabel());
+            mLabelConfigDao.deleteLabeledData(label.getConfigId());
             return null;})).execute(l);
         //mLabelConfigDao.deleteLabeledData(label);
+    }
+
+    void deleteLabeledData(long configId) {
+        new LongAsyncTask(mLabelConfigDao, (id -> {
+            mLabelConfigDao.deleteLabeledData(id);
+            return null;})).execute(configId);
+    }
+
+    private static class LongAsyncTask extends AsyncTask<Long, Void, Void> {
+
+        private LabelConfigDao mAsyncTaskDao;
+        private Function<Long, Void> mFunction;
+
+        public LongAsyncTask(LabelConfigDao dao, Function<Long, Void> function) {
+            this.mAsyncTaskDao = dao;
+            this.mFunction = function;
+        }
+
+        @Override
+        protected Void doInBackground(Long... id) {
+            mFunction.apply(id[0]);
+            return null;
+        }
     }
 
     private static class LabelConfigAsyncTask extends AsyncTask<LabelConfig, Void, Void> {

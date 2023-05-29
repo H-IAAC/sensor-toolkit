@@ -15,6 +15,11 @@ import android.os.Build;
 import android.os.IBinder;
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
+
+import java.sql.Date;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+
 import br.org.eldorado.hiaac.datacollector.DataCollectorActivity;
 import br.org.eldorado.hiaac.R;
 import br.org.eldorado.hiaac.datacollector.controller.ExecutionController;
@@ -78,10 +83,16 @@ public class ExecutionService extends Service {
     }
 
     public void startExecution(ExecutionServiceListener l) {
+        DateFormat df = new SimpleDateFormat("yyyyMMdd.HHmmss");
+
         ExecutionController ctrl = ExecutionController.getInstance();
         log.d("startExecution: " + (l.getDataTrack().equals(this.dataTrack)));
         if (!ctrl.isRunning() || l.getDataTrack().equals(this.dataTrack)) {
             this.dataTrack = l.getDataTrack();
+
+            // Each execution must have an unique identifier
+            this.dataTrack.setUid(df.format(new Date(System.currentTimeMillis())));
+
             ctrl.setService(this);
             ctrl.setListener(l);
             ctrl.startExecution(dataTrack);

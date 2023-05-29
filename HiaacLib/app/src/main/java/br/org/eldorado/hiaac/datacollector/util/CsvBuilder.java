@@ -3,6 +3,9 @@ package br.org.eldorado.hiaac.datacollector.util;
 import static br.org.eldorado.hiaac.datacollector.DataCollectorActivity.FOLDER_NAME;
 
 import android.content.Context;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteOpenHelper;
 
 import com.opencsv.CSVWriter;
 
@@ -69,14 +72,14 @@ public class CsvBuilder {
         }
     }
 
-    public File create(List<LabeledData> data) {
-        DateFormat df = new SimpleDateFormat("yyyyMMdd.HHmmss");
+    public File create(List<LabeledData> data, String timestamp) {
+
         File directory = new File(
                 mContext.getFilesDir().getAbsolutePath() +
                         File.separator +
                         FOLDER_NAME +
                         File.separator +
-                        data.get(0).getLabelId());
+                        data.get(0).getConfigId());
         if (!directory.exists()) {
             directory.mkdirs();
         }
@@ -86,14 +89,13 @@ public class CsvBuilder {
                         File.separator +
                         FOLDER_NAME +
                         File.separator +
-                        data.get(0).getLabelId() +
+                        data.get(0).getConfigId() +
                         File.separator +
                         data.get(0).getUserId() + "_" +
-                        data.get(0).getLabel() + "_" +
+                        data.get(0).getExperiment() + "_" +
                         data.get(0).getActivity() + "_" +
                         data.get(0).getDevicePosition() + "__" +
-                        df.format(new Date(data.get(0).getTimestamp())) +
-                        //df.format(new Date(System.currentTimeMillis())) +
+                        timestamp + // UID
                         ".csv");
         log.d("Creating CSV file: " + csvFile.getAbsolutePath());
         appendData(csvFile, data, 0);

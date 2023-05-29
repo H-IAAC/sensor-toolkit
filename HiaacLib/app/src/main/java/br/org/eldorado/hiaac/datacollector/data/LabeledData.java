@@ -6,24 +6,24 @@ import androidx.room.Index;
 import androidx.room.PrimaryKey;
 import com.opencsv.bean.CsvNumber;
 import br.org.eldorado.sensoragent.model.SensorBase;
-import br.org.eldorado.sensorsdk.SensorSDK;
 
 @Entity(indices = {
-        @Index(value = {"label-id"}),
+        @Index(value = {"config-id"}),
         @Index(value = {"data-used"}),
         @Index(value = {"sensor-name"}),
-        @Index(value = {"sensor-timestamp"})
+        @Index(value = {"sensor-timestamp"}),
+        @Index(value = {"uid"})
 })
 public class LabeledData {
 
     @PrimaryKey(autoGenerate = true)
     private int id;
 
-    @ColumnInfo(name = "label-name")
-    private String label;
+    @ColumnInfo(name = "experiment")
+    private String experiment;
 
-    @ColumnInfo(name = "label-id")
-    private long labelId;
+    @ColumnInfo(name = "config-id")
+    private long configId;
 
     @ColumnInfo(name = "device-position")
     private String devicePosition;
@@ -54,12 +54,14 @@ public class LabeledData {
     @ColumnInfo(name = "data-used")
     private int isDataUsed;
 
+    @ColumnInfo(name = "uid")
+    private String uid;
 
     private SensorBase sensor;
 
-    public LabeledData(String label, SensorBase sensor, String devicePosition, String userId, String activity, long labelId, long timestamp) {
+    public LabeledData(String experiment, SensorBase sensor, String devicePosition, String userId, String activity, long configId, long timestamp, String uid) {
         this.sensor = sensor;
-        this.label = label;
+        this.experiment = experiment;
         this.sensorName = sensor.getName();
         //this.timestamp = sensor.getTimestamp();
         this.timestamp = timestamp;
@@ -70,15 +72,16 @@ public class LabeledData {
         this.devicePosition = devicePosition;
         this.userId = userId;
         this.activity = activity;
-        this.labelId = labelId;
+        this.configId = configId;
+        this.uid = uid;
     }
 
-    public long getLabelId() {
-        return labelId;
+    public long getConfigId() {
+        return configId;
     }
 
-    public void setLabelId(int labelId) {
-        this.labelId = labelId;
+    public void setConfigId(int configId) {
+        this.configId = configId;
     }
 
     public String getUserId() {
@@ -113,12 +116,12 @@ public class LabeledData {
         this.id = id;
     }
 
-    public String getLabel() {
-        return label;
+    public String getExperiment() {
+        return experiment;
     }
 
-    public void setLabel(String label) {
-        this.label = label;
+    public void setExperiment(String experiment) {
+        this.experiment = experiment;
     }
 
     public String getSensorName() {
@@ -161,9 +164,17 @@ public class LabeledData {
         this.sensorValues = sensorValues;
     }
 
+    public String getUid() {
+        return uid;
+    }
+
+    public void setUid(String uid) {
+        this.uid = uid;
+    }
+
     public String[] getCSVFormattedString() {
         String[] values = sensorValues.split(",");
-        return new String[]{label, sensorName, String.valueOf(power), String.valueOf(frequency), String.valueOf(timestamp),
+        return new String[]{experiment, sensorName, String.valueOf(power), String.valueOf(frequency), String.valueOf(timestamp),
                             values[0], values.length > 1 ? values[1] : "-",
                             values.length > 2 ? values[2] : "-"};
     }

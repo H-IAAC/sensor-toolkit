@@ -89,7 +89,7 @@ public class ExecutionController {
                 //labeledDataList.addAll(((MySensorListener)sensorFrequency.sensor.getListener()).getLabeledDataList());
                 if (sensorFrequency.sensor.getListener() != null) {
                     ExperimentStatistics st = new ExperimentStatistics();
-                    st.setExperimentId(dataTrack.getLabelId());
+                    st.setConfigId(dataTrack.getConfigId());
                     st.setSensorName(sensorFrequency.sensor.getName());
                     st.setSensorFrequency(sensorFrequency.sensor.getFrequency());
                     st.setStartTime(((MySensorListener) sensorFrequency.sensor.getListener()).getStartTime());
@@ -108,7 +108,7 @@ public class ExecutionController {
                     totalData += ((MySensorListener) sensorFrequency.sensor.getListener()).getCollectedData();
                 }
             }
-            dbView.deleteExperimentsStatistics(dataTrack.getLabelId());
+            dbView.deleteExperimentsStatistics(dataTrack.getConfigId());
             dbView.insertExperimentStatistics(statistics);
             if (service != null) {
                 service.stopForeground(true);
@@ -244,7 +244,7 @@ public class ExecutionController {
                         minTimestampDifference = Math.min((currentTimestamp - lastTimestamp), minTimestampDifference);
                     }
                     lastTimestamp = currentTimestamp;
-                    LabeledData data = new LabeledData(dataTrack.getLabel(), sensor, dataTrack.getDeviceLocation(), dataTrack.getUserId(), dataTrack.getActivity(), dataTrack.getLabelId(), currentTimestamp);
+                    LabeledData data = new LabeledData(dataTrack.getLabel(), sensor, dataTrack.getDeviceLocation(), dataTrack.getUserId(), dataTrack.getActivity(), dataTrack.getConfigId(), currentTimestamp, dataTrack.getUid());
                     labeledData.add(data);
                     collectedData++;
 

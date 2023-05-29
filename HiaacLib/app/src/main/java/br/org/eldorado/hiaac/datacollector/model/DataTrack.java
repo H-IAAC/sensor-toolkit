@@ -9,12 +9,13 @@ public class DataTrack {
 
     private List<SensorFrequency> sensorList;
     private String label;
-    private long labelId;
+    private long configId;
     private int stopTime;
     private String mDeviceLocation;
     private String mUserId;
     private String mActivity;
     private boolean mSendFilesToServer;
+    private String uid;
 
     public DataTrack() {
         sensorList = new ArrayList<SensorFrequency>();
@@ -45,6 +46,14 @@ public class DataTrack {
         this.mSendFilesToServer = mSendFilesToServer;
     }
 
+    public String getUid() {
+        return uid;
+    }
+
+    public void setUid(String uid) {
+        this.uid = uid;
+    }
+
     public String getDeviceLocation() {
         return mDeviceLocation;
     }
@@ -65,12 +74,12 @@ public class DataTrack {
         return stopTime;
     }
 
-    public void setLabelId(long lId) {
-        this.labelId = lId;
+    public void setConfigId(long lId) {
+        this.configId = lId;
     }
 
-    public long getLabelId() {
-        return labelId;
+    public long getConfigId() {
+        return configId;
     }
 
     public String getLabel() {
@@ -89,7 +98,7 @@ public class DataTrack {
     public boolean equals(Object obj) {
         if (obj instanceof DataTrack) {
             DataTrack dt = (DataTrack) obj;
-            if (dt.getLabel().equals(getLabel()) && dt.getLabelId() == getLabelId()) {
+            if (dt.getLabel().equals(getLabel()) && dt.getConfigId() == getConfigId()) {
                 return true;
             }
         }

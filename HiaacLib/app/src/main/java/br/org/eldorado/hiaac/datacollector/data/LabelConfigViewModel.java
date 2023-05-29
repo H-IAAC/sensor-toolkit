@@ -41,6 +41,11 @@ public class LabelConfigViewModel extends AndroidViewModel {
 
     public void deleteConfig(LabelConfig config) {
         mRepository.deleteConfig(config);
+        // When a config is deleted:
+        // 1) remove related statistics must be removed
+        deleteExperimentsStatistics(config.id);
+        // 2) remove related labeled data
+        deleteLabeledData(config.id);
     }
 
     public LiveData<List<SensorFrequency>> getAllSensorsFromLabel(long id) {
@@ -67,8 +72,8 @@ public class LabelConfigViewModel extends AndroidViewModel {
         mRepository.insertExperimentStatistics(statistics);
     }
 
-    public void deleteExperimentsStatistics(long expId) {
-        mRepository.deleteExperimentStatistics(expId);
+    public void deleteExperimentsStatistics(long configId) {
+        mRepository.deleteExperimentStatistics(configId);
     }
 
     public List<LabeledData> getLabeledData(long labelId, int type, long offset) {
@@ -85,5 +90,9 @@ public class LabelConfigViewModel extends AndroidViewModel {
 
     public void deleteLabeledData(LabeledData label) {
         mRepository.deleteLabeledData(label);
+    }
+
+    public void deleteLabeledData(long configId) {
+        mRepository.deleteLabeledData(configId);
     }
 }

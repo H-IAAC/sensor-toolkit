@@ -68,7 +68,7 @@ public class FirebaseUploadController {
                 storage.setMaxUploadRetryTimeMillis(2000);
                 StorageReference csvRef = storage.getReference().child(labelName+ File.separator + "csv");
 
-                File csvFile = csvBuilder.create(labeledData);
+                File csvFile = csvBuilder.create(labeledData, "0");
                 labeledData.clear();
                 long offset = labeledData.size();
                 while ((labeledData = dbView.getLabeledData(labelId, LabelConfigRepository.TYPE_FIREBASE, offset)).size() > 0) {
@@ -146,7 +146,7 @@ public class FirebaseUploadController {
         }).start();
     }
 
-    public void exportToCSV(String label, long labelId) {
+    public void exportToCSV(String uid, long labelId) {
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -158,7 +158,7 @@ public class FirebaseUploadController {
                     return;
                 }
                 fireListener(ON_PROGRESS, mContext.getString(R.string.creating_csv_file));
-                File csvFile = csvBuilder.create(labeledData);
+                File csvFile = csvBuilder.create(labeledData, uid);
                 labeledData.clear();
                 int index = 0;
                 while ((labeledData = dbView.getLabeledData(labelId, LabelConfigRepository.TYPE_CSV, 0)).size() > 0) {
@@ -176,8 +176,6 @@ public class FirebaseUploadController {
         if (listener != null) {
             switch (type) {
                 case SUCCESS:
-                    listener.onCompleted(msg);
-                    break;
                 case ERROR:
                     listener.onCompleted(msg);
                     break;
