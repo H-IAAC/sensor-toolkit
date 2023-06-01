@@ -4,7 +4,7 @@ import android.hardware.Sensor;
 
 public class AgentGravity extends AgentSensorBase {
     private static final String TAG = "Gravity";
-    private Sensor sensor;
+    private final Sensor sensor;
 
     public AgentGravity() {
         super(TAG, TYPE_GRAVITY);

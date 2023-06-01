@@ -4,7 +4,7 @@ import br.org.eldorado.sensoragent.BuildConfig;
 
 public class Log {
     private static final String MAIN_TAG = "SensorAgent-";
-    private String tag;
+    private final String tag;
 
     public Log(String tag) {
         this.tag = tag;

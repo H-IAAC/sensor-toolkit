@@ -3,7 +3,6 @@ package br.org.eldorado.hiaac.profiling;
 import android.app.ActivityManager;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.os.BatteryManager;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -14,10 +13,10 @@ class ProfilingData {
     protected static final String TYPE_CHECKPOINT = "CHECKPOINT";
     protected static final String TYPE_AUTOMATIC = "AUTOMATIC";
 
-    private long currentTime;
-    private long startTime;
-    private Context mContext;
-    private String type;
+    private final long currentTime;
+    private final long startTime;
+    private final Context mContext;
+    private final String type;
 
     private String ramMB;
     private String ramPercentage;
@@ -25,7 +24,7 @@ class ProfilingData {
     private String batteryLevel;
     private String cpuUsage;
 
-    private Intent battery;
+    private final Intent battery;
 
     protected ProfilingData(long st, Context ctx, String tp, Intent bat) {
         battery = bat;
@@ -74,9 +73,8 @@ class ProfilingData {
     }
 
     protected String[] getCSVFormattedString() {
-        String str[] = {getTimestamp(), getElapsedTime(), getUsedMemory(), getRAMMB(), getRAMPercentage(), getCpuUsage(),
+        return new String[]{getTimestamp(), getElapsedTime(), getUsedMemory(), getRAMMB(), getRAMPercentage(), getCpuUsage(),
                         getBatteryLevel(), getType()};
-        return str;
     }
 
     private void setCpuUsage() {
@@ -102,7 +100,7 @@ class ProfilingData {
         ActivityManager.MemoryInfo mi = new ActivityManager.MemoryInfo();
         ActivityManager activityManager = (ActivityManager) mContext.getSystemService(mContext.ACTIVITY_SERVICE);
         activityManager.getMemoryInfo(mi);
-        double usedMegs = (mi.totalMem - mi.availMem) / 0x100000L;
+        double usedMegs = (double)(mi.totalMem - mi.availMem) / 0x100000L;
 
         double percentUsed = (mi.totalMem - mi.availMem) / (double)mi.totalMem * 100.0;
         ramMB = String.valueOf(usedMegs);
@@ -111,14 +109,12 @@ class ProfilingData {
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("Elapsed Time: ").append(getElapsedTime()).append(", ")
-                .append("Application Used Memory: ").append(getUsedMemory()).append(" bytes, ")
-                .append("Used RAM Memory: ").append(getRAMMB()).append("MB, ")
-                .append("Used RAM Memory: ").append(getRAMPercentage()).append("%, ")
-                .append("Used CPU: ").append(getCpuUsage()).append("%, ")
-                .append("Battery Level: ").append(getBatteryLevel());
 
-        return sb.toString();
+        return "Elapsed Time: " + getElapsedTime() + ", " +
+                "Application Used Memory: " + getUsedMemory() + " bytes, " +
+                "Used RAM Memory: " + getRAMMB() + "MB, " +
+                "Used RAM Memory: " + getRAMPercentage() + "%, " +
+                "Used CPU: " + getCpuUsage() + "%, " +
+                "Battery Level: " + getBatteryLevel();
     }
 }

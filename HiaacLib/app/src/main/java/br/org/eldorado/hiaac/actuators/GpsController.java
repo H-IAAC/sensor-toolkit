@@ -21,11 +21,11 @@ import com.google.android.gms.location.SettingsClient;
 import com.google.android.gms.tasks.OnFailureListener;
 
 public class GpsController {
-    private Context context;
-    private SettingsClient mSettingsClient;
-    private LocationSettingsRequest mLocationSettingsRequest;
-    private LocationManager locationManager;
-    private LocationRequest locationRequest;
+    private final Context context;
+    private final SettingsClient mSettingsClient;
+    private final LocationSettingsRequest mLocationSettingsRequest;
+    private final LocationManager locationManager;
+    private final LocationRequest locationRequest;
 
     protected GpsController(Context context) {
         this.context = context;
@@ -65,7 +65,7 @@ public class GpsController {
                                 String errorMessage = "Location settings are inadequate, and cannot be " +
                                         "fixed here. Fix in Settings.";
                                 Log.e(TAG, errorMessage);
-                                Toast.makeText((Activity) context, errorMessage, Toast.LENGTH_LONG).show();
+                                Toast.makeText(context, errorMessage, Toast.LENGTH_LONG).show();
                         }
                     }
                 });

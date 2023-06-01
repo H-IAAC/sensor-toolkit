@@ -21,13 +21,13 @@ import br.org.eldorado.sensorsdk.util.Log;
 public class SensorController {
 
     private static final String TAG = "SensorController";
-    private Log log;
-    private Map<Integer, SensorBase> sensorMap;
+    private final Log log;
+    private final Map<Integer, SensorBase> sensorMap;
     private static SensorController inst;
     private ISensorAgent sensorAgent;
     private Context mContext;
     private ServiceConnection mServiceConnection;
-    private SensorAgentListener listener;
+    private final SensorAgentListener listener;
 
     public static SensorController getInstance() {
         if (inst == null) {
@@ -37,7 +37,7 @@ public class SensorController {
     }
 
     private SensorController() {
-        this.sensorMap = new HashMap<Integer, SensorBase>();
+        this.sensorMap = new HashMap<>();
         this.listener = new SensorAgentListener();
         this.log = new Log(TAG);
         this.initController();
@@ -84,7 +84,7 @@ public class SensorController {
         log.i("bind: " + b);
     }
 
-    private IBinder.DeathRecipient mDeathRecipient = new IBinder.DeathRecipient() {
+    private final IBinder.DeathRecipient mDeathRecipient = new IBinder.DeathRecipient() {
         @Override
         public void binderDied() {
             if(sensorAgent != null){
@@ -171,7 +171,7 @@ public class SensorController {
     class SensorAgentListener extends ISensorAgentListener.Stub {
 
         @Override
-        public void onSensorStarted(int sensorType) throws RemoteException {
+        public void onSensorStarted(int sensorType) {
             SensorBase sensor = sensorMap.get(sensorType);
             log.d("onSensorStarted " + sensor.getName() + " " + sensor.getFrequency());
             if (sensor != null && sensor.getListener() != null) {
@@ -186,7 +186,7 @@ public class SensorController {
         }
 
         @Override
-        public void onSensorStopped(int sensorType) throws RemoteException {
+        public void onSensorStopped(int sensorType) {
             SensorBase sensor = sensorMap.get(sensorType);
             if (sensor != null && sensor.getListener() != null) {
                 sensor.getListener().onSensorStopped(sensor);

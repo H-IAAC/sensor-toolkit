@@ -57,7 +57,7 @@ public class LabeledData {
     @ColumnInfo(name = "uid")
     private String uid;
 
-    private SensorBase sensor;
+    private final SensorBase sensor;
 
     public LabeledData(String experiment, SensorBase sensor, String devicePosition, String userId, String activity, long configId, long timestamp, String uid) {
         this.sensor = sensor;

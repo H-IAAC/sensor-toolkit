@@ -4,7 +4,7 @@ import android.hardware.Sensor;
 
 public class AgentMagneticField extends AgentSensorBase {
     private static final String TAG = "MagneticField";
-    private Sensor sensor;
+    private final Sensor sensor;
 
     public AgentMagneticField() {
         super(TAG, TYPE_MAGNETIC_FIELD);

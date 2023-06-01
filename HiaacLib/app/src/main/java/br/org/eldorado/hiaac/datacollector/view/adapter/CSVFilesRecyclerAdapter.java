@@ -23,9 +23,9 @@ public class CSVFilesRecyclerAdapter extends RecyclerView.Adapter<CSVFilesRecycl
 
     private static final String TAG = "CSVFilesRecyclerAdapter";
     private final LayoutInflater mInflater;
-    private List<File> csvFileList;
-    private Context mContext;
-    private Log log;
+    private final List<File> csvFileList;
+    private final Context mContext;
+    private final Log log;
 
     public CSVFilesRecyclerAdapter(Context context, List<File> f) {
         mInflater = LayoutInflater.from(context);
@@ -95,15 +95,15 @@ public class CSVFilesRecyclerAdapter extends RecyclerView.Adapter<CSVFilesRecycl
     public class ViewHolder extends RecyclerView.ViewHolder {
 
         private ImageView fileImg;
-        private ImageView deleteImg;
-        private TextView fileName;
-        private CardView csvFile;
+        private final ImageView deleteImg;
+        private final TextView fileName;
+        private final CardView csvFile;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
-            deleteImg = (ImageView) itemView.findViewById(R.id.delete_csv_file);
-            fileName = (TextView) itemView.findViewById(R.id.csv_file_txt);
-            csvFile = (CardView) itemView.findViewById(R.id.csv_file_pnel);
+            deleteImg = itemView.findViewById(R.id.delete_csv_file);
+            fileName = itemView.findViewById(R.id.csv_file_txt);
+            csvFile = itemView.findViewById(R.id.csv_file_pnel);
         }
 
         public CardView getCsvFile() {

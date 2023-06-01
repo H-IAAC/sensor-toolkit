@@ -8,9 +8,9 @@ import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 public class LabelConfigViewModel extends AndroidViewModel {
-    private LabelConfigRepository mRepository;
-    private LiveData<List<LabelConfig>> mAllLabels;
-    private LiveData<List<SensorFrequency>> mAllSensorFrequencies;
+    private final LabelConfigRepository mRepository;
+    private final LiveData<List<LabelConfig>> mAllLabels;
+    private final LiveData<List<SensorFrequency>> mAllSensorFrequencies;
 
     public LabelConfigViewModel(Application application) {
         super(application);

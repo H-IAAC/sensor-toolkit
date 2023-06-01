@@ -16,11 +16,10 @@ public class ServerConnection {
     private boolean isRunning;
     private ServerSocket socket;
 
-    public static ServerConnection getInstance() {
+    public static void getInstance() {
         if (inst == null) {
             inst = new ServerConnection();
         }
-        return inst;
     }
 
     private ServerConnection() {
@@ -54,7 +53,7 @@ public class ServerConnection {
     }
 
     private String getIpAddress() {
-        String ip = "";
+        StringBuilder ip = new StringBuilder();
         try {
             Enumeration<NetworkInterface> enumNetworkInterfaces = NetworkInterface
                     .getNetworkInterfaces();
@@ -67,8 +66,7 @@ public class ServerConnection {
                     InetAddress inetAddress = enumInetAddress.nextElement();
 
                     if (inetAddress.isSiteLocalAddress()) {
-                        ip += "SiteLocalAddress: "
-                                + inetAddress.getHostAddress() + "\n";
+                        ip.append("SiteLocalAddress: ").append(inetAddress.getHostAddress()).append("\n");
                     }
 
                 }
@@ -78,9 +76,9 @@ public class ServerConnection {
         } catch (SocketException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
-            ip += "Something Wrong! " + e.toString() + "\n";
+            ip.append("Something Wrong! ").append(e.toString()).append("\n");
         }
 
-        return ip;
+        return ip.toString();
     }
 }

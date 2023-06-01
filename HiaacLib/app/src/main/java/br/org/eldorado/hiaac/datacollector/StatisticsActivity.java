@@ -1,6 +1,5 @@
 package br.org.eldorado.hiaac.datacollector;
 
-import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -19,7 +18,6 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
 import java.text.DateFormat;
-import java.text.Format;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -49,10 +47,10 @@ public class StatisticsActivity extends AppCompatActivity {
         String statisticsJson = getIntent().getExtras().getString("statistics");
         statistics = new Gson().fromJson(statisticsJson, new TypeToken<ArrayList<ExperimentStatistics>>() {}.getType());
 
-        TextView textView = (TextView) findViewById(R.id.statistics_date);
+        TextView textView = findViewById(R.id.statistics_date);
         textView.setText(convertDate(statistics.get(0).getStartTime()));
 
-        textView = (TextView) findViewById(R.id.sensor_period);
+        textView = findViewById(R.id.sensor_period);
         textView.setText(convertHours(statistics.get(0).getStartTime()) + " ~ " + convertHours(statistics.get(0).getEndTime()));
 
         for ( ExperimentStatistics statistic : statistics) {
@@ -91,7 +89,7 @@ public class StatisticsActivity extends AppCompatActivity {
     }
 
     public static class StatisticsPlaceholderFragment extends Fragment {
-        private ExperimentStatistics statistic;
+        private final ExperimentStatistics statistic;
 
         public StatisticsPlaceholderFragment(ExperimentStatistics statistic) {
             this.statistic = statistic;
@@ -102,16 +100,16 @@ public class StatisticsActivity extends AppCompatActivity {
 
             View statisticsElementView = inflater.inflate(R.layout.statistics_element, container,false);
 
-            TextView textView = (TextView) statisticsElementView.findViewById(R.id.sensor_name);
+            TextView textView = statisticsElementView.findViewById(R.id.sensor_name);
             textView.setText(statistic.getSensorName());
 
-            textView = (TextView) statisticsElementView.findViewById(R.id.sensor_frequency);
+            textView = statisticsElementView.findViewById(R.id.sensor_frequency);
             textView.setText(" (" + statistic.getSensorFrequency() + " Hz)");
 
-            textView = (TextView) statisticsElementView.findViewById(R.id.sensor_valid_data);
+            textView = statisticsElementView.findViewById(R.id.sensor_valid_data);
             textView.setText(statistic.getCollectedData() + "");
 
-            textView = (TextView) statisticsElementView.findViewById(R.id.sensor_invalid_data);
+            textView = statisticsElementView.findViewById(R.id.sensor_invalid_data);
             textView.setText(statistic.getInvalidData() + "");
 
             // Calculate the time frame with "start time - end time"
@@ -121,20 +119,20 @@ public class StatisticsActivity extends AppCompatActivity {
                     TimeUnit.MILLISECONDS.toSeconds(totalTimeFrame) -
                             TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(totalTimeFrame))
             );
-            textView = (TextView) statisticsElementView.findViewById(R.id.sensor_timeframe);
+            textView = statisticsElementView.findViewById(R.id.sensor_timeframe);
             textView.setText(timeFrame);
 
             // If there is no valid samples, then ignore the remaining fields
             if (statistic.getCollectedData() == 0) return statisticsElementView;
 
             // Set the detailed time frame values
-            textView = (TextView) statisticsElementView.findViewById(R.id.sensor_timestamp_average);
+            textView = statisticsElementView.findViewById(R.id.sensor_timestamp_average);
             textView.setText(statistic.getTimestampAverage() + " ms");
 
-            textView = (TextView) statisticsElementView.findViewById(R.id.max_timestamp_difference);
+            textView = statisticsElementView.findViewById(R.id.max_timestamp_difference);
             textView.setText(statistic.getMaxTimestampDifference() + " ms");
 
-            textView = (TextView) statisticsElementView.findViewById(R.id.min_timestamp_difference);
+            textView = statisticsElementView.findViewById(R.id.min_timestamp_difference);
             textView.setText(statistic.getMinTimestampDifference() + " ms");
 
             return statisticsElementView;

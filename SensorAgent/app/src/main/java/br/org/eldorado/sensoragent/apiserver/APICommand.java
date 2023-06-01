@@ -4,7 +4,6 @@ import androidx.annotation.NonNull;
 
 import com.google.gson.Gson;
 
-import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 

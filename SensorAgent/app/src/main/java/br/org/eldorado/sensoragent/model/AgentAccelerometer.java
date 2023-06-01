@@ -4,7 +4,7 @@ import android.hardware.Sensor;
 
 public class AgentAccelerometer extends AgentSensorBase {
     private static final String TAG = "Accelerometer";
-    private Sensor sensor;
+    private final Sensor sensor;
 
     public AgentAccelerometer() {
         super(TAG, TYPE_ACCELEROMETER);

@@ -12,7 +12,7 @@ import java.util.List;
 public class CsvFiles {
     private static final String TAG = "CsvFiles";
     private Log log = new Log(TAG);
-    private Context mContext;
+    private final Context mContext;
 
     public CsvFiles(Context context) {
         mContext = context;
@@ -25,7 +25,7 @@ public class CsvFiles {
                         FOLDER_NAME +
                         File.separator +
                         id);
-        List<File> filesList = new ArrayList<File>();
+        List<File> filesList = new ArrayList<>();
         if (directory.exists()) {
             filesList = new ArrayList<>(Arrays.asList(directory.listFiles()));
         }

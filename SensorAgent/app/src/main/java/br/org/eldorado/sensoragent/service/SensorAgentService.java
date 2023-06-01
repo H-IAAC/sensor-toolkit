@@ -25,7 +25,7 @@ public class SensorAgentService extends Service {
 
     private static final String TAG = "SensorAgentService";
     private Log log;
-    private SensorAgentBind sensorBind = new SensorAgentBind();
+    private final SensorAgentBind sensorBind = new SensorAgentBind();
     private RemoteCallbackList<ISensorAgentListener> mClientListener;
 
     @Override
@@ -51,7 +51,7 @@ public class SensorAgentService extends Service {
             SensorAgentContext.getInstance().setContext(this);
         }
         //APIController.getInstance();
-        mClientListener = new RemoteCallbackList<ISensorAgentListener>();
+        mClientListener = new RemoteCallbackList<>();
         SensorController.getInstance().setListener(mClientListener);
     }
 

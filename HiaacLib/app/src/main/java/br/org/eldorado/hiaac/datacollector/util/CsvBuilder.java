@@ -3,18 +3,12 @@ package br.org.eldorado.hiaac.datacollector.util;
 import static br.org.eldorado.hiaac.datacollector.DataCollectorActivity.FOLDER_NAME;
 
 import android.content.Context;
-import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteOpenHelper;
 
 import com.opencsv.CSVWriter;
 
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.sql.Date;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.Locale;
 
@@ -24,10 +18,10 @@ import br.org.eldorado.hiaac.datacollector.data.LabeledData;
 public class CsvBuilder {
 
     private static final String TAG = "CsvBuilder";
-    private Log log = new Log(TAG);
+    private final Log log = new Log(TAG);
 
-    private LabelConfigViewModel mDbView;
-    private Context mContext;
+    private final LabelConfigViewModel mDbView;
+    private final Context mContext;
 
     public CsvBuilder(LabelConfigViewModel dbView, Context context) {
         mDbView = dbView;

@@ -4,7 +4,7 @@ import android.hardware.Sensor;
 
 public class AgentGyroscope extends AgentSensorBase {
     private static final String TAG = "Gyroscope";
-    private Sensor sensor;
+    private final Sensor sensor;
 
     public AgentGyroscope() {
         super(TAG, TYPE_GYROSCOPE);

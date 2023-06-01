@@ -90,13 +90,9 @@ public class CpuInfo {
     private static int readIntegerFile(String path) {
         int ret = 0;
         try {
-            RandomAccessFile reader = new RandomAccessFile(path, "r");
-
-            try {
+            try (RandomAccessFile reader = new RandomAccessFile(path, "r")) {
                 String line = reader.readLine();
                 ret = Integer.parseInt(line);
-            } finally {
-                reader.close();
             }
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -115,10 +111,7 @@ public class CpuInfo {
             @Override
             public boolean accept(File pathname) {
                 //Check if filename is "cpu", followed by one or more digits
-                if(Pattern.matches("cpu[0-9]+", pathname.getName())) {
-                    return true;
-                }
-                return false;
+                return Pattern.matches("cpu\\d+", pathname.getName());
             }
         }
 
@@ -137,7 +130,10 @@ public class CpuInfo {
 
 
     private static class CoreFreq {
-        int num, cur, min = 0, max = 0;
+        final int num;
+        int cur;
+        int min;
+        int max;
 
         CoreFreq(int num) {
             this.num = num;

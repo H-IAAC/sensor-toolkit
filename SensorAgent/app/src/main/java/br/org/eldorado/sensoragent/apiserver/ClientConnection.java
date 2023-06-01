@@ -48,9 +48,7 @@ public class ClientConnection {
                             }
                             Thread.sleep(200);
                         }
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    } catch (InterruptedException e) {
+                    } catch (IOException | InterruptedException e) {
                         e.printStackTrace();
                     } finally {
                         try {

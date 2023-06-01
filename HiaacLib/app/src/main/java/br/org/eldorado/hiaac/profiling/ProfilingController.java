@@ -3,7 +3,6 @@ package br.org.eldorado.hiaac.profiling;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.os.BatteryManager;
 
 import com.opencsv.CSVWriter;
 import java.io.File;
@@ -18,17 +17,17 @@ import br.org.eldorado.hiaac.datacollector.util.Log;
 class ProfilingController {
 
     private static final String TAG = "ProfilingController";
-    private Log log;
+    private final Log log;
 
     private long initialTime;
     private boolean isRunning;
     private boolean shouldFinish;
     private Context mContext;
-    private List<ProfilingData> data;
+    private final List<ProfilingData> data;
     private long frequency;
     private String csvFileName;
     private Thread profilingThread;
-    private String[] csvHeader = {"Timestamp", "Elapsed Time", "Used Memory from Application (bytes)", "Used System`s RAM (MB)",
+    private final String[] csvHeader = {"Timestamp", "Elapsed Time", "Used Memory from Application (bytes)", "Used System`s RAM (MB)",
             "Used System`s RAM (%)", "Used System`s CPU (%)", "Battery Level", "Profiling Type"};
 
     private Intent batteryStatus;

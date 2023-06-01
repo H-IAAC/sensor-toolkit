@@ -17,13 +17,13 @@ public class SensorFrequency {
     public int id;
 
     @NonNull
-    public long config_id;
+    public final long config_id;
 
     @NonNull
-    public SensorBase sensor;
+    public final SensorBase sensor;
 
     @NonNull
-    public int frequency;
+    public final int frequency;
 
     @NonNull
     public long getConfigId() {

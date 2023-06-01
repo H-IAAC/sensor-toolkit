@@ -7,34 +7,24 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
-import android.location.Location;
-import android.os.Bundle;
 import android.os.Looper;
 import android.os.Parcel;
 import android.os.Parcelable;
-import android.os.SystemClock;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 
-import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.Task;
-import com.google.gson.Gson;
 
 import java.util.Arrays;
 
 import br.org.eldorado.sensoragent.SensorAgentContext;
-import br.org.eldorado.sensoragent.apiserver.APICommand;
-import br.org.eldorado.sensoragent.apiserver.APIController;
 import br.org.eldorado.sensoragent.util.Log;
 import br.org.eldorado.sensoragent.util.RemoteApplicationTime;
 

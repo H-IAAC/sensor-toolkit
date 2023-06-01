@@ -12,7 +12,6 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
-import android.widget.CompoundButton;
 import android.widget.Spinner;
 import android.widget.Toast;
 
@@ -33,23 +32,23 @@ import br.org.eldorado.sensorsdk.SensorSDK;
 public class SensorFrequencyViewAdapter extends RecyclerView.Adapter<SensorFrequencyViewAdapter.ViewHolder> {
     private final LayoutInflater mInflater;
     private List<SelectedSensorFrequency> mSelectedSensors;
-    private SensorFrequencyChangeListener mListener;
-    private Context mContext;
+    private final SensorFrequencyChangeListener mListener;
+    private final Context mContext;
     private ViewHolder gpsHolder;
-    private Log log;
+    private final Log log;
 
-    public static List<Integer> frequencyOptions = new ArrayList<Integer>(
-            Arrays.asList(  0,
-                            1,
-                            10,
-                            20,
-                            30,
-                            40,
-                            50,
-                            100,
-                            500,
-                            1000
-                        )
+    public static final List<Integer> frequencyOptions = new ArrayList<>(
+            Arrays.asList(0,
+                    1,
+                    10,
+                    20,
+                    30,
+                    40,
+                    50,
+                    100,
+                    500,
+                    1000
+            )
     );
 
     public SensorFrequencyViewAdapter(Context context, SensorFrequencyChangeListener listener) {
@@ -155,7 +154,7 @@ public class SensorFrequencyViewAdapter extends RecyclerView.Adapter<SensorFrequ
     }
 
     private void handleCheckBox(ViewHolder holder, SelectedSensorFrequency selectedSensorFrequency, AnimatedLinearLayout frequencyContainer) {
-        if (GPS.TAG.equals(holder.getSelectSensorCheckBox().getText())) {
+        if (GPS.TAG.contentEquals(holder.getSelectSensorCheckBox().getText())) {
             // Check if we have GPS permission
             //gpsHolder = holder;
             checkGPSPermission();
@@ -256,9 +255,9 @@ public class SensorFrequencyViewAdapter extends RecyclerView.Adapter<SensorFrequ
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {
-        private CheckBox selectSensorCheckBox;
-        private AnimatedLinearLayout frequencyContainer;
-        private Spinner frequenciesSpinner;
+        private final CheckBox selectSensorCheckBox;
+        private final AnimatedLinearLayout frequencyContainer;
+        private final Spinner frequenciesSpinner;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -290,7 +289,7 @@ public class SensorFrequencyViewAdapter extends RecyclerView.Adapter<SensorFrequ
 
     public static class SelectedSensorFrequency {
         private boolean isSelected;
-        private String sensor;
+        private final String sensor;
         private int frequency;
 
         public SelectedSensorFrequency(boolean isSelected, String sensor, int frequency) {

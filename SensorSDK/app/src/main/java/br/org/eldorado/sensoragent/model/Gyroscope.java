@@ -11,10 +11,8 @@ public class Gyroscope extends SensorBase {
     }
 
     public String getValuesString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append(getValuesArray()[0]).append(",")
-                .append(getValuesArray()[1]).append(",")
-                .append(getValuesArray()[2]);
-        return sb.toString();
+        return getValuesArray()[0] + "," +
+                getValuesArray()[1] + "," +
+                getValuesArray()[2];
     }
 }

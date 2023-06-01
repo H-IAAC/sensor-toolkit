@@ -85,16 +85,16 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
     private List<LabelConfig> labelConfigs;
     private Set<Integer> labelsConflicts = new HashSet<>();
     private Map<Long, List<SensorFrequency>> sensorFrequencyMap;
-    private Context mContext;
+    private final Context mContext;
     private ExecutionService execService;
     private ServiceConnection svc;
-    private Log log;
+    private final Log log;
     private ProgressDialog sendDataDialog;
     private LabelConfigViewModel mLabelConfigViewModel;
-    private Map<String, ViewHolder> holdersMap = new HashMap<>();
+    private final Map<String, ViewHolder> holdersMap = new HashMap<>();
     private boolean deleteButtonClicked;
 
-    private CsvFiles csvFiles;
+    private final CsvFiles csvFiles;
 
     public LabelRecyclerViewAdapter(Context context) {
         mInflater = LayoutInflater.from(context);
@@ -301,7 +301,7 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
     }
 
     private void resizeLabelPanel(ViewHolder holder) {
-        if (((CSVFilesRecyclerAdapter)holder.getCsvRecyclerView().getAdapter()).getItemCount() > 0) {
+        if (holder.getCsvRecyclerView().getAdapter().getItemCount() > 0) {
             holder.getButtonContainer().expand(300);
         } else {
             holder.getButtonContainer().expand(54);
@@ -419,7 +419,7 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
                 MultipartBody.Part.createFormData("subject", labelConfigs.get(holder.getAdapterPosition()).userId);
         filesToUpload = files.size();
         files.forEach((file) -> {
-            MultipartBody.Part filePart = filePart = MultipartBody.Part.createFormData(
+            MultipartBody.Part filePart = MultipartBody.Part.createFormData(
                     "file", file.getName(),
                     RequestBody.create(MediaType.parse("multipart/form-data"), file));
 
@@ -554,7 +554,7 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
             } catch (Exception e) {
                 log.e("App is not running!");
             }
-            TextView messageView = (TextView) dialog.findViewById(android.R.id.message);
+            TextView messageView = dialog.findViewById(android.R.id.message);
             messageView.setGravity(Gravity.CENTER);
             messageView.setTextSize(30);
             countDown.start();
@@ -621,21 +621,21 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
     public class ViewHolder extends RecyclerView.ViewHolder {
         private boolean isOpened;
 
-        private CardView expCard;
-        private ColorStateList expCardColor;
-        private TextView labelTitle;
-        private TextView labelActivity;
-        private TextView labelConflict;
-        private TextView labelDeviceLocation;
-        private TextView labelTimer;
-        private AnimatedLinearLayout buttonContainer;
-        private Button startButton;
-        private Button stopButton;
-        private Button editButton;
-        private ImageView shareButton;
-        private ImageView deleteButton;
-        private ImageView statisticsButton;
-        private RecyclerView csvRecyclerView;
+        private final CardView expCard;
+        private final ColorStateList expCardColor;
+        private final TextView labelTitle;
+        private final TextView labelActivity;
+        private final TextView labelConflict;
+        private final TextView labelDeviceLocation;
+        private final TextView labelTimer;
+        private final AnimatedLinearLayout buttonContainer;
+        private final Button startButton;
+        private final Button stopButton;
+        private final Button editButton;
+        private final ImageView shareButton;
+        private final ImageView deleteButton;
+        private final ImageView statisticsButton;
+        private final RecyclerView csvRecyclerView;
         private boolean started;
 
         public ViewHolder(@NonNull View itemView) {
@@ -748,7 +748,7 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
 
     private class MyExecutionListener extends ExecutionServiceListenerAdapter {
 
-        private ViewHolder holder;
+        private final ViewHolder holder;
         public MyExecutionListener(DataTrack dt, ViewHolder h) {
             super(dt);
             this.holder = h;
@@ -826,7 +826,7 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
                             }
                         };
                         createCSVDialog.show();
-                        TextView messageView = (TextView) createCSVDialog.findViewById(android.R.id.message);
+                        TextView messageView = createCSVDialog.findViewById(android.R.id.message);
                         messageView.setGravity(Gravity.CENTER);
                         messageView.setTextSize(26);
                         countDown.start();

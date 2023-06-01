@@ -4,7 +4,7 @@ import android.hardware.Sensor;
 
 public class AgentAmbientTemperature extends AgentSensorBase {
     private static final String TAG = "AmbientTemperature";
-    private Sensor sensor;
+    private final Sensor sensor;
 
     public AgentAmbientTemperature() {
         super(TAG, TYPE_AMBIENT_TEMPERATURE);

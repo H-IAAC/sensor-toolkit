@@ -6,8 +6,8 @@ import android.media.AudioManager;
 import android.util.Log;
 
 public class VolumeController {
-    private Activity activity;
-    private int stream = AudioManager.STREAM_MUSIC;
+    private final Activity activity;
+    private final int stream = AudioManager.STREAM_MUSIC;
 
     protected VolumeController(Activity activity) {
         this.activity = activity;

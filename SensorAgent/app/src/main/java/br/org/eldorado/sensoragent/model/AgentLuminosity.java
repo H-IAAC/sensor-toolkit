@@ -4,7 +4,7 @@ import android.hardware.Sensor;
 
 public class AgentLuminosity extends AgentSensorBase {
     private static final String TAG = "Luminosity";
-    private Sensor sensor;
+    private final Sensor sensor;
 
     public AgentLuminosity() {
         super(TAG, TYPE_LIGHT);

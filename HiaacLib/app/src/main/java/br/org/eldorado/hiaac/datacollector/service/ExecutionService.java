@@ -32,7 +32,7 @@ public class ExecutionService extends Service {
 
     private static final String TAG = "ExecutionService";
     private Log log;
-    private IBinder mBinder = new MyBinder();
+    private final IBinder mBinder = new MyBinder();
     private DataTrack dataTrack;
 
     public class MyBinder extends Binder {

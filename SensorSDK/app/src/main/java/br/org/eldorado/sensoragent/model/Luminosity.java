@@ -10,8 +10,6 @@ public class Luminosity extends SensorBase {
     }
 
     public String getValuesString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append(values[0]);
-        return sb.toString();
+        return String.valueOf(values[0]);
     }
 }

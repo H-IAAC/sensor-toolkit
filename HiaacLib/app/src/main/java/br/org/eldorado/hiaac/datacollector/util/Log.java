@@ -3,7 +3,7 @@ package br.org.eldorado.hiaac.datacollector.util;
 
 public class Log {
     private static final String APP_TAG = "HIAAC-";
-    private String classTag;
+    private final String classTag;
 
     public Log(String tag) {
         this.classTag = tag;

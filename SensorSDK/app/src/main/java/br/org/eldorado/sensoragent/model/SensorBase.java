@@ -170,10 +170,8 @@ public class SensorBase implements Parcelable, Cloneable {
                         listener.onSensorChanged((SensorBase) this.clone());
                         break;
                 }
-            } catch (CloneNotSupportedException ex) {
+            } catch (Exception ex) {
                 ex.printStackTrace();
-            } catch (Exception e) {
-                e.printStackTrace();
             }
         }
     }

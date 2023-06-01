@@ -14,7 +14,7 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 public class BrightnessController {
-    private Activity activity;
+    private final Activity activity;
 
     protected BrightnessController(Activity activity) {
         this.activity = activity;

@@ -27,7 +27,7 @@ public class ExecutionController {
 
     private static final String TAG = "ExecutionController";
     private static ExecutionController inst;
-    private Log log;
+    private final Log log;
     private boolean isRunning;
     private ExecutionServiceListener listener;
     private ExecutionService service;
@@ -83,7 +83,7 @@ public class ExecutionController {
             isRunning = false;
             timer.cancel();
             long totalData = 0;
-            List<ExperimentStatistics> statistics = new ArrayList<ExperimentStatistics>();
+            List<ExperimentStatistics> statistics = new ArrayList<>();
             for (SensorFrequency sensorFrequency : dataTrack.getSensorList()) {
                 sensorFrequency.sensor.stopSensor();
                 //labeledDataList.addAll(((MySensorListener)sensorFrequency.sensor.getListener()).getLabeledDataList());
@@ -128,7 +128,7 @@ public class ExecutionController {
 
     private void setExecutionTimer(DataTrack dataTrack) {
         if (!isRunning) {
-            timer = new CountDownTimer(dataTrack.getStopTime() * 1000, 1000) {
+            timer = new CountDownTimer((long)dataTrack.getStopTime() * 1000, 1000) {
 
                 @Override
                 public void onTick(long millisUntilFinished) {
@@ -161,9 +161,14 @@ public class ExecutionController {
 
     private class MySensorListener implements SensorSDKListener {
 
-        private DataTrack dataTrack;
-        private LinkedList<LabeledData> labeledData;
-        private long startTime, endTime, timestampAverage, lastTimestamp, maxTimestampDifference, minTimestampDifference;
+        private final DataTrack dataTrack;
+        private final LinkedList<LabeledData> labeledData;
+        private final long startTime;
+        private long endTime;
+        private long timestampAverage;
+        private long lastTimestamp;
+        private long maxTimestampDifference;
+        private long minTimestampDifference;
         private long collectedData = 0;
         private long invalidData = 0;
         // Valid + Invalid data
@@ -171,7 +176,7 @@ public class ExecutionController {
 
         public MySensorListener(DataTrack data) {
             this.dataTrack = data;
-            labeledData = new LinkedList<LabeledData>();
+            labeledData = new LinkedList<>();
             this.startTime = System.currentTimeMillis();
             this.timestampAverage = 0;
             this.lastTimestamp = 0;
@@ -180,7 +185,7 @@ public class ExecutionController {
         }
 
         public List<LabeledData> getLabeledDataList() {
-            return labeledData == null ? new LinkedList<LabeledData>() : labeledData;
+            return labeledData == null ? new LinkedList<>() : labeledData;
         }
 
         public long getStartTime() {

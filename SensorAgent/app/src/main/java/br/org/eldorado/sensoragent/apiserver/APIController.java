@@ -10,9 +10,9 @@ import br.org.eldorado.sensoragent.util.Log;
 
 public class APIController {
 
-    private Log log;
+    private final Log log;
     private static APIController inst;
-    private List<ClientConnection> clientList;
+    private final List<ClientConnection> clientList;
 
     public static APIController getInstance() {
         if (inst == null) {
@@ -23,7 +23,7 @@ public class APIController {
 
     private APIController() {
         this.log = new Log("APIController");
-        this.clientList = new ArrayList<ClientConnection>();
+        this.clientList = new ArrayList<>();
         this.startServer();
     }
 

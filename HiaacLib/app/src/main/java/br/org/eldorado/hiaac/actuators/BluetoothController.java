@@ -6,7 +6,7 @@ import android.bluetooth.BluetoothAdapter;
 import android.util.Log;
 
 public class BluetoothController {
-    Activity activity;
+    final Activity activity;
 
     protected BluetoothController(Activity activity) {
         this.activity = activity;

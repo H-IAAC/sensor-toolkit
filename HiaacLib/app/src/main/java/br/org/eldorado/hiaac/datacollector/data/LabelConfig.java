@@ -14,31 +14,31 @@ public class LabelConfig {
 
     @NonNull
     @ColumnInfo(name = "experiment")
-    public String experiment;
+    public final String experiment;
 
     @NonNull
     @ColumnInfo(name = "activity")
-    public String activity;
+    public final String activity;
 
     @NonNull
     @ColumnInfo(name = "user-id")
-    public String userId;
+    public final String userId;
 
     @NonNull
     @ColumnInfo(name = "device-location")
-    public String deviceLocation;
+    public final String deviceLocation;
 
     @NonNull
     @ColumnInfo(name = "stop-time")
-    public int stopTime;
+    public final int stopTime;
 
     @NonNull
     @ColumnInfo(name = "scheduled-time")
-    public long scheduledTime;
+    public final long scheduledTime;
 
     @NonNull
     @ColumnInfo(name = "sendToServer")
-    public boolean sendToServer;
+    public final boolean sendToServer;
 
     public LabelConfig(@NonNull String experiment, int stopTime, String deviceLocation, String userId, boolean sendToServer, String activity, long scheduledTime) {
         this.experiment = experiment;

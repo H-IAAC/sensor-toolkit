@@ -8,7 +8,7 @@ import android.os.Build;
 import android.provider.Settings;
 
 public class WifiController {
-    private Activity activity;
+    private final Activity activity;
 
     protected WifiController(Activity activity) {
         this.activity = activity;

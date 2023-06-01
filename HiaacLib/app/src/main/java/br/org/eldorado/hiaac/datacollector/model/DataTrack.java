@@ -18,7 +18,7 @@ public class DataTrack {
     private String uid;
 
     public DataTrack() {
-        sensorList = new ArrayList<SensorFrequency>();
+        sensorList = new ArrayList<>();
         mDeviceLocation = "";
     }
 
@@ -98,9 +98,7 @@ public class DataTrack {
     public boolean equals(Object obj) {
         if (obj instanceof DataTrack) {
             DataTrack dt = (DataTrack) obj;
-            if (dt.getLabel().equals(getLabel()) && dt.getConfigId() == getConfigId()) {
-                return true;
-            }
+            return dt.getLabel().equals(getLabel()) && dt.getConfigId() == getConfigId();
         }
         return false;
     }

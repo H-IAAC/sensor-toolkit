@@ -25,7 +25,7 @@ import br.org.eldorado.hiaac.datacollector.util.Log;
 public class FirebaseUploadController {
 
     private static final String TAG = "FirebaseUploadController";
-    private Log log;
+    private final Log log;
     private static final int SUCCESS = 0;
     private static final int ERROR = 1;
     private static final int ON_PROGRESS = 2;
@@ -33,9 +33,9 @@ public class FirebaseUploadController {
     private static final int TYPE_CSV = 4;
     private final CsvBuilder csvBuilder;
 
-    private Context mContext;
+    private final Context mContext;
     private FirebaseListener listener;
-    private LabelConfigViewModel dbView;
+    private final LabelConfigViewModel dbView;
 
     public FirebaseUploadController(Context ctx) {
         log = new Log(TAG);

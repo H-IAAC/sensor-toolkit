@@ -26,8 +26,8 @@ public class SensorController {
     private static final int LISTENER_SENSOR_STARTED = 0;
     private static final int LISTENER_SENSOR_STOPPED = 1;
     private static final String TAG = "SensorController";
-    private Log log;
-    private Map<Integer, AgentSensorBase> sensorMap;
+    private final Log log;
+    private final Map<Integer, AgentSensorBase> sensorMap;
     private static SensorController inst;
     private RemoteCallbackList<ISensorAgentListener> mListener;
 
@@ -39,7 +39,7 @@ public class SensorController {
     }
 
     private SensorController() {
-        this.sensorMap = new HashMap<Integer, AgentSensorBase>();
+        this.sensorMap = new HashMap<>();
         this.log = new Log(TAG);
     }
 

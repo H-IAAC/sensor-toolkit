@@ -15,8 +15,8 @@ public class LabelConfigRepository {
     public static final int TYPE_FIREBASE = 0;
     public static final int TYPE_CSV = 1;
 
-    private LabelConfigDao mLabelConfigDao;
-    private LiveData<List<LabelConfig>> mAllLabels;
+    private final LabelConfigDao mLabelConfigDao;
+    private final LiveData<List<LabelConfig>> mAllLabels;
 
     public LabelConfigRepository(Application application) {
         AppDatabase db = AppDatabase.getDatabase(application);
@@ -136,8 +136,8 @@ public class LabelConfigRepository {
 
     private static class LongAsyncTask extends AsyncTask<Long, Void, Void> {
 
-        private LabelConfigDao mAsyncTaskDao;
-        private Function<Long, Void> mFunction;
+        private final LabelConfigDao mAsyncTaskDao;
+        private final Function<Long, Void> mFunction;
 
         public LongAsyncTask(LabelConfigDao dao, Function<Long, Void> function) {
             this.mAsyncTaskDao = dao;
@@ -153,8 +153,8 @@ public class LabelConfigRepository {
 
     private static class LabelConfigAsyncTask extends AsyncTask<LabelConfig, Void, Void> {
 
-        private LabelConfigDao mAsyncTaskDao;
-        private Function<LabelConfig, Void> mFunction;
+        private final LabelConfigDao mAsyncTaskDao;
+        private final Function<LabelConfig, Void> mFunction;
 
         public LabelConfigAsyncTask(LabelConfigDao dao, Function<LabelConfig, Void> function) {
             this.mAsyncTaskDao = dao;
@@ -170,8 +170,8 @@ public class LabelConfigRepository {
 
     private static class LabelConfigInsertAsyncTask extends AsyncTask<LabelConfig, Long, Long> {
 
-        private LabelConfigDao mAsyncTaskDao;
-        private Function<LabelConfig, Long> mFunction;
+        private final LabelConfigDao mAsyncTaskDao;
+        private final Function<LabelConfig, Long> mFunction;
 
         public LabelConfigInsertAsyncTask(LabelConfigDao dao, Function<LabelConfig, Long> function) {
             this.mAsyncTaskDao = dao;
@@ -186,8 +186,8 @@ public class LabelConfigRepository {
 
     private static class SensorFrequencyAsyncTask extends AsyncTask<List<SensorFrequency>, Void, Void> {
 
-        private LabelConfigDao mAsyncTaskDao;
-        private Function<List<SensorFrequency>, Void> mFunction;
+        private final LabelConfigDao mAsyncTaskDao;
+        private final Function<List<SensorFrequency>, Void> mFunction;
 
         public SensorFrequencyAsyncTask(LabelConfigDao dao, Function<List<SensorFrequency>, Void> function) {
             this.mAsyncTaskDao = dao;
@@ -203,8 +203,8 @@ public class LabelConfigRepository {
 
     private static class LabeledDataAsyncTask extends AsyncTask<List<LabeledData>, Void, Void> {
 
-        private LabelConfigDao mAsyncTaskDao;
-        private Function<List<LabeledData>, Void> mFunction;
+        private final LabelConfigDao mAsyncTaskDao;
+        private final Function<List<LabeledData>, Void> mFunction;
 
         public LabeledDataAsyncTask(LabelConfigDao dao, Function<List<LabeledData>, Void> function) {
             this.mAsyncTaskDao = dao;
@@ -220,8 +220,8 @@ public class LabelConfigRepository {
 
     private static class ExperimentStatisticsAsyncTask extends AsyncTask<List<ExperimentStatistics>, Void, Void> {
 
-        private LabelConfigDao mAsyncTaskDao;
-        private Function<List<ExperimentStatistics>, Void> mFunction;
+        private final LabelConfigDao mAsyncTaskDao;
+        private final Function<List<ExperimentStatistics>, Void> mFunction;
 
         public ExperimentStatisticsAsyncTask(LabelConfigDao dao, Function<List<ExperimentStatistics>, Void> function) {
             this.mAsyncTaskDao = dao;

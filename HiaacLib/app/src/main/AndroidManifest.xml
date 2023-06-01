@@ -6,6 +6,7 @@
     <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"  />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
     <uses-permission android:name="android.permission.WRITE_SETTINGS"
         tools:ignore="ProtectedPermissions" />
@@ -20,18 +21,17 @@
         android:supportsRtl="true">
         <activity
             android:name=".datacollector.LabelOptionsActivity"
-            android:screenOrientation="portrait"
+            android:screenOrientation="fullSensor"
             android:exported="false" />
         <activity
             android:name=".datacollector.StatisticsActivity"
-            android:screenOrientation="portrait"
+            android:screenOrientation="fullSensor"
             android:exported="false" />
         <activity
             android:name=".datacollector.DataCollectorActivity"
             android:exported="true"
-            android:screenOrientation="portrait"
-            android:launchMode="singleInstance"
-            android:label="@string/app_name" >
+            android:screenOrientation="fullSensor"
+            android:launchMode="singleInstance">
         </activity>
         <service
             android:name=".datacollector.service.ExecutionService"

@@ -124,7 +124,7 @@ public class LabelOptionsActivity extends AppCompatActivity {
     private boolean isConfigLoaded;
     private CsvFiles csvFiles;
 
-    private SensorFrequencyViewAdapter.SensorFrequencyChangeListener mSensorFrequencyChangeListener =
+    private final SensorFrequencyViewAdapter.SensorFrequencyChangeListener mSensorFrequencyChangeListener =
             new SensorFrequencyViewAdapter.SensorFrequencyChangeListener() {
                 @Override
                 public void onSensorFrequencyChanged(List<SensorFrequencyViewAdapter.SelectedSensorFrequency> selectedSensorFrequencies) {
@@ -196,7 +196,7 @@ public class LabelOptionsActivity extends AppCompatActivity {
                 R.layout.custom_spinner, deviceLocationList));
 
 
-        RecyclerView recyclerView = (RecyclerView) findViewById(R.id.sensors_recycler_view);
+        RecyclerView recyclerView = findViewById(R.id.sensors_recycler_view);
         mSensorFrequencyViewAdapter =
                 new SensorFrequencyViewAdapter(this, mSensorFrequencyChangeListener);
         recyclerView.setAdapter(mSensorFrequencyViewAdapter);
@@ -212,7 +212,7 @@ public class LabelOptionsActivity extends AppCompatActivity {
                 break;
             case UPDATE_LABEL_CONFIG_ACTIVITY:
                 mIsUpdating = true;
-                Long labelId = extras.getLong(LABEL_CONFIG_ACTIVITY_ID);
+                long labelId = extras.getLong(LABEL_CONFIG_ACTIVITY_ID);
                 if (csvFiles.getFiles(labelId).size() > 0) {
                     mLabelTile.setEnabled(false);
                     mActivityTxt.setEnabled(false);
@@ -323,7 +323,6 @@ public class LabelOptionsActivity extends AppCompatActivity {
                 }
             }
             mStopTimeSpinner.setSelection(position);
-            position = 0;
             for (int i = 0; i < mDeviceLocation.getCount(); i++) {
                 if (mCurrentConfig.deviceLocation.equals(mDeviceLocation.getItemAtPosition(i))) {
                     mDeviceLocation.setSelection(i);
@@ -379,14 +378,11 @@ public class LabelOptionsActivity extends AppCompatActivity {
             Map<Integer, Integer> sensorTypeFrequencyMap, int sensorType, String sensorName) {
         Integer frequency = sensorTypeFrequencyMap.get(sensorType);
 
-        SensorFrequencyViewAdapter.SelectedSensorFrequency selectedSensorFrequency =
-                new SensorFrequencyViewAdapter.SelectedSensorFrequency(
-                        frequency != null,
-                        sensorName,
-                        frequency == null ? frequencyOptions.get(0) : frequency.intValue()
-                );
-
-        return selectedSensorFrequency;
+        return new SensorFrequencyViewAdapter.SelectedSensorFrequency(
+                frequency != null,
+                sensorName,
+                frequency == null ? frequencyOptions.get(0) : frequency.intValue()
+        );
     }
 
     private List<SensorFrequency> getSensorFrequenciesFromSelectedSensorFrequencies(long config_id) {
@@ -465,8 +461,7 @@ public class LabelOptionsActivity extends AppCompatActivity {
             finishSaveProcess(newConfig, mCurrentConfig.id);
         } else {
             try {
-                long rowId = mLabelConfigViewModel.insertNewConfig(newConfig);
-                newConfig.id = rowId;
+                newConfig.id = mLabelConfigViewModel.insertNewConfig(newConfig);
                 finishSaveProcess(newConfig, newConfig.id);
             } catch (ExecutionException | InterruptedException e) {
                 Toast.makeText(getApplicationContext(), "Error when saving config.", Toast.LENGTH_SHORT).show();
@@ -543,7 +538,7 @@ public class LabelOptionsActivity extends AppCompatActivity {
                 MultipartBody.Part activityPart =
                         MultipartBody.Part.createFormData("activity", cfg.activity);
 
-                MultipartBody.Part filePart = filePart = MultipartBody.Part.createFormData(
+                MultipartBody.Part filePart = MultipartBody.Part.createFormData(
                         "file", config.getName(),
                         RequestBody.create(MediaType.parse("multipart/form-data"), config));
 
@@ -568,7 +563,7 @@ public class LabelOptionsActivity extends AppCompatActivity {
             @Override
             public void onResponse(Call<JsonObject> call, Response<JsonObject> response) {
                 JsonObject res = new Gson().fromJson(response.body(), JsonObject.class);
-                List<String> experiments = new ArrayList<String>();
+                List<String> experiments = new ArrayList<>();
 
                 for (JsonElement el : res.get("experiment").getAsJsonArray()) {
                     JsonObject exp = el.getAsJsonObject();
@@ -722,7 +717,7 @@ public class LabelOptionsActivity extends AppCompatActivity {
     }
 
     public static class DeleteDialogFragment extends DialogFragment {
-        private DeleteDialogListener mListener;
+        private final DeleteDialogListener mListener;
 
         public DeleteDialogFragment(DeleteDialogListener listener) {
             this.mListener = listener;
@@ -746,7 +741,7 @@ public class LabelOptionsActivity extends AppCompatActivity {
     }
 
     public static class SaveConfigDialogFragment extends DialogFragment {
-        private SaveConfigListener mListener;
+        private final SaveConfigListener mListener;
 
         public SaveConfigDialogFragment(SaveConfigListener listener) {
             this.mListener = listener;

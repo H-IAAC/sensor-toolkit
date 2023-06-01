@@ -4,7 +4,7 @@ import android.hardware.Sensor;
 
 public class AgentProximity extends AgentSensorBase {
     private static final String TAG = "Proximity";
-    private Sensor sensor;
+    private final Sensor sensor;
 
     public AgentProximity() {
         super(TAG, TYPE_PROXIMITY);

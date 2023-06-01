@@ -1,16 +1,13 @@
 package br.org.eldorado.hiaac.profiling;
 
 import android.content.Context;
-import android.content.Intent;
-import android.content.IntentFilter;
-import android.os.BatteryManager;
 
 import java.io.File;
 import br.org.eldorado.sensorsdk.SensorSDKContext;
 
 public class Profiling {
 
-    private Context mContext;
+    private final Context mContext;
     private ProfilingController controller;
     private boolean isManualOnly;
     private static Profiling inst;

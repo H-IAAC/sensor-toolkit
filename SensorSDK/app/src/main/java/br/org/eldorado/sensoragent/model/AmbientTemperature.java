@@ -8,8 +8,6 @@ public class AmbientTemperature  extends SensorBase {
     }
 
     public String getValuesString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append(getValuesArray()[0]);
-        return sb.toString();
+        return String.valueOf(getValuesArray()[0]);
     }
 }
