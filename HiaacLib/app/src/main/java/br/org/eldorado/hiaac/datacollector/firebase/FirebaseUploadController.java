@@ -151,7 +151,7 @@ public class FirebaseUploadController {
             @Override
             public void run() {
                 long start = System.currentTimeMillis();
-                log.d("Starting creating csv file");
+                log.d("Starting creating csv file labelId: " + labelId + " uid: " + uid);
                 List<LabeledData> labeledData = dbView.getLabeledData(labelId, LabelConfigRepository.TYPE_CSV, 0);
                 if (labeledData == null || labeledData.size() == 0) {
                     fireListener(ERROR, mContext.getString(R.string.error_no_data_create_csc));
@@ -167,6 +167,7 @@ public class FirebaseUploadController {
                 }
                 long end = System.currentTimeMillis();
                 log.d("Csv file created. Time consumed: " + ((end-start)/1000)/60 + "m" + ((end-start)/1000)%60+"s");
+                dbView.deleteLabeledData(labelId);
                 fireListener(SUCCESS, mContext.getString(R.string.success_csv_file));
             }
         }).start();
