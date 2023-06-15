@@ -5,6 +5,7 @@ import android.app.Application;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 public class LabelConfigViewModel extends AndroidViewModel {
     private LabelConfigRepository mRepository;
@@ -26,12 +27,12 @@ public class LabelConfigViewModel extends AndroidViewModel {
         return mAllSensorFrequencies;
     }
 
-    public LiveData<LabelConfig> getLabelConfigById(String id) {
+    public LiveData<LabelConfig> getLabelConfigById(long id) {
         return mRepository.getLabelConfigById(id);
     }
 
-    public void insertNewConfig(LabelConfig config) {
-        mRepository.insertNewConfig(config);
+    public long insertNewConfig(LabelConfig config) throws ExecutionException, InterruptedException {
+        return mRepository.insertNewConfig(config);
     }
 
     public void updateConfig(LabelConfig config) {
@@ -40,10 +41,15 @@ public class LabelConfigViewModel extends AndroidViewModel {
 
     public void deleteConfig(LabelConfig config) {
         mRepository.deleteConfig(config);
+        // When a config is deleted:
+        // 1) remove related statistics must be removed
+        deleteExperimentsStatistics(config.id);
+        // 2) remove related labeled data
+        deleteLabeledData(config.id);
     }
 
-    public LiveData<List<SensorFrequency>> getAllSensorsFromLabel(String label) {
-        return mRepository.getAllSensorsFromLabel(label);
+    public LiveData<List<SensorFrequency>> getAllSensorsFromLabel(long id) {
+        return mRepository.getAllSensorsFromLabel(id);
     }
 
     public void deleteSensorsFromLabel(LabelConfig label) {
@@ -66,12 +72,16 @@ public class LabelConfigViewModel extends AndroidViewModel {
         mRepository.insertExperimentStatistics(statistics);
     }
 
-    public void deleteExperimentsStatistics(long expId) {
-        mRepository.deleteExperimentStatistics(expId);
+    public void deleteExperimentsStatistics(long configId) {
+        mRepository.deleteExperimentStatistics(configId);
     }
 
-    public List<LabeledData> getLabeledData(int labelId, int type, long offset) {
+    public List<LabeledData> getLabeledData(long labelId, int type, long offset) {
         return mRepository.getLabeledData(labelId, type, offset);
+    }
+
+    public LiveData<List<ExperimentStatistics>> getExperimentStatistics(long expId) {
+        return mRepository.getExperimentStatisticsByExpId(expId);
     }
 
     public void updateLabeledData(List<LabeledData> dt) {
@@ -80,5 +90,9 @@ public class LabelConfigViewModel extends AndroidViewModel {
 
     public void deleteLabeledData(LabeledData label) {
         mRepository.deleteLabeledData(label);
+    }
+
+    public void deleteLabeledData(long configId) {
+        mRepository.deleteLabeledData(configId);
     }
 }

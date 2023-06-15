@@ -7,6 +7,7 @@ import androidx.lifecycle.LiveData;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 import java.util.function.Function;
 
 public class LabelConfigRepository {
@@ -27,17 +28,17 @@ public class LabelConfigRepository {
         return mAllLabels;
     }
 
-    LiveData<LabelConfig> getLabelConfigById(String id) {
+    LiveData<LabelConfig> getLabelConfigById(long id) {
         return mLabelConfigDao.getLabelConfigById(id);
     }
 
-    LiveData<List<SensorFrequency>> getAllSensorsFromLabel(String label) {
-        return mLabelConfigDao.getAllSensorsFromLabel(label);
+    LiveData<List<SensorFrequency>> getAllSensorsFromLabel(long id) {
+        return mLabelConfigDao.getAllSensorsFromLabel(id);
     }
 
     void deleteSensorFromLabel(LabelConfig label) {
         new LabelConfigAsyncTask(mLabelConfigDao, (labelConfig -> {
-            mLabelConfigDao.deleteSensorFromLabel(label.label);
+            mLabelConfigDao.deleteSensorFromLabel(label.id);
             return null;})).execute(label);
 
     }
@@ -46,10 +47,13 @@ public class LabelConfigRepository {
         return mLabelConfigDao.getAllSensorFrequencies();
     }
 
-    public void insertNewConfig(LabelConfig config) {
-        new LabelConfigAsyncTask(mLabelConfigDao, (labelConfig -> {
-            mLabelConfigDao.insert(labelConfig);
-            return null;})).execute(config);
+    public Long insertNewConfig(LabelConfig config) throws ExecutionException, InterruptedException {
+        //LabelConfigInsertAsyncTask runner = new LabelConfigInsertAsyncTask(mLabelConfigDao, config);
+        //runner.execute();
+
+        return new LabelConfigInsertAsyncTask(mLabelConfigDao, (labelConfig -> {
+            return mLabelConfigDao.insert(labelConfig);
+        })).execute(config).get();
     }
 
     public void updateConfig(LabelConfig config) {
@@ -66,7 +70,7 @@ public class LabelConfigRepository {
 
     public void insertAllSensorFrequencies(List<SensorFrequency> frequencies) {
         new SensorFrequencyAsyncTask(mLabelConfigDao, (sensorFrequencies -> {
-            mLabelConfigDao.deleteSensorFromLabel(sensorFrequencies.get(0).getLabel_id());
+            mLabelConfigDao.deleteSensorFromLabel(sensorFrequencies.get(0).getConfigId());
             mLabelConfigDao.insertAllSensorFrequencies(sensorFrequencies);
             return null;})).execute(frequencies);
     }
@@ -90,19 +94,19 @@ public class LabelConfigRepository {
             return null;})).execute(data);
     }
 
-    public List<ExperimentStatistics> getExperimentStatisticsByExpId(long expId) {
-        return mLabelConfigDao.getStatisticsByExpId(expId);
+    public LiveData<List<ExperimentStatistics>> getExperimentStatisticsByExpId(long configId) {
+        return mLabelConfigDao.getStatisticsByExpId(configId);
     }
 
-    public void deleteExperimentStatistics(long expId) {
+    public void deleteExperimentStatistics(long configId) {
         List<ExperimentStatistics> st = new ArrayList<>();
         new ExperimentStatisticsAsyncTask(mLabelConfigDao, (statistics -> {
-            mLabelConfigDao.deleteExperimentStatistics(expId);
+            mLabelConfigDao.deleteExperimentStatistics(configId);
             return null;})).execute(st);
 
     }
 
-    public List<LabeledData> getLabeledData(int labelId, int type, long offset) {
+    public List<LabeledData> getLabeledData(long labelId, int type, long offset) {
         if (type == TYPE_FIREBASE) {
             return mLabelConfigDao.getLabeledData(labelId, offset);
         } else {
@@ -119,9 +123,32 @@ public class LabelConfigRepository {
         LinkedList<LabeledData> l = new LinkedList();
         l.add(label);
         new LabeledDataAsyncTask(mLabelConfigDao, (labeledData -> {
-            mLabelConfigDao.deleteLabeledData(label.getLabel());
+            mLabelConfigDao.deleteLabeledData(label.getConfigId());
             return null;})).execute(l);
         //mLabelConfigDao.deleteLabeledData(label);
+    }
+
+    void deleteLabeledData(long configId) {
+        new LongAsyncTask(mLabelConfigDao, (id -> {
+            mLabelConfigDao.deleteLabeledData(id);
+            return null;})).execute(configId);
+    }
+
+    private static class LongAsyncTask extends AsyncTask<Long, Void, Void> {
+
+        private LabelConfigDao mAsyncTaskDao;
+        private Function<Long, Void> mFunction;
+
+        public LongAsyncTask(LabelConfigDao dao, Function<Long, Void> function) {
+            this.mAsyncTaskDao = dao;
+            this.mFunction = function;
+        }
+
+        @Override
+        protected Void doInBackground(Long... id) {
+            mFunction.apply(id[0]);
+            return null;
+        }
     }
 
     private static class LabelConfigAsyncTask extends AsyncTask<LabelConfig, Void, Void> {
@@ -138,6 +165,22 @@ public class LabelConfigRepository {
         protected Void doInBackground(LabelConfig... labelConfigs) {
             mFunction.apply(labelConfigs[0]);
             return null;
+        }
+    }
+
+    private static class LabelConfigInsertAsyncTask extends AsyncTask<LabelConfig, Long, Long> {
+
+        private LabelConfigDao mAsyncTaskDao;
+        private Function<LabelConfig, Long> mFunction;
+
+        public LabelConfigInsertAsyncTask(LabelConfigDao dao, Function<LabelConfig, Long> function) {
+            this.mAsyncTaskDao = dao;
+            this.mFunction = function;
+        }
+
+        @Override
+        protected Long doInBackground(LabelConfig... labelConfigs) {
+            return mFunction.apply(labelConfigs[0]);
         }
     }
 

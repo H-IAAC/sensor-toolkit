@@ -101,7 +101,6 @@ public class CSVFilesRecyclerAdapter extends RecyclerView.Adapter<CSVFilesRecycl
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
-            fileImg = (ImageView) itemView.findViewById(R.id.csv_file_img);
             deleteImg = (ImageView) itemView.findViewById(R.id.delete_csv_file);
             fileName = (TextView) itemView.findViewById(R.id.csv_file_txt);
             csvFile = (CardView) itemView.findViewById(R.id.csv_file_pnel);

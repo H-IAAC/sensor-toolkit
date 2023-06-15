@@ -21,6 +21,7 @@ import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
 import androidx.annotation.NonNull;
@@ -47,6 +48,8 @@ import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
+
 import br.org.eldorado.hiaac.R;
 import br.org.eldorado.hiaac.datacollector.api.ApiInterface;
 import br.org.eldorado.hiaac.datacollector.api.ClientAPI;
@@ -54,6 +57,7 @@ import br.org.eldorado.hiaac.datacollector.api.StatusResponse;
 import br.org.eldorado.hiaac.datacollector.data.LabelConfig;
 import br.org.eldorado.hiaac.datacollector.data.LabelConfigViewModel;
 import br.org.eldorado.hiaac.datacollector.data.SensorFrequency;
+import br.org.eldorado.hiaac.datacollector.util.CsvFiles;
 import br.org.eldorado.hiaac.datacollector.util.Log;
 import br.org.eldorado.hiaac.datacollector.util.Tools;
 import br.org.eldorado.hiaac.datacollector.view.adapter.SensorFrequencyViewAdapter;
@@ -113,10 +117,12 @@ public class LabelOptionsActivity extends AppCompatActivity {
     private Spinner mDeviceLocation;
     private CheckBox mSendFilesToServer;
     private EditText mUserIdTxt;
+    private TextView mWarnTxt;
     private ActionMenuItemView mLoadConfigBtn;
     private static final String TAG = "LabelOptionsActivity";
     private Log log;
     private boolean isConfigLoaded;
+    private CsvFiles csvFiles;
 
     private SensorFrequencyViewAdapter.SensorFrequencyChangeListener mSensorFrequencyChangeListener =
             new SensorFrequencyViewAdapter.SensorFrequencyChangeListener() {
@@ -140,6 +146,7 @@ public class LabelOptionsActivity extends AppCompatActivity {
         mLabelTile = findViewById(R.id.edit_label_name);
         mActivityTxt = findViewById(R.id.activity_txt);
         isConfigLoaded = false;
+        csvFiles = new CsvFiles(this.getApplicationContext());
 
         mScheduleTimeTxt = findViewById(R.id.txtScheduleTime);
         mScheduleTimeTxt.setOnClickListener(new View.OnClickListener() {
@@ -170,7 +177,8 @@ public class LabelOptionsActivity extends AppCompatActivity {
         mStopTimeSpinner = findViewById(R.id.stops_at_spinner);
         mDeviceLocation = findViewById(R.id.device_location_spinner);
         mUserIdTxt = findViewById(R.id.user_id_txt);
-        mLoadConfigBtn = findViewById(R.id.load_config_button);
+        mWarnTxt = findViewById(R.id.edit_warn_txt);
+        //mLoadConfigBtn = findViewById(R.id.load_config_button);
         mSendFilesToServer = findViewById(R.id.send_files_to_server_checkbox);
         mLabelConfigViewModel = ViewModelProvider.AndroidViewModelFactory
                 .getInstance(getApplication()).create(LabelConfigViewModel.class);
@@ -198,15 +206,20 @@ public class LabelOptionsActivity extends AppCompatActivity {
         int activityType = extras.getInt(LABEL_CONFIG_ACTIVITY_TYPE);
         switch (activityType) {
             case NEW_LABEL_CONFIG_ACTIVITY:
+                mIsUpdating = false;
                 mSelectedSensors = getSelectedSensorFrequenciesFromSensorFrequencies();
                 mSensorFrequencyViewAdapter.setSelectedSensors(mSelectedSensors);
                 break;
             case UPDATE_LABEL_CONFIG_ACTIVITY:
                 mIsUpdating = true;
-                mLabelTile.setEnabled(false);
-                mActivityTxt.setEnabled(false);
-                mUserIdTxt.setEnabled(false);
-                String labelId = extras.getString(LABEL_CONFIG_ACTIVITY_ID);
+                Long labelId = extras.getLong(LABEL_CONFIG_ACTIVITY_ID);
+                if (csvFiles.getFiles(labelId).size() > 0) {
+                    mLabelTile.setEnabled(false);
+                    mActivityTxt.setEnabled(false);
+                    mUserIdTxt.setEnabled(false);
+                    mWarnTxt.setVisibility(View.VISIBLE);
+                }
+
                 mLabelConfigViewModel.getLabelConfigById(labelId)
                         .observe(this, new Observer<LabelConfig>() {
                             @Override
@@ -290,7 +303,7 @@ public class LabelOptionsActivity extends AppCompatActivity {
 
     private void updateFields() {
         if (mCurrentConfig != null) {
-            mLabelTile.setText(mCurrentConfig.label);
+            mLabelTile.setText(mCurrentConfig.experiment);
             mActivityTxt.setText(mCurrentConfig.activity);
 
             if (mCurrentConfig.scheduledTime > 0) {
@@ -322,7 +335,7 @@ public class LabelOptionsActivity extends AppCompatActivity {
     }
 
     private void populateRecyclerView() {
-        mLabelConfigViewModel.getAllSensorsFromLabel(mCurrentConfig.label)
+        mLabelConfigViewModel.getAllSensorsFromLabel(mCurrentConfig.id)
                 .observe(this, new Observer<List<SensorFrequency>>() {
                     @Override
                     public void onChanged(List<SensorFrequency> sensorFrequencies) {
@@ -376,12 +389,12 @@ public class LabelOptionsActivity extends AppCompatActivity {
         return selectedSensorFrequency;
     }
 
-    private List<SensorFrequency> getSensorFrequenciesFromSelectedSensorFrequencies(String label) {
+    private List<SensorFrequency> getSensorFrequenciesFromSelectedSensorFrequencies(long config_id) {
         List<SensorFrequency> sensorFrequencies = new ArrayList<>();
         for (SensorFrequencyViewAdapter.SelectedSensorFrequency selectedSensorFrequency : mSelectedSensors) {
             if (selectedSensorFrequency.isSelected()) {
                 SensorFrequency sensorFrequency = new SensorFrequency(
-                        label,
+                        config_id,
                         Tools.getSensorFromTitleName(selectedSensorFrequency.getSensor()),
                         selectedSensorFrequency.getFrequency());
                 sensorFrequencies.add(sensorFrequency);
@@ -447,39 +460,28 @@ public class LabelOptionsActivity extends AppCompatActivity {
         int stopTime = stopTimeOptions[spinnerPosition];
         LabelConfig newConfig = new LabelConfig(label, stopTime, deviceLocation, userId, mSendFilesToServer.isChecked(), activity, scheduledTime);
 
-        if (mIsUpdating && mCurrentConfig != null) {
-            if (label.equals(mCurrentConfig.label)) {
-                mLabelConfigViewModel.updateConfig(newConfig);
-            } else {
-                mLabelConfigViewModel.deleteConfig(mCurrentConfig);
-                mLabelConfigViewModel.insertNewConfig(newConfig);
-            }
-            finishSaveProcess(newConfig, newConfig.label);
+        if (mIsUpdating) {
+            mLabelConfigViewModel.updateConfig(newConfig);
+            finishSaveProcess(newConfig, mCurrentConfig.id);
         } else {
-            obs = new Observer<LabelConfig>() {
-                @Override
-                public void onChanged(LabelConfig labelConfig) {
-                    if (labelConfig == null) {
-                        mLabelConfigViewModel.insertNewConfig(newConfig);
-                    } else {
-                        mLabelConfigViewModel.updateConfig(newConfig);
-                    }
-                    mLabelConfigViewModel.getLabelConfigById(newConfig.label).removeObserver(obs);
-                    finishSaveProcess(newConfig, newConfig.label);
-                }
-            };
-            mLabelConfigViewModel.getLabelConfigById(newConfig.label).observe(this, obs);
+            try {
+                long rowId = mLabelConfigViewModel.insertNewConfig(newConfig);
+                newConfig.id = rowId;
+                finishSaveProcess(newConfig, newConfig.id);
+            } catch (ExecutionException | InterruptedException e) {
+                Toast.makeText(getApplicationContext(), "Error when saving config.", Toast.LENGTH_SHORT).show();
+                log.d("Error when saving config: " + e.getMessage());
+            }
         }
-
     }
 
     private Observer<LabelConfig> obs = null;
     private boolean isFinishing = false;
-    private void finishSaveProcess(LabelConfig newConfig, String label) {
+    private void finishSaveProcess(LabelConfig newConfig, long id) {
         if (isFinishing) return;
         isFinishing = true;
 
-        mLabelConfigViewModel.insertAllSensorFrequencies(getSensorFrequenciesFromSelectedSensorFrequencies(label));
+        mLabelConfigViewModel.insertAllSensorFrequencies(getSensorFrequenciesFromSelectedSensorFrequencies(id));
 
         if (isConfigLoaded) {
             closeActivity();
@@ -507,7 +509,7 @@ public class LabelOptionsActivity extends AppCompatActivity {
                                                 File.separator +
                                                 FOLDER_NAME +
                                                 File.separator +
-                                                newConfig.userId+"_"+newConfig.label+"_"+newConfig.activity+".json");
+                                                newConfig.userId+"_"+newConfig.experiment+"_"+newConfig.activity+".json");
                                 PrintWriter writer = new PrintWriter(configJson.getAbsolutePath(), "UTF-8");
                                 writer.println(json);
                                 writer.close();
@@ -535,7 +537,7 @@ public class LabelOptionsActivity extends AppCompatActivity {
             public void run() {
                 log.d("sendConfigurationToServer ");
                 MultipartBody.Part experimentPart =
-                        MultipartBody.Part.createFormData("experiment", cfg.label);
+                        MultipartBody.Part.createFormData("experiment", cfg.experiment);
                 MultipartBody.Part subjectPart =
                         MultipartBody.Part.createFormData("subject", cfg.userId);
                 MultipartBody.Part activityPart =
@@ -652,7 +654,7 @@ public class LabelOptionsActivity extends AppCompatActivity {
                             }
                             //log.d(sensors.toString());
                             mSensorFrequencyViewAdapter.setSelectedSensors(mSelectedSensors);
-                            mLabelConfigViewModel.insertAllSensorFrequencies(getSensorFrequenciesFromSelectedSensorFrequencies(mCurrentConfig.label));
+                            mLabelConfigViewModel.insertAllSensorFrequencies(getSensorFrequenciesFromSelectedSensorFrequencies(mCurrentConfig.id));
                             if (checkGPSPermission) {
                                 mSensorFrequencyViewAdapter.checkGPSPermission();
                             }

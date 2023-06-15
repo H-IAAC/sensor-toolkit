@@ -1,12 +1,12 @@
 <resources>
     <string name="app_name">HIAAC</string>
-    <string name="app_version">Version v1.8</string>
+    <string name="app_version">Version v1.9</string>
     <string name="action_settings">Settings</string>
     <string name="next">Next</string>
     <string name="previous">Previous</string>
 
     <string name="server_time">Server Time: </string>
-    <string name="csv_files">Created CSV Files</string>
+    <string name="csv_files">Files:</string>
     <string name="creating_csv_file">Creating CSV File . . .</string>
     <string name="before_create_csv_file">Finishing getting data to create CSV file. Please wait . . .</string>
     <string name="starting_upload_file">Starting Upload . . .</string>
@@ -44,6 +44,7 @@
     <string name="stops_at">Stops at:</string>
     <string name="device_location">Device Location:</string>
     <string name="user_id">User Id</string>
+    <string name="not_editable_warn">Experiment contain collected data. Some fields are not editable.</string>
     <string name="send_files_to_server">Send files to server</string>
     <string name="delete_config_confirmation">Would you like to delete this configuration?</string>
     <string name="save_config_on_server_confirmation">Would you like to save this configuration on server?</string>
@@ -51,13 +52,24 @@
     <string name="yes">Yes</string>
     <string name="no">No</string>
     <string name="configuration_deleted">Configuration deleted</string>
-    <string name="label_title_empty">Experiment tile is empty</string>
+    <string name="label_title_empty">Experiment title is empty</string>
     <string name="activity_title_empty">Activity is empty</string>
     <string name="user_id_empty">User ID is empty</string>
     <string name="frequency_not_set">The frequency of %1$s was not set!</string>
     <string name="any_sensor_selected">You should select at least 1 sensor</string>
     <string name="schedule_time">Schedule:</string>
     <string name="schedule_time_hint">Automatic start time</string>
+    <string name="statistics_title">Statistics</string>
+    <string name="statistics_period">Period:</string>
+    <string name="statistics_timeframe">Time frame:</string>
+    <string name="statistics_valid_data">Valid:</string>
+    <string name="statistics_invalid_data">Discarded:</string>
+    <string name="statistics_timestamp_average">Average:</string>
+    <string name="statistics_max_timestamp_difference">Max diff:</string>
+    <string name="statistics_min_timestamp_difference">Min diff:</string>
+    <string name="statistics_collect_timestamp">Time frame details:</string>
+    <string name="statistics_samples">Samples:</string>
+    <string name="conflict">CONFLICT</string>
 
     <string-array name="device_location_items">
         <item>Cabeça</item>

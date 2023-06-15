@@ -13,14 +13,14 @@ import java.util.List;
 
 @Dao
 public interface LabelConfigDao {
-    @Query("SELECT * FROM LabelConfig ORDER BY label ASC")
+    @Query("SELECT * FROM LabelConfig ORDER BY experiment ASC")
     LiveData<List<LabelConfig>> getAllLabels();
 
-    @Query("SELECT * FROM LabelConfig WHERE label=:id")
-    LiveData<LabelConfig> getLabelConfigById(String id);
+    @Query("SELECT * FROM LabelConfig WHERE id=:id")
+    LiveData<LabelConfig> getLabelConfigById(long id);
 
     @Insert
-    void insert(LabelConfig labelConfig);
+    long insert(LabelConfig labelConfig);
 
     @Update
     void update(LabelConfig labelConfig);
@@ -28,8 +28,8 @@ public interface LabelConfigDao {
     @Delete
     void delete(LabelConfig labelConfig);
 
-    @Query("SELECT * FROM sensorfrequency WHERE label_id=:label")
-    LiveData<List<SensorFrequency>> getAllSensorsFromLabel(String label);
+    @Query("SELECT * FROM sensorfrequency WHERE config_id=:configId")
+    LiveData<List<SensorFrequency>> getAllSensorsFromLabel(long configId);
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     void insertAllSensorFrequencies(List<SensorFrequency> sensorFrequencies);
@@ -37,8 +37,8 @@ public interface LabelConfigDao {
     @Delete
     void deleteAllSensorFrequencies(List<SensorFrequency> sensorFrequencies);
 
-    @Query("DELETE FROM sensorfrequency WHERE label_id=:label")
-    void deleteSensorFromLabel(String label);
+    @Query("DELETE FROM sensorfrequency WHERE config_id=:configId")
+    void deleteSensorFromLabel(long configId);
 
     @Query("SELECT * FROM sensorfrequency")
     LiveData<List<SensorFrequency>> getAllSensorFrequencies();
@@ -50,25 +50,25 @@ public interface LabelConfigDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     void insertLabeledData(List<LabeledData> data);
 
-    @Query("DELETE from LabeledData where `label-name`=:label")
-    void deleteLabeledData(String label);
+    @Query("DELETE from LabeledData where `config-id`=:configId")
+    void deleteLabeledData(long configId);
 
     @Update
     void updateLabeledData(List<LabeledData> dt);
 
-    @Transaction @Query("SELECT * from LabeledData where `label-id`=:labelId ORDER BY `sensor-name`, `sensor-timestamp` LIMIT 300000 OFFSET :offset")
-    List<LabeledData> getLabeledData(int labelId, long offset);
+    @Transaction @Query("SELECT * from LabeledData where `config-id`=:configId ORDER BY `sensor-name`, `sensor-timestamp` LIMIT 300000 OFFSET :offset")
+    List<LabeledData> getLabeledData(long configId, long offset);
 
     //@Query("SELECT * from LabeledData where `label-id`=:labelId and `data-used`=0 ORDER BY `sensor-name`, `sensor-timestamp` LIMIT 300000 OFFSET 0")
-    @Transaction @Query("SELECT * from LabeledData where `label-id`=:labelId and `data-used`=0 ORDER BY `sensor-name`, `sensor-timestamp` LIMIT 300000 OFFSET 0")
-    List<LabeledData> getLabeledDataCsv(int labelId);
+    @Transaction @Query("SELECT * from LabeledData where `config-id`=:configId and `data-used`=0 ORDER BY `sensor-name`, `sensor-timestamp` LIMIT 300000 OFFSET 0")
+    List<LabeledData> getLabeledDataCsv(long configId);
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     void insertExperimentStatistics(List<ExperimentStatistics> experiments);
 
-    @Query("SELECT * from ExperimentStatistics where `experiment-id`=:expId")
-    List<ExperimentStatistics> getStatisticsByExpId(long expId);
+    @Query("SELECT * from ExperimentStatistics where `config-id`=:configId")
+    LiveData<List<ExperimentStatistics>> getStatisticsByExpId(long configId);
 
-    @Query("DELETE from ExperimentStatistics where `experiment-id`=:expId")
-    void deleteExperimentStatistics(long expId);
+    @Query("DELETE from ExperimentStatistics where `config-id`=:configId")
+    void deleteExperimentStatistics(long configId);
 }

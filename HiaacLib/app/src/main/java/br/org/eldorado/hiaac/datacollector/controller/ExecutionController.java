@@ -16,6 +16,7 @@ import br.org.eldorado.hiaac.datacollector.service.ExecutionService;
 import br.org.eldorado.hiaac.datacollector.service.listener.ExecutionServiceListener;
 import br.org.eldorado.hiaac.datacollector.util.Log;
 import br.org.eldorado.sensoragent.model.SensorBase;
+import br.org.eldorado.sensorsdk.SensorSDK;
 import br.org.eldorado.sensorsdk.listener.SensorSDKListener;
 
 public class ExecutionController {
@@ -88,14 +89,17 @@ public class ExecutionController {
                 //labeledDataList.addAll(((MySensorListener)sensorFrequency.sensor.getListener()).getLabeledDataList());
                 if (sensorFrequency.sensor.getListener() != null) {
                     ExperimentStatistics st = new ExperimentStatistics();
-                    st.setExperimentId(dataTrack.getLabelId());
+                    st.setConfigId(dataTrack.getConfigId());
                     st.setSensorName(sensorFrequency.sensor.getName());
                     st.setSensorFrequency(sensorFrequency.sensor.getFrequency());
                     st.setStartTime(((MySensorListener) sensorFrequency.sensor.getListener()).getStartTime());
                     st.setEndTime(((MySensorListener) sensorFrequency.sensor.getListener()).getEndTime());
                     st.setCollectedData(((MySensorListener) sensorFrequency.sensor.getListener()).getCollectedData());
                     st.setInvalidData(((MySensorListener) sensorFrequency.sensor.getListener()).getInvalidData());
-                    st.setTimestampAverage(0);
+                    st.setTimestampAverage(((MySensorListener) sensorFrequency.sensor.getListener()).getTimestampAverage());
+                    st.setMaxTimestampDifference(((MySensorListener) sensorFrequency.sensor.getListener()).getMaxTimestampDifference());
+                    st.setMinTimestampDifference(((MySensorListener) sensorFrequency.sensor.getListener()).getMinTimestampDifference());
+                    st.setTimestampStandardVariation(0);
                     statistics.add(st);
                     log.d("Total data collected from " + sensorFrequency.sensor.getName() + ": " + ((MySensorListener) sensorFrequency.sensor.getListener()).getTotalData());
                     log.d("\tValid data from " + sensorFrequency.sensor.getName() + ": " + ((MySensorListener) sensorFrequency.sensor.getListener()).getCollectedData());
@@ -104,7 +108,7 @@ public class ExecutionController {
                     totalData += ((MySensorListener) sensorFrequency.sensor.getListener()).getCollectedData();
                 }
             }
-            dbView.deleteExperimentsStatistics(dataTrack.getLabelId());
+            dbView.deleteExperimentsStatistics(dataTrack.getConfigId());
             dbView.insertExperimentStatistics(statistics);
             if (service != null) {
                 service.stopForeground(true);
@@ -159,7 +163,7 @@ public class ExecutionController {
 
         private DataTrack dataTrack;
         private LinkedList<LabeledData> labeledData;
-        private long startTime, endTime, timestampAverage;
+        private long startTime, endTime, timestampAverage, lastTimestamp, maxTimestampDifference, minTimestampDifference;
         private long collectedData = 0;
         private long invalidData = 0;
         // Valid + Invalid data
@@ -169,6 +173,10 @@ public class ExecutionController {
             this.dataTrack = data;
             labeledData = new LinkedList<LabeledData>();
             this.startTime = System.currentTimeMillis();
+            this.timestampAverage = 0;
+            this.lastTimestamp = 0;
+            this.maxTimestampDifference = 0;
+            this.minTimestampDifference = Long.MAX_VALUE;
         }
 
         public List<LabeledData> getLabeledDataList() {
@@ -195,15 +203,28 @@ public class ExecutionController {
             return collectedData;
         }
 
+        public long getTimestampAverage() {
+            return timestampAverage;
+        }
+
+        public long getMaxTimestampDifference() {
+            return maxTimestampDifference;
+        }
+
+        public long getMinTimestampDifference() {
+            return minTimestampDifference;
+        }
+
         @Override
         public void onSensorStarted(SensorBase sensor) {
-            log.d("Sensor STARTED");
+            log.d(sensor.getName() + " sensor STARTED");
         }
 
         @Override
         public void onSensorStopped(SensorBase sensor) {
-            log.d("Sensor STOPED");
+            log.d(sensor.getName() + " sensor STOPPED");
             this.endTime = System.currentTimeMillis();
+            this.timestampAverage = (collectedData < 2 ? 0 : timestampAverage/(collectedData-1)) ;
         }
 
         @Override
@@ -212,12 +233,23 @@ public class ExecutionController {
                 totalData++;
                 if (sensor.isValidValues()) {
                     //log.d(dataTrack.getLabel() + " Active Threads: " + Thread.activeCount() + "  - " + num++ + " - " + sensor.toString());
-                    LabeledData data = new LabeledData(dataTrack.getLabel(), sensor, dataTrack.getDeviceLocation(), dataTrack.getUserId(), dataTrack.getActivity(), dataTrack.getLabelId());
+
+                    long currentTimestamp = SensorSDK.getInstance().getRemoteTime();
+                    if (collectedData > 0) {
+                        // Ignore 'timestampAverage' when checking the first collectedData
+                        if (lastTimestamp != 0)
+                            timestampAverage += (currentTimestamp - lastTimestamp);
+
+                        maxTimestampDifference = Math.max((currentTimestamp - lastTimestamp), maxTimestampDifference);
+                        minTimestampDifference = Math.min((currentTimestamp - lastTimestamp), minTimestampDifference);
+                    }
+                    lastTimestamp = currentTimestamp;
+                    LabeledData data = new LabeledData(dataTrack.getLabel(), sensor, dataTrack.getDeviceLocation(), dataTrack.getUserId(), dataTrack.getActivity(), dataTrack.getConfigId(), currentTimestamp, dataTrack.getUid());
                     labeledData.add(data);
                     collectedData++;
 
                     if (labeledData.size() > 50000) {
-                        log.d("Collected data so far for " + dataTrack.getLabel() + " - " + sensor.getName() + "\n\tValid: " + collectedData + "\n\tInvalid: " + invalidData);
+                        log.d("Collected data so far for " + dataTrack.getLabel() + " - " + sensor.getName() + "\n\tValid: " + collectedData + "\n\tInvalid: " + invalidData + "\n\tAverage: " + (timestampAverage/collectedData));
                         dbView.insertLabeledData((LinkedList<LabeledData>)labeledData.clone());
                         labeledData.clear();
                     }
@@ -230,8 +262,7 @@ public class ExecutionController {
                     dbView.insertLabeledData(labeledData);
                     labeledData.clear();
                 }
-                log.d("OnSensorChanged error");
-                e.printStackTrace();
+                log.d(sensor.getName() + " OnSensorChanged error: " + e.getMessage());
             }
         }
     }

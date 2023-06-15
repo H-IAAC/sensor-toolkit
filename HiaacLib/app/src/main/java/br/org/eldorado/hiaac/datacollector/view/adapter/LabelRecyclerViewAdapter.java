@@ -1,6 +1,5 @@
 package br.org.eldorado.hiaac.datacollector.view.adapter;
 
-import static br.org.eldorado.hiaac.datacollector.DataCollectorActivity.FOLDER_NAME;
 import static br.org.eldorado.hiaac.datacollector.DataCollectorActivity.LABEL_CONFIG_ACTIVITY_ID;
 import static br.org.eldorado.hiaac.datacollector.DataCollectorActivity.LABEL_CONFIG_ACTIVITY_TYPE;
 import static br.org.eldorado.hiaac.datacollector.DataCollectorActivity.UPDATE_LABEL_CONFIG_ACTIVITY;
@@ -16,6 +15,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.content.res.ColorStateList;
 import android.os.CountDownTimer;
 import android.os.IBinder;
 import android.view.Gravity;
@@ -28,25 +28,31 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
+import androidx.cardview.widget.CardView;
+import androidx.core.content.ContextCompat;
 import androidx.lifecycle.LifecycleOwner;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.gson.Gson;
+
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import br.org.eldorado.hiaac.datacollector.LabelOptionsActivity;
 import br.org.eldorado.hiaac.R;
+import br.org.eldorado.hiaac.datacollector.StatisticsActivity;
 import br.org.eldorado.hiaac.datacollector.api.ApiInterface;
 import br.org.eldorado.hiaac.datacollector.api.ClientAPI;
 import br.org.eldorado.hiaac.datacollector.api.StatusResponse;
+import br.org.eldorado.hiaac.datacollector.data.ExperimentStatistics;
 import br.org.eldorado.hiaac.datacollector.data.LabelConfig;
 import br.org.eldorado.hiaac.datacollector.data.LabelConfigViewModel;
 import br.org.eldorado.hiaac.datacollector.data.SensorFrequency;
@@ -56,6 +62,7 @@ import br.org.eldorado.hiaac.datacollector.layout.AnimatedLinearLayout;
 import br.org.eldorado.hiaac.datacollector.model.DataTrack;
 import br.org.eldorado.hiaac.datacollector.service.ExecutionService;
 import br.org.eldorado.hiaac.datacollector.service.listener.ExecutionServiceListenerAdapter;
+import br.org.eldorado.hiaac.datacollector.util.CsvFiles;
 import br.org.eldorado.hiaac.datacollector.util.Log;
 import br.org.eldorado.hiaac.datacollector.util.Tools;
 import br.org.eldorado.sensorsdk.SensorSDK;
@@ -76,7 +83,8 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
     private static final String TAG = "LabelRecyclerViewAdapter";
     private final LayoutInflater mInflater;
     private List<LabelConfig> labelConfigs;
-    private Map<String, List<SensorFrequency>> sensorFrequencyMap;
+    private Set<Integer> labelsConflicts = new HashSet<>();
+    private Map<Long, List<SensorFrequency>> sensorFrequencyMap;
     private Context mContext;
     private ExecutionService execService;
     private ServiceConnection svc;
@@ -86,18 +94,35 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
     private Map<String, ViewHolder> holdersMap = new HashMap<>();
     private boolean deleteButtonClicked;
 
+    private CsvFiles csvFiles;
+
     public LabelRecyclerViewAdapter(Context context) {
         mInflater = LayoutInflater.from(context);
         mContext = context;
+        csvFiles = new CsvFiles(context);
         log = new Log(TAG);
     }
 
     public void setLabelConfigs(List<LabelConfig> labels) {
+        // Check if there is conflicts between the labels
+        labelsConflicts = new HashSet<>();
+        for (int i = 0; i < labels.size() - 1; ++i) {
+            for (int j = 1; j < labels.size(); ++j) {
+                if (i == j) continue;
+                if (labels.get(i).experiment.equals(labels.get(j).experiment) &&
+                    labels.get(i).activity.equals(labels.get(j).activity) &&
+                    labels.get(i).userId.equals(labels.get(j).userId)) {
+                    labelsConflicts.add(i);
+                    labelsConflicts.add(j);
+                }
+            }
+        }
+
         this.labelConfigs = labels;
         notifyDataSetChanged();
     }
 
-    public void setSensorFrequencyMap(Map<String, List<SensorFrequency>> sensorFrequencyMap) {
+    public void setSensorFrequencyMap(Map<Long, List<SensorFrequency>> sensorFrequencyMap) {
         this.sensorFrequencyMap = sensorFrequencyMap;
     }
 
@@ -108,35 +133,44 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
         return new ViewHolder(view);
     }
 
+    private void expandOption (LabelRecyclerViewAdapter.ViewHolder holder, View v) {
+        if (holder.isOpened) {
+            holder.getButtonContainer().close();
+            holder.setOpened(false);
+        } else {
+            resizeLabelPanel(holder);
+            holder.setOpened(true);
+        }
+    }
+
     public void onBindViewHolder(ViewHolder holder, int position) {
         log.d("CSVFilesRecyclerAdapter - ActiveThreads: " + Thread.activeCount());
         LabelConfig labelConfig = labelConfigs.get(holder.getAdapterPosition());
-        String labelTitle = labelConfig.label;
+        String labelTitle = labelConfig.experiment;
         holdersMap.put(labelTitle, holder);
 
         mLabelConfigViewModel = ViewModelProvider.AndroidViewModelFactory
                 .getInstance((Application)mContext.getApplicationContext()).create(LabelConfigViewModel.class);
 
         RecyclerView csvList = holder.getCsvRecyclerView();
-        List<File> filesList = getCsvFiles(labelConfig.label);
+        List<File> filesList = csvFiles.getFiles(labelConfig.id);
         final int filesSize = filesList.size();
         csvList.setAdapter(new CSVFilesRecyclerAdapter(mContext, filesList));
         csvList.setLayoutManager(new LinearLayoutManager(mContext));
 
         holder.getLabelTitle().setText(labelTitle);
-        holder.getLabelTitle().setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (holder.isOpened) {
-                    holder.getButtonContainer().close();
-                    holder.setOpened(false);
-                } else {
-                    resizeLabelPanel(holder);
-                    holder.setOpened(true);
-                }
-            }
-        });
-        holder.getLabelDeviceLocation().setText("("+labelConfig.deviceLocation+")");
+        holder.getLabelTitle().setOnClickListener(v -> { expandOption(holder, v); });
+
+        holder.getLabelActivity().setOnClickListener(v -> { expandOption(holder, v); });
+
+        holder.getLabelActivity().setText(labelConfig.activity);
+        holder.getLabelDeviceLocation().setText(labelConfig.userId + " - " + labelConfig.deviceLocation);
+        holder.getLabelDeviceLocation().setOnClickListener(v -> { expandOption(holder, v); });
+
+        if (labelsConflicts.contains(position))
+            holder.getLabelConflict().setVisibility(View.VISIBLE);
+        else
+            holder.getLabelConflict().setVisibility(View.INVISIBLE);
 
         holder.getLabelTimer().setText(
                 Tools.getFormatedTime(labelConfigs.get(holder.getAdapterPosition()).stopTime, Tools.CHRONOMETER));
@@ -147,7 +181,7 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
             public void onClick(View v) {
                 Intent intent = new Intent(editButton.getContext(), LabelOptionsActivity.class);
                 intent.putExtra(LABEL_CONFIG_ACTIVITY_TYPE, UPDATE_LABEL_CONFIG_ACTIVITY);
-                intent.putExtra(LABEL_CONFIG_ACTIVITY_ID, labelTitle);
+                intent.putExtra(LABEL_CONFIG_ACTIVITY_ID, labelConfig.id);
                 editButton.getContext().startActivity(intent);
             }
         });
@@ -157,7 +191,28 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
             @Override
             public void onClick(View v) {
                 shareButton.setEnabled(false);
-                sendData(holder, SEND_DATA_TO_HIAAC,false);
+                sendData(holder, SEND_DATA_TO_HIAAC,false, "0");
+            }
+        });
+
+        ImageView statisticsButton = holder.getStatisticsButton();
+        mLabelConfigViewModel.getExperimentStatistics(labelConfig.id).observe((LifecycleOwner)mContext,
+                new Observer<List<ExperimentStatistics>>() {
+            @Override
+            public void onChanged(List<ExperimentStatistics> statistics) {
+                if (statistics != null && statistics.size() > 0) {
+                    statisticsButton.setVisibility(View.VISIBLE);
+                    statisticsButton.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            Intent intent = new Intent(statisticsButton.getContext(), StatisticsActivity.class);
+                            intent.putExtra("statistics", new Gson().toJson(statistics));
+                            statisticsButton.getContext().startActivity(intent);
+                        }
+                    });
+                } else {
+                    statisticsButton.setVisibility(View.INVISIBLE);
+                }
             }
         });
 
@@ -182,7 +237,7 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
                     public void onClick(DialogInterface dialogInt, int which) {
                         deleteButtonClicked = true;
                         aDialog.dismiss();
-                        mLabelConfigViewModel.getLabelConfigById(labelTitle)
+                        mLabelConfigViewModel.getLabelConfigById(labelConfig.id)
                                 .observe((LifecycleOwner) mContext, new Observer<LabelConfig>() {
                                     @Override
                                     public void onChanged(LabelConfig labelConfig) {
@@ -191,7 +246,7 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
                                                 deleteButtonClicked = false;
                                                 mLabelConfigViewModel.deleteConfig(labelConfig);
                                                 mLabelConfigViewModel.deleteSensorsFromLabel(labelConfig);
-                                                deleteLabelDir(labelConfig.label);
+                                                csvFiles.deleteDirectory(labelConfig.id);
                                             }
                                         } catch (Exception e) {
                                             e.printStackTrace();
@@ -234,7 +289,7 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
             if (c.after(now)) {
                 String action = "br.org.eldorado.schedule_collect_data";
                 Intent i = new Intent(action);
-                i.putExtra("holder", labelConfig.label);
+                i.putExtra("holder", labelConfig.experiment);
                 AlarmManager mgr = (AlarmManager) mContext.getSystemService(Context.ALARM_SERVICE);
                 PendingIntent pi = PendingIntent.getBroadcast(mContext, 0, i, PendingIntent.FLAG_MUTABLE | PendingIntent.FLAG_UPDATE_CURRENT);
                 long startsTime = labelConfig.scheduledTime - SensorSDK.getInstance().getRemoteTime();
@@ -253,40 +308,7 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
         }
     }
 
-    private List<File> getCsvFiles(String label) {
-        File directory = new File(
-                mContext.getFilesDir().getAbsolutePath() +
-                        File.separator +
-                        FOLDER_NAME +
-                        File.separator +
-                        label);
-        List<File> filesList = new ArrayList<File>();
-        if (directory.exists()) {
-            filesList = new ArrayList<>(Arrays.asList(directory.listFiles()));
-        }
-        return filesList;
-    }
-
-    private void deleteLabelDir(String label) {
-        try {
-            File directory = new File(
-                    mContext.getFilesDir().getAbsolutePath() +
-                            File.separator +
-                            FOLDER_NAME +
-                            File.separator +
-                            label);
-            if (directory.exists()) {
-                for (File f : directory.listFiles()) {
-                    f.delete();
-                }
-                directory.delete();
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    private void sendData(ViewHolder holder, int type, boolean showDialog) {
+    private void sendData(ViewHolder holder, int type, boolean showDialog, String dataUid) {
         if (showDialog) {
             sendDataDialog = ProgressDialog.show(mContext, "Export to CSV File", "Creating CSV", true);
         }
@@ -313,7 +335,7 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
         });
 
         if (type == CREATE_CSV_FILE) {
-            firebase.exportToCSV(labelConfigs.get(holder.getAdapterPosition()).label, labelConfigs.get(holder.getAdapterPosition()).labelId);
+            firebase.exportToCSV(dataUid, labelConfigs.get(holder.getAdapterPosition()).id);
         } else if (type == SEND_DATA_TO_FIREBASE) {
             AlertDialog.Builder aDialogBuilder = new AlertDialog.Builder(mContext);
             AlertDialog aDialog = aDialogBuilder.create();
@@ -325,7 +347,7 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
                 public void onClick(DialogInterface dialogInt, int which) {
                     sendDataDialog.dismiss();
                     aDialog.dismiss();
-                    ((CSVFilesRecyclerAdapter)holder.getCsvRecyclerView().getAdapter()).updateFileList(getCsvFiles(labelConfigs.get(holder.getAdapterPosition()).label));
+                    ((CSVFilesRecyclerAdapter)holder.getCsvRecyclerView().getAdapter()).updateFileList(csvFiles.getFiles(labelConfigs.get(holder.getAdapterPosition()).id));
                     resizeLabelPanel(holder);
                 }
             });
@@ -333,12 +355,12 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
                 @Override
                 public void onClick(DialogInterface dialogInt, int which) {
                     aDialog.dismiss();
-                    firebase.uploadCSVFile(labelConfigs.get(holder.getAdapterPosition()).label, labelConfigs.get(holder.getAdapterPosition()).labelId);
+                    firebase.uploadCSVFile(labelConfigs.get(holder.getAdapterPosition()).experiment, labelConfigs.get(holder.getAdapterPosition()).id);
                 }
             });
             aDialog.show();
         } else if (type == SEND_DATA_TO_HIAAC) {
-            sendFilesToServer(getCsvFiles(labelConfigs.get(holder.getAdapterPosition()).label), holder);
+            sendFilesToServer(csvFiles.getFiles(labelConfigs.get(holder.getAdapterPosition()).id), holder);
         }
     }
 
@@ -355,7 +377,7 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
                     AlertDialog dl = builder.create();
                     dl.show();
                 }
-                List<File> files = getCsvFiles(labelConfigs.get(holder.getAdapterPosition()).label);
+                List<File> files = csvFiles.getFiles(labelConfigs.get(holder.getAdapterPosition()).id);
                 ((CSVFilesRecyclerAdapter)holder.getCsvRecyclerView().getAdapter()).updateFileList(files);
                 if (dialog != null) {
                     resizeLabelPanel(holder);
@@ -390,7 +412,7 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
     private void sendFilesToServer(List<File> files, ViewHolder holder) {
         log.d("sendFilesToServer - " + files);
         MultipartBody.Part experimentPart =
-                MultipartBody.Part.createFormData("experiment", labelConfigs.get(holder.getAdapterPosition()).label);
+                MultipartBody.Part.createFormData("experiment", labelConfigs.get(holder.getAdapterPosition()).experiment);
         MultipartBody.Part namePart =
                 MultipartBody.Part.createFormData("activity", labelConfigs.get(holder.getAdapterPosition()).activity);
         MultipartBody.Part subjectPart =
@@ -449,7 +471,7 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
     }
 
     private void sendToFirebase(ViewHolder holder) {
-        sendData(holder, SEND_DATA_TO_FIREBASE, true);
+        sendData(holder, SEND_DATA_TO_FIREBASE, true, "0");
     }
 
     public ViewHolder getViewHolder(String label) {
@@ -471,18 +493,18 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
                     ExecutionService.MyBinder binder = (ExecutionService.MyBinder) service;
                     execService = binder.getServer();
                     DataTrack dt = new DataTrack();
-                    String label = labelConfigs.get(holder.getAdapterPosition()).label;
+                    String label = labelConfigs.get(holder.getAdapterPosition()).experiment;
                     int stopTime = labelConfigs.get(holder.getAdapterPosition()).stopTime;
-                    int labelId = labelConfigs.get(holder.getAdapterPosition()).labelId;
+                    long configId = labelConfigs.get(holder.getAdapterPosition()).id;
 
                     dt.setDeviceLocation(labelConfigs.get(holder.getAdapterPosition()).deviceLocation);
                     dt.setUserId(labelConfigs.get(holder.getAdapterPosition()).userId);
                     dt.setSendFilesToServer(labelConfigs.get(holder.getAdapterPosition()).sendToServer);
                     dt.setActivity(labelConfigs.get(holder.getAdapterPosition()).activity);
                     dt.setStopTime(stopTime);
-                    dt.setLabelId(labelId);
+                    dt.setConfigId(configId);
                     dt.setLabel(label);
-                    dt.addSensorList(sensorFrequencyMap.get(label));
+                    dt.addSensorList(sensorFrequencyMap.get(configId));
                     execService.startExecution(new MyExecutionListener(dt, holder));
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -494,6 +516,7 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
         };
         log.d("startExecution - disabling start button");
         holder.getStartButton().setEnabled(false);
+        holder.getExpCard().setCardBackgroundColor(ContextCompat.getColor(mContext, R.color.inprogress));
 
         //execService.setRemoteTime(System.currentTimeMillis() + (1000*60*60));
 
@@ -551,15 +574,15 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
                     ExecutionService.MyBinder binder = (ExecutionService.MyBinder) service;
                     execService = binder.getServer();
                     DataTrack dt = new DataTrack();
-                    String label = labelConfigs.get(holder.getAdapterPosition()).label;
+                    String label = labelConfigs.get(holder.getAdapterPosition()).experiment;
                     int stopTime = labelConfigs.get(holder.getAdapterPosition()).stopTime;
-                    int labelId = labelConfigs.get(holder.getAdapterPosition()).labelId;
+                    long labelId = labelConfigs.get(holder.getAdapterPosition()).id;
 
                     dt.setDeviceLocation(labelConfigs.get(holder.getAdapterPosition()).deviceLocation);
                     dt.setUserId(labelConfigs.get(holder.getAdapterPosition()).userId);
                     dt.setSendFilesToServer(labelConfigs.get(holder.getAdapterPosition()).sendToServer);
                     dt.setActivity(labelConfigs.get(holder.getAdapterPosition()).activity);
-                    dt.setLabelId(labelId);
+                    dt.setConfigId(labelId);
                     dt.setStopTime(stopTime);
                     dt.setLabel(label);
                     dt.addSensorList(sensorFrequencyMap.get(label));
@@ -571,7 +594,7 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
                         execService.changeExecutionServiceListener(new MyExecutionListener(dt, holder));
                         //startExecution(holder);
                     } else {
-                        sendData(holder, CREATE_CSV_FILE, false);
+                        sendData(holder, CREATE_CSV_FILE, false, "0");
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -598,7 +621,11 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
     public class ViewHolder extends RecyclerView.ViewHolder {
         private boolean isOpened;
 
+        private CardView expCard;
+        private ColorStateList expCardColor;
         private TextView labelTitle;
+        private TextView labelActivity;
+        private TextView labelConflict;
         private TextView labelDeviceLocation;
         private TextView labelTimer;
         private AnimatedLinearLayout buttonContainer;
@@ -607,6 +634,7 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
         private Button editButton;
         private ImageView shareButton;
         private ImageView deleteButton;
+        private ImageView statisticsButton;
         private RecyclerView csvRecyclerView;
         private boolean started;
 
@@ -614,7 +642,11 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
             super(itemView);
             started = false;
             isOpened = false;
+            expCard = itemView.findViewById(R.id.exp_card);
+            expCardColor = expCard.getCardBackgroundColor();
             labelTitle = itemView.findViewById(R.id.label_title);
+            labelActivity = itemView.findViewById(R.id.label_activity);
+            labelConflict = itemView.findViewById(R.id.label_conflict);
             labelDeviceLocation = itemView.findViewById(R.id.label_device_location);
             labelTimer = itemView.findViewById(R.id.label_timer);
             buttonContainer = itemView.findViewById(R.id.label_button_container);
@@ -624,6 +656,7 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
             shareButton = itemView.findViewById(R.id.share_sampling_button);
             deleteButton = itemView.findViewById(R.id.delete_button);
             csvRecyclerView = itemView.findViewById(R.id.csvfiles_reclyclerView);
+            statisticsButton = itemView.findViewById(R.id.btn_statistics);
             csvRecyclerView.addOnItemTouchListener(new RecyclerView.OnItemTouchListener() {
                 @Override
                 public boolean onInterceptTouchEvent(@NonNull RecyclerView rv, @NonNull MotionEvent e) {
@@ -660,6 +693,14 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
             return labelTitle;
         }
 
+        public TextView getLabelActivity() {
+            return labelActivity;
+        }
+
+        public TextView getLabelConflict() {
+            return labelConflict;
+        }
+
         public TextView getLabelDeviceLocation() {
             return labelDeviceLocation;
         }
@@ -675,6 +716,10 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
         public AnimatedLinearLayout getButtonContainer() {
             return buttonContainer;
         }
+
+        public CardView getExpCard() { return expCard; };
+
+        public ColorStateList getExpCardColor() { return expCardColor; };
 
         public Button getStartButton() {
             return startButton;
@@ -695,6 +740,10 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
         public ImageView getDeleteButton() {
             return deleteButton;
         }
+
+        public ImageView getStatisticsButton() {
+            return statisticsButton;
+        }
     }
 
     private class MyExecutionListener extends ExecutionServiceListenerAdapter {
@@ -710,10 +759,11 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
             ((Activity)mContext).runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    log.d("MyExecutionListener - onError");
+                    log.d("MyExecutionListener - onError - " + message);
                     holder.getEditButton().setEnabled(true);
                     holder.getStartButton().setEnabled(true);
                     holder.getStopButton().setEnabled(true);
+                    holder.getExpCard().setCardBackgroundColor(holder.getExpCardColor());
                     AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
                     builder.setTitle("Error");
                     builder.setMessage(message);
@@ -747,6 +797,7 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
                         holder.getEditButton().setEnabled(true);
                         holder.getStartButton().setEnabled(true);
                         holder.getStopButton().setEnabled(false);
+                        holder.getExpCard().setCardBackgroundColor(holder.getExpCardColor());
                         holder.getLabelTimer().setText(
                                 Tools.getFormatedTime(labelConfigs.get(holder.getAdapterPosition()).stopTime, Tools.CHRONOMETER));
 
@@ -758,7 +809,7 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
                         createCSVDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
                             @Override
                             public void onCancel(DialogInterface dialog) {
-                                sendData(holder, CREATE_CSV_FILE, true);
+                                sendData(holder, CREATE_CSV_FILE, true, getDataTrack().getUid());
                             }
                         });
                         CountDownTimer countDown = new CountDownTimer(5000, 1000) {
@@ -771,7 +822,7 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
                                                 /*createCSVDialog.setCancelable(true);
                                                 createCSVDialog.setMessage("OK");*/
                                 createCSVDialog.dismiss();
-                                sendData(holder, CREATE_CSV_FILE, true);
+                                sendData(holder, CREATE_CSV_FILE, true, getDataTrack().getUid());
                             }
                         };
                         createCSVDialog.show();
@@ -797,6 +848,7 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
                     holder.getEditButton().setEnabled(false);
                     holder.getStartButton().setEnabled(false);
                     holder.getStopButton().setEnabled(true);
+                    holder.getExpCard().setCardBackgroundColor(ContextCompat.getColor(mContext, R.color.inprogress));
                 }
             });
         }

@@ -98,8 +98,8 @@ public class DataCollectorActivity extends AppCompatActivity {
         mLabelConfigViewModel.getAllSensorFrequencies().observe(this, new Observer<List<SensorFrequency>>() {
             @Override
             public void onChanged(List<SensorFrequency> sensorFrequencies) {
-                Map<String, List<SensorFrequency>> sensorFrequencyMap = sensorFrequencies.stream()
-                        .collect(Collectors.groupingBy(SensorFrequency::getLabel_id));
+                Map<Long, List<SensorFrequency>> sensorFrequencyMap = sensorFrequencies.stream()
+                        .collect(Collectors.groupingBy(SensorFrequency::getConfigId));
                 adapter.setSensorFrequencyMap(sensorFrequencyMap);
             }
         });
