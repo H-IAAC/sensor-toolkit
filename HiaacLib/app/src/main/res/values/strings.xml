@@ -71,6 +71,10 @@
     <string name="statistics_samples">Samples:</string>
     <string name="conflict">CONFLICT</string>
 
+    <string name="settings_server">Environment</string>
+    <string name="settings_server_address">Upload destination</string>
+    <string name="settings_server_config">Server Config</string>
+
     <string-array name="device_location_items">
         <item>Cabeça</item>
         <item>Braço Direito</item>

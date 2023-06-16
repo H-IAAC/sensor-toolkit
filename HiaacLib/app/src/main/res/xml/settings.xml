@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <PreferenceCategory>
+        <ListPreference
+            android:defaultValue="0"
+            android:dialogTitle="@string/settings_server"
+            android:entries="@array/servers"
+            android:entryValues="@array/server_urls"
+            android:key="@string/settings_server_config"
+            android:summary="%s"
+            android:title="@string/settings_server_address" />
+    </PreferenceCategory>
+
+
+</PreferenceScreen>

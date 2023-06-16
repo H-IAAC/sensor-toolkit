@@ -20,6 +20,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 
 import java.sql.Date;
@@ -39,6 +40,7 @@ import br.org.eldorado.hiaac.datacollector.data.LabelConfig;
 import br.org.eldorado.hiaac.datacollector.data.LabelConfigViewModel;
 import br.org.eldorado.hiaac.datacollector.data.SensorFrequency;
 import br.org.eldorado.hiaac.datacollector.util.Log;
+import br.org.eldorado.hiaac.datacollector.util.Preferences;
 import br.org.eldorado.hiaac.datacollector.util.Tools;
 import br.org.eldorado.hiaac.datacollector.view.adapter.LabelRecyclerViewAdapter;
 import br.org.eldorado.sensorsdk.SensorSDK;
@@ -69,6 +71,9 @@ public class DataCollectorActivity extends AppCompatActivity {
         }
         setContentView(R.layout.data_collector_activity_main);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+
+        // Initiate shared preferences
+        Preferences.init(getApplicationContext());
 
         RecyclerView recyclerView = findViewById(R.id.label_recycle_view);
         adapter = new LabelRecyclerViewAdapter(this);
@@ -117,7 +122,9 @@ public class DataCollectorActivity extends AppCompatActivity {
         serverTimeTxt = findViewById(R.id.server_time);
         df = new SimpleDateFormat("HH:mm");
         ClientAPI api = new ClientAPI();
-        ApiInterface apiInterface = api.getClient(Tools.SERVER_HOST, Tools.SERVER_PORT).create(ApiInterface.class);
+        String address = Preferences.getPreferredServer().split(":")[0];
+        String port = Preferences.getPreferredServer().split(":")[1];
+        ApiInterface apiInterface = api.getClient(address, port).create(ApiInterface.class);
         updateServerTime(apiInterface);
     }
 
@@ -229,6 +236,9 @@ public class DataCollectorActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
         if (id == R.id.action_settings) {
+            Intent intent = new Intent(this, SettingsActivity.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            this.getApplicationContext().startActivity(intent);
             return true;
         }
         return super.onOptionsItemSelected(item);

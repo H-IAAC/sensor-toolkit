@@ -64,6 +64,7 @@ import br.org.eldorado.hiaac.datacollector.service.ExecutionService;
 import br.org.eldorado.hiaac.datacollector.service.listener.ExecutionServiceListenerAdapter;
 import br.org.eldorado.hiaac.datacollector.util.CsvFiles;
 import br.org.eldorado.hiaac.datacollector.util.Log;
+import br.org.eldorado.hiaac.datacollector.util.Preferences;
 import br.org.eldorado.hiaac.datacollector.util.Tools;
 import br.org.eldorado.sensorsdk.SensorSDK;
 import okhttp3.MediaType;
@@ -424,7 +425,9 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
                     RequestBody.create(MediaType.parse("multipart/form-data"), file));
 
             ClientAPI apiClient = new ClientAPI();
-            ApiInterface apiInterface = apiClient.getClient(Tools.SERVER_HOST, Tools.SERVER_PORT).create(ApiInterface.class);
+            String address = Preferences.getPreferredServer().split(":")[0];
+            String port = Preferences.getPreferredServer().split(":")[1];
+            ApiInterface apiInterface = apiClient.getClient(address, port).create(ApiInterface.class);
             Call<StatusResponse> call = apiInterface.uploadFile(filePart, experimentPart, subjectPart, namePart);
             call.enqueue(uploadCallback(file, holder));
 
