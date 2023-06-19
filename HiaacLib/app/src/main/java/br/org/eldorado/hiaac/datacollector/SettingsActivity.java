@@ -39,9 +39,7 @@ public class SettingsActivity extends AppCompatActivity {
     }
 
     private void closeActivity() {
-        this.finish();
-        Intent intent = new Intent(getApplicationContext(), DataCollectorActivity.class);
-        startActivity(intent);
+        super.onBackPressed();
     }
 
     public static class SettingsFragment extends PreferenceFragmentCompat {

@@ -1,5 +1,6 @@
 package br.org.eldorado.hiaacapp;
 
+import android.content.Intent;
 import android.os.Bundle;
 
 import com.google.android.material.snackbar.Snackbar;
@@ -14,6 +15,8 @@ import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
 
 import br.org.eldorado.hiaac.HIAACLibrary;
+import br.org.eldorado.hiaac.datacollector.SettingsActivity;
+import br.org.eldorado.hiaac.datacollector.util.Preferences;
 import br.org.eldorado.hiaac.profiling.Profiling;
 import br.org.eldorado.hiaacapp.databinding.HiaacActivityMainBinding;
 
@@ -28,6 +31,9 @@ public class HIAAPMainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        // Initiate shared preferences
+        Preferences.init(getApplicationContext());
 
         binding = HiaacActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
@@ -51,16 +57,13 @@ public class HIAAPMainActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
+        if (id == br.org.eldorado.hiaac.R.id.action_settings) {
+            Intent intent = new Intent(this, SettingsActivity.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            this.getApplicationContext().startActivity(intent);
             return true;
         }
-
         return super.onOptionsItemSelected(item);
     }
 }

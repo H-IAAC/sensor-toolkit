@@ -21,7 +21,8 @@
         android:usesCleartextTraffic="true">
         <activity
             android:name=".datacollector.SettingsActivity"
-            android:exported="false" />
+            android:theme="@style/PreferenceScreen"
+            android:exported="false"/>
         <activity
             android:name=".datacollector.LabelOptionsActivity"
             android:exported="false"

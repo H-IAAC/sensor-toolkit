@@ -72,7 +72,9 @@
     <string name="conflict">CONFLICT</string>
 
     <string name="settings_server">Environment</string>
-    <string name="settings_server_address">Upload destination</string>
+    <string name="settings_upload_title">File upload</string>
+    <string name="settings_upload_summary">Choose where collected data should be sent.</string>
+    <string name="settings_server_address">Destination</string>
     <string name="settings_server_config">Server Config</string>
 
     <string-array name="device_location_items">

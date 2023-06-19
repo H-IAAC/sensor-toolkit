@@ -12,6 +12,7 @@
         <!-- Status bar color. -->
         <item name="android:statusBarColor" tools:targetApi="l">?attr/colorPrimaryVariant</item>
         <!-- Customize your theme here. -->
+
     </style>
 
     <style name="Theme.HIAAC.NoActionBar">
@@ -21,5 +22,14 @@
 
     <style name="Theme.HIAAC.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
 
-    <style name="Theme.HIAAC.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
+    <style name="Theme.HIAAC.PopupOverlay" parent="Theme.AppCompat" />
+
+    <style name="PreferenceScreen" parent="Theme.MaterialComponents.DayNight.DarkActionBar">
+        <item name="android:colorAccent">@color/blue</item>
+        <item name="android:textColorPrimary">@color/black</item>
+        <item name="android:textColorSecondary">@color/gray</item>
+        <item name="colorPrimary">@color/purple_500</item>
+        <item name="colorPrimaryVariant">@color/purple_700</item>
+        <item name="android:statusBarColor" tools:targetApi="l">?attr/colorPrimaryVariant</item>
+    </style>
 </resources>

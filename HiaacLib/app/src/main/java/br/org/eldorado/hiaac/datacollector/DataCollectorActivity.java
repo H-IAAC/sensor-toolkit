@@ -72,9 +72,6 @@ public class DataCollectorActivity extends AppCompatActivity {
         setContentView(R.layout.data_collector_activity_main);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
-        // Initiate shared preferences
-        Preferences.init(getApplicationContext());
-
         RecyclerView recyclerView = findViewById(R.id.label_recycle_view);
         adapter = new LabelRecyclerViewAdapter(this);
         br = new BroadcastReceiver() {
