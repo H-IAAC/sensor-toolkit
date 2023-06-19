@@ -183,6 +183,7 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
                 Intent intent = new Intent(editButton.getContext(), LabelOptionsActivity.class);
                 intent.putExtra(LABEL_CONFIG_ACTIVITY_TYPE, UPDATE_LABEL_CONFIG_ACTIVITY);
                 intent.putExtra(LABEL_CONFIG_ACTIVITY_ID, labelConfig.id);
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_MULTIPLE_TASK);
                 editButton.getContext().startActivity(intent);
             }
         });
@@ -208,6 +209,7 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
                         public void onClick(View v) {
                             Intent intent = new Intent(statisticsButton.getContext(), StatisticsActivity.class);
                             intent.putExtra("statistics", new Gson().toJson(statistics));
+                            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_MULTIPLE_TASK);
                             statisticsButton.getContext().startActivity(intent);
                         }
                     });

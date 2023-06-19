@@ -60,7 +60,7 @@ public class HIAAPMainActivity extends AppCompatActivity {
         int id = item.getItemId();
         if (id == br.org.eldorado.hiaac.R.id.action_settings) {
             Intent intent = new Intent(this, SettingsActivity.class);
-            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_MULTIPLE_TASK);
             this.getApplicationContext().startActivity(intent);
             return true;
         }

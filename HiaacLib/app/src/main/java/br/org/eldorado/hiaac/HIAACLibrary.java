@@ -11,7 +11,7 @@ public class HIAACLibrary {
 
     public static void openDataCollector(Context ctx) {
         Intent intent = new Intent(ctx, DataCollectorActivity.class);
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_MULTIPLE_TASK);
         FirebaseApp.initializeApp(ctx);
         ctx.startActivity(intent);
     }

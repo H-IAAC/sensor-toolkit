@@ -112,6 +112,7 @@ public class DataCollectorActivity extends AppCompatActivity {
             public void onClick(View v) {
                 Intent intent = new Intent(getApplicationContext(), LabelOptionsActivity.class);
                 intent.putExtra(LABEL_CONFIG_ACTIVITY_TYPE, NEW_LABEL_CONFIG_ACTIVITY);
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_MULTIPLE_TASK);
                 startActivity(intent);
             }
         });
@@ -225,7 +226,7 @@ public class DataCollectorActivity extends AppCompatActivity {
 
     @Override
     public boolean onSupportNavigateUp() {
-        this.finish();
+        super.onBackPressed();
         return true;
     }
 
@@ -234,8 +235,8 @@ public class DataCollectorActivity extends AppCompatActivity {
         int id = item.getItemId();
         if (id == R.id.action_settings) {
             Intent intent = new Intent(this, SettingsActivity.class);
-            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            this.getApplicationContext().startActivity(intent);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_MULTIPLE_TASK);
+            this.startActivity(intent);
             return true;
         }
         return super.onOptionsItemSelected(item);
