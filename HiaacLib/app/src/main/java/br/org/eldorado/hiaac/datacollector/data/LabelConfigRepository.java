@@ -94,8 +94,8 @@ public class LabelConfigRepository {
             return null;})).execute(data);
     }
 
-    public LiveData<List<ExperimentStatistics>> getExperimentStatisticsByExpId(long configId) {
-        return mLabelConfigDao.getStatisticsByExpId(configId);
+    public LiveData<List<ExperimentStatistics>> getExperimentStatisticsByExpId(long configId, String startTime) {
+        return mLabelConfigDao.getStatisticsByExpId(configId, startTime);
     }
 
     public void deleteExperimentStatistics(long configId) {

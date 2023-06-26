@@ -91,14 +91,19 @@ public class CsvBuilder {
                         File.separator +
                         data.get(0).getConfigId() +
                         File.separator +
-                        data.get(0).getUserId() + "_" +
-                        data.get(0).getExperiment() + "_" +
-                        data.get(0).getActivity() + "_" +
-                        data.get(0).getDevicePosition() + "__" +
-                        timestamp + // UID
-                        ".csv");
+                        composeFileName(data, timestamp));
         log.d("Creating CSV file: " + csvFile.getAbsolutePath());
         appendData(csvFile, data, 0);
         return csvFile;
+    }
+
+    private String composeFileName(List<LabeledData> data, String timestamp) {
+        return data.get(0).getUserId() + "_" +
+               data.get(0).getExperiment() + "_" +
+               data.get(0).getActivity() + "_" +
+               data.get(0).getDevicePosition() + "__" +
+               timestamp + // UID
+               ".csv";
+
     }
 }

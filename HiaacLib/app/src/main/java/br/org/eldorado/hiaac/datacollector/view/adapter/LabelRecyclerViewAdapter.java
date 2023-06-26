@@ -155,8 +155,8 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
 
         RecyclerView csvList = holder.getCsvRecyclerView();
         List<File> filesList = csvFiles.getFiles(labelConfig.id);
-        final int filesSize = filesList.size();
-        csvList.setAdapter(new CSVFilesRecyclerAdapter(mContext, filesList));
+
+        csvList.setAdapter(new CSVFilesRecyclerAdapter(mContext, filesList, mLabelConfigViewModel.getLabelConfigRepository(), labelConfig.id));
         csvList.setLayoutManager(new LinearLayoutManager(mContext));
 
         holder.getLabelTitle().setText(labelTitle);
@@ -194,28 +194,6 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
             public void onClick(View v) {
                 shareButton.setEnabled(false);
                 sendData(holder, SEND_DATA_TO_HIAAC,false, "0");
-            }
-        });
-
-        ImageView statisticsButton = holder.getStatisticsButton();
-        mLabelConfigViewModel.getExperimentStatistics(labelConfig.id).observe((LifecycleOwner)mContext,
-                new Observer<List<ExperimentStatistics>>() {
-            @Override
-            public void onChanged(List<ExperimentStatistics> statistics) {
-                if (statistics != null && statistics.size() > 0) {
-                    statisticsButton.setVisibility(View.VISIBLE);
-                    statisticsButton.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            Intent intent = new Intent(statisticsButton.getContext(), StatisticsActivity.class);
-                            intent.putExtra("statistics", new Gson().toJson(statistics));
-                            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_MULTIPLE_TASK);
-                            statisticsButton.getContext().startActivity(intent);
-                        }
-                    });
-                } else {
-                    statisticsButton.setVisibility(View.INVISIBLE);
-                }
             }
         });
 
@@ -661,7 +639,6 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
             shareButton = itemView.findViewById(R.id.share_sampling_button);
             deleteButton = itemView.findViewById(R.id.delete_button);
             csvRecyclerView = itemView.findViewById(R.id.csvfiles_reclyclerView);
-            statisticsButton = itemView.findViewById(R.id.btn_statistics);
             csvRecyclerView.addOnItemTouchListener(new RecyclerView.OnItemTouchListener() {
                 @Override
                 public boolean onInterceptTouchEvent(@NonNull RecyclerView rv, @NonNull MotionEvent e) {
@@ -744,10 +721,6 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
 
         public ImageView getDeleteButton() {
             return deleteButton;
-        }
-
-        public ImageView getStatisticsButton() {
-            return statisticsButton;
         }
     }
 

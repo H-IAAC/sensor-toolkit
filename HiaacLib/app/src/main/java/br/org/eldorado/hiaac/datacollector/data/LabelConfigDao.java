@@ -66,8 +66,8 @@ public interface LabelConfigDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     void insertExperimentStatistics(List<ExperimentStatistics> experiments);
 
-    @Query("SELECT * from ExperimentStatistics where `config-id`=:configId")
-    LiveData<List<ExperimentStatistics>> getStatisticsByExpId(long configId);
+    @Query("SELECT * from ExperimentStatistics where `config-id`=:configId and `start-time` LIKE :startTme")
+    LiveData<List<ExperimentStatistics>> getStatisticsByExpId(long configId, String startTme);
 
     @Query("DELETE from ExperimentStatistics where `config-id`=:configId")
     void deleteExperimentStatistics(long configId);
