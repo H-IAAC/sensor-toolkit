@@ -35,7 +35,6 @@
             android:name=".datacollector.DataCollectorActivity"
             android:exported="true"
             android:label="@string/app_name"
-            android:launchMode="singleInstance"
             android:screenOrientation="portrait"></activity>
 
         <service

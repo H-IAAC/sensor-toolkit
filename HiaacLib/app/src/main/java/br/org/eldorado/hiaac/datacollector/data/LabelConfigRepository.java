@@ -103,7 +103,13 @@ public class LabelConfigRepository {
         new ExperimentStatisticsAsyncTask(mLabelConfigDao, (statistics -> {
             mLabelConfigDao.deleteExperimentStatistics(configId);
             return null;})).execute(st);
+    }
 
+    public void deleteExperimentStatistics(long configId, String startTime) {
+        List<ExperimentStatistics> st = new ArrayList<>();
+        new ExperimentStatisticsAsyncTask(mLabelConfigDao, (statistics -> {
+            mLabelConfigDao.deleteExperimentStatistics(configId, startTime);
+            return null;})).execute(st);
     }
 
     public List<LabeledData> getLabeledData(long labelId, int type, long offset) {

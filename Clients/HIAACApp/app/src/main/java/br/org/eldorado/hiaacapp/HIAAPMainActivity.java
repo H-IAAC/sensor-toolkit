@@ -2,26 +2,16 @@ package br.org.eldorado.hiaacapp;
 
 import android.content.Intent;
 import android.os.Bundle;
-
-import com.google.android.material.snackbar.Snackbar;
-
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.view.View;
-
-import androidx.navigation.NavController;
-import androidx.navigation.Navigation;
+import android.view.Menu;
+import android.view.MenuItem;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.navigation.ui.AppBarConfiguration;
-import androidx.navigation.ui.NavigationUI;
 
 import br.org.eldorado.hiaac.HIAACLibrary;
 import br.org.eldorado.hiaac.datacollector.SettingsActivity;
 import br.org.eldorado.hiaac.datacollector.util.Preferences;
-import br.org.eldorado.hiaac.profiling.Profiling;
 import br.org.eldorado.hiaacapp.databinding.HiaacActivityMainBinding;
-
-import android.view.Menu;
-import android.view.MenuItem;
 
 public class HIAAPMainActivity extends AppCompatActivity {
 
@@ -60,7 +50,7 @@ public class HIAAPMainActivity extends AppCompatActivity {
         int id = item.getItemId();
         if (id == br.org.eldorado.hiaac.R.id.action_settings) {
             Intent intent = new Intent(this, SettingsActivity.class);
-            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_MULTIPLE_TASK);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             this.getApplicationContext().startActivity(intent);
             return true;
         }

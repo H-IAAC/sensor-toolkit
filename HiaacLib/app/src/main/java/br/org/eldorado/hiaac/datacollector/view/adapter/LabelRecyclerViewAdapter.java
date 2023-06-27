@@ -36,8 +36,6 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.google.gson.Gson;
-
 import java.io.File;
 import java.util.Calendar;
 import java.util.HashMap;
@@ -48,11 +46,9 @@ import java.util.Set;
 
 import br.org.eldorado.hiaac.datacollector.LabelOptionsActivity;
 import br.org.eldorado.hiaac.R;
-import br.org.eldorado.hiaac.datacollector.StatisticsActivity;
 import br.org.eldorado.hiaac.datacollector.api.ApiInterface;
 import br.org.eldorado.hiaac.datacollector.api.ClientAPI;
 import br.org.eldorado.hiaac.datacollector.api.StatusResponse;
-import br.org.eldorado.hiaac.datacollector.data.ExperimentStatistics;
 import br.org.eldorado.hiaac.datacollector.data.LabelConfig;
 import br.org.eldorado.hiaac.datacollector.data.LabelConfigViewModel;
 import br.org.eldorado.hiaac.datacollector.data.SensorFrequency;
@@ -183,7 +179,7 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
                 Intent intent = new Intent(editButton.getContext(), LabelOptionsActivity.class);
                 intent.putExtra(LABEL_CONFIG_ACTIVITY_TYPE, UPDATE_LABEL_CONFIG_ACTIVITY);
                 intent.putExtra(LABEL_CONFIG_ACTIVITY_ID, labelConfig.id);
-                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_MULTIPLE_TASK);
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 editButton.getContext().startActivity(intent);
             }
         });

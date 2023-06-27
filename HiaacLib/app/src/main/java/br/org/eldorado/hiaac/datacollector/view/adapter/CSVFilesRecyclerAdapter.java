@@ -20,9 +20,6 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.google.gson.Gson;
 
 import java.io.File;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.List;
 import br.org.eldorado.hiaac.R;
 import br.org.eldorado.hiaac.datacollector.StatisticsActivity;
@@ -99,12 +96,17 @@ public class CSVFilesRecyclerAdapter extends RecyclerView.Adapter<CSVFilesRecycl
             public void onClick(View v) {
                 csvFileList.remove(holder.getAdapterPosition());
                 csvFile.delete();
+
+                String clickedFileName = csvFileList.get(holder.getAdapterPosition()).getName();
+                CsvFiles.CsvFileName csvFileName = CsvFiles.decomposeFileName(clickedFileName);
+                String startTimeEpoch = CsvFiles.CsvFileNameConvertTimestamp(csvFileName.startTime);
+                mRepository.deleteExperimentStatistics(configId, startTimeEpoch.substring(0, 9) + '%');
+
                 notifyItemRemoved(holder.getAdapterPosition());
             }
         });
 
         holder.getStatisticsBtn().setOnClickListener(new View.OnClickListener() {
-
             String clickedFileName = csvFileList.get(holder.getAdapterPosition()).getName();
             CsvFiles.CsvFileName csvFileName = CsvFiles.decomposeFileName(clickedFileName);
             String startTimeEpoch = CsvFiles.CsvFileNameConvertTimestamp(csvFileName.startTime);
@@ -120,7 +122,7 @@ public class CSVFilesRecyclerAdapter extends RecyclerView.Adapter<CSVFilesRecycl
                                  if (statistics != null && statistics.size() > 0) {
                                      Intent intent = new Intent(mContext, StatisticsActivity.class);
                                      intent.putExtra("statistics", new Gson().toJson(statistics));
-                                     intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_MULTIPLE_TASK);
+                                     intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                                      mContext.startActivity(intent);
                                  }
                              }

@@ -1,17 +1,10 @@
 package br.org.eldorado.hiaac.datacollector;
 
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
 
-import android.content.Intent;
 import android.os.Bundle;
-import android.widget.Toast;
-
-import androidx.preference.PreferenceFragment;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.preference.PreferenceFragmentCompat;
-
 import br.org.eldorado.hiaac.R;
-import br.org.eldorado.hiaac.datacollector.util.Preferences;
 
 public class SettingsActivity extends AppCompatActivity {
 
@@ -34,17 +27,11 @@ public class SettingsActivity extends AppCompatActivity {
 
     @Override
     public boolean onSupportNavigateUp() {
-        closeActivity();
+        finish();
         return true;
     }
 
-    private void closeActivity() {
-        super.onBackPressed();
-    }
-
     public static class SettingsFragment extends PreferenceFragmentCompat {
-
-
         @Override
         public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
             setPreferencesFromResource(R.xml.settings, rootKey);
