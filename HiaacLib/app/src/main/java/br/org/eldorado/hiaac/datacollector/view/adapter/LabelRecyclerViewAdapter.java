@@ -27,6 +27,7 @@ import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
+
 import androidx.annotation.NonNull;
 import androidx.cardview.widget.CardView;
 import androidx.core.content.ContextCompat;
@@ -505,7 +506,9 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
             dialog.setTitle(mContext.getString(R.string.experiment_timer_title));
             dialog.setMessage("\t 10");
             dialog.setCancelable(false);
-            CountDownTimer countDown = new CountDownTimer(9000, 1000) {
+
+            Integer counterStartDelay = Preferences.getPreferredStartDelay() * 1000;
+            CountDownTimer countDown = new CountDownTimer(counterStartDelay, 1000) {
                 @Override
                 public void onTick(long timeRemaining) {
                     ((Activity) mContext).runOnUiThread(new Runnable() {

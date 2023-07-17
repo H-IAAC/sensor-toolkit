@@ -22,10 +22,21 @@ public class Preferences {
             Preferences.prefs.edit().putString(getResource(R.string.settings_server_config),
                                                server).apply();
         }
+
+        if (notContains(R.string.settings_counter_key)) {
+            String server = getArrayResource(R.array.collect_counter_values, 8);
+            Preferences.prefs.edit().putString(getResource(R.string.settings_counter_key),
+                    server).apply();
+        }
     }
 
     public static String getPreferredServer() {
         return Preferences.prefs.getString(ctx.getResources().getString(R.string.settings_server_config), "1:2");
+    }
+
+    public static Integer getPreferredStartDelay() {
+        return Integer.parseInt(Preferences.prefs.getString(ctx.getResources().getString(R.string.settings_counter_key),
+                        "8"));
     }
 
     private static String getResource(Integer stringId) {
