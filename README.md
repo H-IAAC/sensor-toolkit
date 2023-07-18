@@ -23,3 +23,12 @@ Supported sensors:
 
 Clone this project. Build and install the SensorAgent application on Android device. Build and install SensorManager on Android device.
 To create your own clients, follow the instructions on the README files from `SensorSDK` and `ClientAPILibrary` folders.
+
+
+## Application architecture
+
+### Clock synchronization
+![image](https://github.com/H-IAAC/sensor-toolkit/assets/117912051/177ed8db-8625-424f-bad1-cf96ae4a443c)
+
+### Sensor Data Collection
+![image](https://github.com/H-IAAC/sensor-toolkit/assets/117912051/11c593e3-d722-4e57-9930-c4b631a277f4)
