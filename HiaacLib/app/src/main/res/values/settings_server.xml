@@ -11,7 +11,7 @@
     </string-array>
 
     <string-array name="collect_counter">
-        <item>0 second</item>
+        <item>None</item>
         <item>1 second</item>
         <item>2 seconds</item>
         <item>3 seconds</item>

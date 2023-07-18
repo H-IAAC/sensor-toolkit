@@ -20,7 +20,7 @@
         android:summary="@string/settings_collect_summary">
         <DropDownPreference
             android:key="@string/settings_counter_key"
-            android:summary="%s seconds"
+            android:summary="%s"
             android:defaultValue="8"
             android:title="@string/settings_counter"
             android:entries="@array/collect_counter"
