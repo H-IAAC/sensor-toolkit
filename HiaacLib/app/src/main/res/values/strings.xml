@@ -72,6 +72,21 @@
     <string name="statistics_samples">Samples:</string>
     <string name="conflict">CONFLICT</string>
 
+    <string name="settings_upload_title">File upload</string>
+    <string name="settings_upload_summary">Choose where collected data should be sent.</string>
+
+    <string name="settings_server">Environment</string>
+    <string name="settings_server_address">Destination</string>
+    <string name="settings_server_config">Server Config</string>
+
+    <string name="settings_collect_title">Collect config</string>
+    <string name="settings_collect_summary">Options to customize the collect process.</string>
+
+    <string name="settings_counter">Counter time</string>
+    <string name="settings_counter_summary">Value in seconds:</string>
+    <string name="settings_counter_key">Start Collect Config</string>
+
+
     <string-array name="device_location_items">
         <item>Cabeça</item>
         <item>Braço Direito</item>

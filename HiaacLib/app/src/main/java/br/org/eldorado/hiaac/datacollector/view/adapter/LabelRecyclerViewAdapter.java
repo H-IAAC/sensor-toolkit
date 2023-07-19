@@ -27,6 +27,7 @@ import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
+
 import androidx.annotation.NonNull;
 import androidx.cardview.widget.CardView;
 import androidx.core.content.ContextCompat;
@@ -35,8 +36,6 @@ import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-
-import com.google.gson.Gson;
 
 import java.io.File;
 import java.util.Calendar;
@@ -48,11 +47,9 @@ import java.util.Set;
 
 import br.org.eldorado.hiaac.datacollector.LabelOptionsActivity;
 import br.org.eldorado.hiaac.R;
-import br.org.eldorado.hiaac.datacollector.StatisticsActivity;
 import br.org.eldorado.hiaac.datacollector.api.ApiInterface;
 import br.org.eldorado.hiaac.datacollector.api.ClientAPI;
 import br.org.eldorado.hiaac.datacollector.api.StatusResponse;
-import br.org.eldorado.hiaac.datacollector.data.ExperimentStatistics;
 import br.org.eldorado.hiaac.datacollector.data.LabelConfig;
 import br.org.eldorado.hiaac.datacollector.data.LabelConfigViewModel;
 import br.org.eldorado.hiaac.datacollector.data.SensorFrequency;
@@ -64,6 +61,7 @@ import br.org.eldorado.hiaac.datacollector.service.ExecutionService;
 import br.org.eldorado.hiaac.datacollector.service.listener.ExecutionServiceListenerAdapter;
 import br.org.eldorado.hiaac.datacollector.util.CsvFiles;
 import br.org.eldorado.hiaac.datacollector.util.Log;
+import br.org.eldorado.hiaac.datacollector.util.Preferences;
 import br.org.eldorado.hiaac.datacollector.util.Tools;
 import br.org.eldorado.sensorsdk.SensorSDK;
 import okhttp3.MediaType;
@@ -154,8 +152,8 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
 
         RecyclerView csvList = holder.getCsvRecyclerView();
         List<File> filesList = csvFiles.getFiles(labelConfig.id);
-        final int filesSize = filesList.size();
-        csvList.setAdapter(new CSVFilesRecyclerAdapter(mContext, filesList));
+
+        csvList.setAdapter(new CSVFilesRecyclerAdapter(mContext, filesList, mLabelConfigViewModel.getLabelConfigRepository(), labelConfig.id));
         csvList.setLayoutManager(new LinearLayoutManager(mContext));
 
         holder.getLabelTitle().setText(labelTitle);
@@ -182,6 +180,7 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
                 Intent intent = new Intent(editButton.getContext(), LabelOptionsActivity.class);
                 intent.putExtra(LABEL_CONFIG_ACTIVITY_TYPE, UPDATE_LABEL_CONFIG_ACTIVITY);
                 intent.putExtra(LABEL_CONFIG_ACTIVITY_ID, labelConfig.id);
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 editButton.getContext().startActivity(intent);
             }
         });
@@ -192,27 +191,6 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
             public void onClick(View v) {
                 shareButton.setEnabled(false);
                 sendData(holder, SEND_DATA_TO_HIAAC,false, "0");
-            }
-        });
-
-        ImageView statisticsButton = holder.getStatisticsButton();
-        mLabelConfigViewModel.getExperimentStatistics(labelConfig.id).observe((LifecycleOwner)mContext,
-                new Observer<List<ExperimentStatistics>>() {
-            @Override
-            public void onChanged(List<ExperimentStatistics> statistics) {
-                if (statistics != null && statistics.size() > 0) {
-                    statisticsButton.setVisibility(View.VISIBLE);
-                    statisticsButton.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            Intent intent = new Intent(statisticsButton.getContext(), StatisticsActivity.class);
-                            intent.putExtra("statistics", new Gson().toJson(statistics));
-                            statisticsButton.getContext().startActivity(intent);
-                        }
-                    });
-                } else {
-                    statisticsButton.setVisibility(View.INVISIBLE);
-                }
             }
         });
 
@@ -424,7 +402,9 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
                     RequestBody.create(MediaType.parse("multipart/form-data"), file));
 
             ClientAPI apiClient = new ClientAPI();
-            ApiInterface apiInterface = apiClient.getClient(Tools.SERVER_HOST, Tools.SERVER_PORT).create(ApiInterface.class);
+            String address = Preferences.getPreferredServer().split(":")[0];
+            String port = Preferences.getPreferredServer().split(":")[1];
+            ApiInterface apiInterface = apiClient.getClient(address, port).create(ApiInterface.class);
             Call<StatusResponse> call = apiInterface.uploadFile(filePart, experimentPart, subjectPart, namePart);
             call.enqueue(uploadCallback(file, holder));
 
@@ -526,7 +506,9 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
             dialog.setTitle(mContext.getString(R.string.experiment_timer_title));
             dialog.setMessage("\t 10");
             dialog.setCancelable(false);
-            CountDownTimer countDown = new CountDownTimer(9000, 1000) {
+
+            Integer counterStartDelay = Preferences.getPreferredStartDelay() * 1000;
+            CountDownTimer countDown = new CountDownTimer(counterStartDelay, 1000) {
                 @Override
                 public void onTick(long timeRemaining) {
                     ((Activity) mContext).runOnUiThread(new Runnable() {
@@ -656,7 +638,6 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
             shareButton = itemView.findViewById(R.id.share_sampling_button);
             deleteButton = itemView.findViewById(R.id.delete_button);
             csvRecyclerView = itemView.findViewById(R.id.csvfiles_reclyclerView);
-            statisticsButton = itemView.findViewById(R.id.btn_statistics);
             csvRecyclerView.addOnItemTouchListener(new RecyclerView.OnItemTouchListener() {
                 @Override
                 public boolean onInterceptTouchEvent(@NonNull RecyclerView rv, @NonNull MotionEvent e) {
@@ -739,10 +720,6 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
 
         public ImageView getDeleteButton() {
             return deleteButton;
-        }
-
-        public ImageView getStatisticsButton() {
-            return statisticsButton;
         }
     }
 

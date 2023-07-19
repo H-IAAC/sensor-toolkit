@@ -10,5 +10,6 @@
     <color name="blue">#0000FF</color>
     <color name="red">#FF0000</color>
     <color name="inprogress">#34FF2828</color>
+    <color name="gray">#9c9c9c</color>
 
 </resources>

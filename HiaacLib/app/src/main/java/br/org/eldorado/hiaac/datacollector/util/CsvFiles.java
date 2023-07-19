@@ -5,8 +5,11 @@ import static br.org.eldorado.hiaac.datacollector.DataCollectorActivity.FOLDER_N
 import android.content.Context;
 
 import java.io.File;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 
 public class CsvFiles {
@@ -49,5 +52,37 @@ public class CsvFiles {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    public static CsvFileName decomposeFileName(String fileName) {
+        CsvFileName file = new CsvFileName();
+        // File name example: user1_experiment1_activity1_Perna_20230626.103628.csv
+        String[] fileContent = fileName.split("_");
+        file.user = fileContent[0];
+        file.experiment = fileContent[1];
+        file.activity = fileContent[2];
+        file.devicePosition = fileContent[3];
+        file.startTime = fileContent[5].substring(0, fileContent[5].lastIndexOf("."));
+
+        return file;
+    }
+
+    public static String CsvFileNameConvertTimestamp(String startTime) {
+        SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd.HHmmss");
+
+        try {
+            Date date = df.parse(startTime);
+            return date.getTime() + "";
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static class CsvFileName {
+        public String experiment;
+        public String activity;
+        public String user;
+        public String devicePosition;
+        public String startTime;
     }
 }

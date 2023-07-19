@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <PreferenceCategory
+        android:title="@string/settings_upload_title"
+        android:layout="@layout/custom_preference_category"
+        android:summary="@string/settings_upload_summary">
+        <ListPreference
+            android:defaultValue="0"
+            android:dialogTitle="@string/settings_server"
+            android:entries="@array/servers"
+            android:entryValues="@array/server_urls"
+            android:key="@string/settings_server_config"
+            android:summary="%s"
+            android:title="@string/settings_server_address" />
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        android:title="@string/settings_collect_title"
+        android:layout="@layout/custom_preference_category"
+        android:summary="@string/settings_collect_summary">
+        <DropDownPreference
+            android:key="@string/settings_counter_key"
+            android:summary="%s"
+            android:defaultValue="8"
+            android:title="@string/settings_counter"
+            android:entries="@array/collect_counter"
+            android:entryValues="@array/collect_counter_values"/>
+    </PreferenceCategory>
+</PreferenceScreen>

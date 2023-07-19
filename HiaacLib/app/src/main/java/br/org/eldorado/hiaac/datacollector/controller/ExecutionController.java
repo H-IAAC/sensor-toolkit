@@ -108,7 +108,6 @@ public class ExecutionController {
                     totalData += ((MySensorListener) sensorFrequency.sensor.getListener()).getCollectedData();
                 }
             }
-            dbView.deleteExperimentsStatistics(dataTrack.getConfigId());
             dbView.insertExperimentStatistics(statistics);
             if (service != null) {
                 service.stopForeground(true);

@@ -74,9 +74,7 @@ public class StatisticsActivity extends AppCompatActivity {
     }
 
     private void closeActivity() {
-        this.finish();
-        Intent intent = new Intent(getApplicationContext(), DataCollectorActivity.class);
-        startActivity(intent);
+        super.onBackPressed();
     }
 
     private String convertDate(long time) {

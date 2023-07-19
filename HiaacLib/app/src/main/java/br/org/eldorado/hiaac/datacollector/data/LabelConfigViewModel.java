@@ -19,6 +19,10 @@ public class LabelConfigViewModel extends AndroidViewModel {
         mAllSensorFrequencies = mRepository.getAllSensorFrequencies();
     }
 
+    public LabelConfigRepository getLabelConfigRepository() {
+        return mRepository;
+    }
+
     public LiveData<List<LabelConfig>> getAllLabels() {
         return mAllLabels;
     }
@@ -80,8 +84,8 @@ public class LabelConfigViewModel extends AndroidViewModel {
         return mRepository.getLabeledData(labelId, type, offset);
     }
 
-    public LiveData<List<ExperimentStatistics>> getExperimentStatistics(long expId) {
-        return mRepository.getExperimentStatisticsByExpId(expId);
+    public LiveData<List<ExperimentStatistics>> getExperimentStatistics(long expId, String startTime) {
+        return mRepository.getExperimentStatisticsByExpId(expId, startTime);
     }
 
     public void updateLabeledData(List<LabeledData> dt) {

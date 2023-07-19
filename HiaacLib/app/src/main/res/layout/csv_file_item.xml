@@ -19,10 +19,18 @@
             android:id="@+id/csv_file_txt"
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_weight="90"
+            android:layout_weight="80"
             android:gravity="center_vertical"
             android:ellipsize="end"
+            android:paddingRight="2dp"
             android:maxLines="1" />
+
+        <ImageView
+            android:id="@+id/statistics_file"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="10"
+            android:src="@drawable/ic_baseline_statistics" />
 
         <ImageView
             android:id="@+id/delete_csv_file"

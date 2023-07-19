@@ -59,6 +59,7 @@ import br.org.eldorado.hiaac.datacollector.data.LabelConfigViewModel;
 import br.org.eldorado.hiaac.datacollector.data.SensorFrequency;
 import br.org.eldorado.hiaac.datacollector.util.CsvFiles;
 import br.org.eldorado.hiaac.datacollector.util.Log;
+import br.org.eldorado.hiaac.datacollector.util.Preferences;
 import br.org.eldorado.hiaac.datacollector.util.Tools;
 import br.org.eldorado.hiaac.datacollector.view.adapter.SensorFrequencyViewAdapter;
 import br.org.eldorado.sensoragent.model.Accelerometer;
@@ -547,10 +548,10 @@ public class LabelOptionsActivity extends AppCompatActivity {
                         "file", config.getName(),
                         RequestBody.create(MediaType.parse("multipart/form-data"), config));
 
-                ClientAPI apiClient = new ClientAPI();
+                /*ClientAPI apiClient = new ClientAPI();
                 ApiInterface apiInterface = apiClient.getClient(Tools.SERVER_HOST, Tools.SERVER_PORT).create(ApiInterface.class);
                 Call<StatusResponse> call = apiInterface.uploadConfigFile(filePart, experimentPart, subjectPart, activityPart);
-                call.enqueue(uploadCallback(config));
+                call.enqueue(uploadCallback(config));*/
             }
         }).start();
     }
@@ -562,7 +563,9 @@ public class LabelOptionsActivity extends AppCompatActivity {
         }
         mLoadConfigBtn.setEnabled(false);
         ClientAPI api = new ClientAPI();
-        ApiInterface apiInterface = api.getClient(Tools.SERVER_HOST, Tools.SERVER_PORT).create(ApiInterface.class);
+        String address = Preferences.getPreferredServer().split(":")[0];
+        String port = Preferences.getPreferredServer().split(":")[1];
+        ApiInterface apiInterface = api.getClient(address, port).create(ApiInterface.class);
         Call<JsonObject> call = apiInterface.getAllExperiments();
         call.enqueue(new Callback<JsonObject>() {
             @Override
@@ -716,9 +719,7 @@ public class LabelOptionsActivity extends AppCompatActivity {
     }
 
     private void closeActivity() {
-        this.finish();
-        Intent intent = new Intent(getApplicationContext(), DataCollectorActivity.class);
-        startActivity(intent);
+        super.onBackPressed();
     }
 
     public static class DeleteDialogFragment extends DialogFragment {
