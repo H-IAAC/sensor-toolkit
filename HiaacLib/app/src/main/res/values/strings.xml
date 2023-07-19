@@ -22,6 +22,7 @@
     <string name="error_no_data_upload_firebase">There was any data to upload to Firebase server!</string>
     <string name="dont_use_gps">Don\'t use GPS</string>
     <string name="gps_ok">Ok, I understand</string>
+    <string name="button_ok">OK</string>
     <string name="gps_permission_description">To use GPS sensor, application needs the Background permission. If you want to use GPS, please select the Always Use permission.</string>
     <string name="sensor_not_available">This Sensor (%s) is not available on this device!</string>
     <string name="dialog_alert_title">ALERT!</string>
@@ -41,7 +42,7 @@
     <string name="activity_title">Activity</string>
     <string name="delete_label">Delete label</string>
     <string name="load_config">Load Config</string>
-    <string name="stops_at">Stops at:</string>
+    <string name="stops_at">Stops after:</string>
     <string name="device_location">Device Location:</string>
     <string name="user_id">User Id</string>
     <string name="not_editable_warn">Experiment contain collected data. Some fields are not editable.</string>

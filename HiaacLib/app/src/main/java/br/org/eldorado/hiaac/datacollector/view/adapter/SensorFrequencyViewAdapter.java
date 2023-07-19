@@ -203,7 +203,13 @@ public class SensorFrequencyViewAdapter extends RecyclerView.Adapter<SensorFrequ
         if (!SensorSDK.getInstance().checkSensorAvailability(Tools.getSensorFromTitleName(sensorName).getType())) {
             AlertDialog alert = new AlertDialog.Builder(mContext)
                     .setMessage(mContext.getString(R.string.sensor_not_available, sensorName))
-                    .setCancelable(true)
+                    .setCancelable(false)
+                    .setPositiveButton(mContext.getString(R.string.button_ok), new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            dialog.dismiss();
+                        }
+                    })
                     .create();
             alert.setTitle(mContext.getString(R.string.dialog_alert_title));
             alert.show();
