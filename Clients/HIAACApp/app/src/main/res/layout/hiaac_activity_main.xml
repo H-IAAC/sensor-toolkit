@@ -20,16 +20,20 @@
 
     </com.google.android.material.appbar.AppBarLayout>
 
-    <LinearLayout
-        android:layout_width="fill_parent"
-        android:gravity="center_vertical"
-        android:layout_height="fill_parent">
-        <Button
-            android:id="@+id/btn_data_collector"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Collect Sensors Data" />
+    <Button
+        android:id="@+id/btn_data_collector"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:text="Collect Sensors Data" />
 
-    </LinearLayout>
+    <TextView
+        android:id="@+id/license"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="20px"
+        android:layout_gravity="bottom|center_horizontal"
+        android:textColor="@color/purple_700"
+        android:text="Open Source Licenses"/>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
