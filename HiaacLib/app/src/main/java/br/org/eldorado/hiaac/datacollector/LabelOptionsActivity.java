@@ -159,7 +159,7 @@ public class LabelOptionsActivity extends AppCompatActivity {
                 timePickerDialog = new TimePickerDialog(LabelOptionsActivity.this, new TimePickerDialog.OnTimeSetListener() {
                     @Override
                     public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
-                        mScheduleTimeTxt.setText(hourOfDay + ":" + minute);
+                        mScheduleTimeTxt.setText(String.format("%02d", hourOfDay) + ":" + String.format("%02d", minute));
                     }
 
                 } , now.get(Calendar.HOUR_OF_DAY), now.get(Calendar.MINUTE), true);
