@@ -230,7 +230,7 @@ public class ExecutionController {
         public void onSensorChanged(SensorBase sensor) {
             try {
                 totalData++;
-                if (sensor.isValidValues()) {
+                //if (sensor.isValidValues()) {
                     //log.d(dataTrack.getLabel() + " Active Threads: " + Thread.activeCount() + "  - " + num++ + " - " + sensor.toString());
 
                     long currentTimestamp = SensorSDK.getInstance().getRemoteTime();
@@ -252,10 +252,14 @@ public class ExecutionController {
                         dbView.insertLabeledData((LinkedList<LabeledData>)labeledData.clone());
                         labeledData.clear();
                     }
-                } else {
-                    invalidData++;
+                    if (!sensor.isValidValues()) {
+                        data.setValidData(false);
+                        invalidData++;
+                    }
+                //} else {
+                    //invalidData++;
                     //log.d("Invalid Data Collected\n" + sensor.toString());
-                }
+                //}
             } catch (Exception e) {
                 if (labeledData.size() > 0) {
                     dbView.insertLabeledData(labeledData);
