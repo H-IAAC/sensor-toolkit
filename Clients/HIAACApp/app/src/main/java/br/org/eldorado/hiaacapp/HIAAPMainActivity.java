@@ -9,6 +9,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.navigation.ui.AppBarConfiguration;
 
 import br.org.eldorado.hiaac.HIAACLibrary;
+import br.org.eldorado.hiaac.datacollector.DataCollectorActivity;
 import br.org.eldorado.hiaac.datacollector.SettingsActivity;
 import br.org.eldorado.hiaac.datacollector.util.Preferences;
 import br.org.eldorado.hiaacapp.databinding.HiaacActivityMainBinding;
@@ -34,6 +35,15 @@ public class HIAAPMainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 HIAACLibrary.openDataCollector(getApplicationContext());
+            }
+        });
+
+        binding.license.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(getApplicationContext(), LicenseActivity.class);
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                getApplicationContext().startActivity(intent);
             }
         });
     }

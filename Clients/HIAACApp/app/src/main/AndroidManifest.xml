@@ -11,6 +11,9 @@
         android:theme="@style/Theme.HIAACApp"
         tools:replace="android:theme">
         <activity
+            android:name=".LicenseActivity"
+            android:exported="false" />
+        <activity
             android:name=".HIAAPMainActivity"
             android:exported="true"
             android:label="@string/app_name"

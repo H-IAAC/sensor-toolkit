@@ -164,7 +164,7 @@ public class LabelOptionsActivity extends AppCompatActivity {
                 timePickerDialog = new TimePickerDialog(LabelOptionsActivity.this, new TimePickerDialog.OnTimeSetListener() {
                     @Override
                     public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
-                        mScheduleTimeTxt.setText(hourOfDay + ":" + minute);
+                        mScheduleTimeTxt.setText(String.format("%02d", hourOfDay) + ":" + String.format("%02d", minute));
                     }
 
                 } , now.get(Calendar.HOUR_OF_DAY), now.get(Calendar.MINUTE), true);
@@ -607,10 +607,12 @@ public class LabelOptionsActivity extends AppCompatActivity {
                         "file", config.getName(),
                         RequestBody.create(MediaType.parse("multipart/form-data"), config));
 
-                /*ClientAPI apiClient = new ClientAPI();
-                ApiInterface apiInterface = apiClient.getClient(Tools.SERVER_HOST, Tools.SERVER_PORT).create(ApiInterface.class);
+                ClientAPI apiClient = new ClientAPI();
+                String address = Preferences.getPreferredServer().split(":")[0];
+                String port = Preferences.getPreferredServer().split(":")[1];
+                ApiInterface apiInterface = apiClient.getClient(address, port).create(ApiInterface.class);
                 Call<StatusResponse> call = apiInterface.uploadConfigFile(filePart, experimentPart, subjectPart, activityPart);
-                call.enqueue(uploadCallback(config));*/
+                call.enqueue(uploadCallback(config));
             }
         }).start();
     }
