@@ -62,6 +62,10 @@ public class DataCollectorActivity extends AppCompatActivity {
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         }
+
+        // Initiate shared preferences
+        Preferences.init(getApplicationContext());
+
         setContentView(R.layout.data_collector_activity_main);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
@@ -116,8 +120,8 @@ public class DataCollectorActivity extends AppCompatActivity {
         serverTimeTxt = findViewById(R.id.server_time);
         df = new SimpleDateFormat("HH:mm");
         ClientAPI api = new ClientAPI();
-        String address = Preferences.getPreferredServer().split(":")[0];
-        String port = Preferences.getPreferredServer().split(":")[1];
+        String address = Preferences.getPreferredServer(getApplicationContext()).split(":")[0];
+        String port = Preferences.getPreferredServer(getApplicationContext()).split(":")[1];
         ApiInterface apiInterface = api.getClient(address, port).create(ApiInterface.class);
         updateServerTime(apiInterface);
     }

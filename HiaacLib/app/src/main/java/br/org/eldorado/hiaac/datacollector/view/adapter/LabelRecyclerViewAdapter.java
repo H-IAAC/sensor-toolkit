@@ -402,8 +402,8 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
                     RequestBody.create(MediaType.parse("multipart/form-data"), file));
 
             ClientAPI apiClient = new ClientAPI();
-            String address = Preferences.getPreferredServer().split(":")[0];
-            String port = Preferences.getPreferredServer().split(":")[1];
+            String address = Preferences.getPreferredServer(this.mContext).split(":")[0];
+            String port = Preferences.getPreferredServer(this.mContext).split(":")[1];
             ApiInterface apiInterface = apiClient.getClient(address, port).create(ApiInterface.class);
             Call<StatusResponse> call = apiInterface.uploadFile(filePart, experimentPart, subjectPart, namePart);
             call.enqueue(uploadCallback(file, holder));
@@ -507,7 +507,7 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
             dialog.setMessage("\t 10");
             dialog.setCancelable(false);
 
-            Integer counterStartDelay = Preferences.getPreferredStartDelay() * 1000;
+            Integer counterStartDelay = Preferences.getPreferredStartDelay(this.mContext) * 1000;
             CountDownTimer countDown = new CountDownTimer(counterStartDelay, 1000) {
                 @Override
                 public void onTick(long timeRemaining) {
