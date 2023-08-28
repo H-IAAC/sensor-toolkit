@@ -7,34 +7,22 @@ import android.widget.ArrayAdapter;
 import android.widget.Toast;
 
 
-import java.lang.reflect.Array;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
 import br.org.eldorado.hiaac.R;
 
 public class Preferences {
-    private static Context ctx;
-    private static SharedPreferences prefs;
 
     public static void init(Context ctx) {
-        Preferences.ctx = ctx;
-        Preferences.prefs = PreferenceManager.getDefaultSharedPreferences(ctx);
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(ctx);
 
-        if (notContains(R.string.settings_server_config)) {
-            String server = getArrayResource(R.array.server_urls, 0);
-            Preferences.prefs.edit().putString(getResource(R.string.settings_server_config),
+        if (notContains(ctx, R.string.settings_server_config)) {
+            String server = getArrayResource(ctx, R.array.server_urls, 0);
+            prefs.edit().putString(getResource(ctx, R.string.settings_server_config),
                                                server).apply();
         }
 
-        if (notContains(R.string.settings_counter_key)) {
-            String server = getArrayResource(R.array.collect_counter_values, 8);
-            Preferences.prefs.edit().putString(getResource(R.string.settings_counter_key),
+        if (notContains(ctx, R.string.settings_counter_key)) {
+            String server = getArrayResource(ctx, R.array.collect_counter_values, 8);
+            prefs.edit().putString(getResource(ctx, R.string.settings_counter_key),
                     server).apply();
         }
 
@@ -46,8 +34,9 @@ public class Preferences {
         }
     }
 
-    public static String getPreferredServer() {
-        return Preferences.prefs.getString(ctx.getResources().getString(R.string.settings_server_config), "1:2");
+    public static String getPreferredServer(Context ctx) {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(ctx);
+        return prefs.getString(ctx.getResources().getString(R.string.settings_server_config), "1:2");
     }
 
     public static ArrayList<String> getDeviceLocationsList() {
@@ -75,19 +64,22 @@ public class Preferences {
         }
     }
 
-    public static Integer getPreferredStartDelay() {
-        return Integer.parseInt(Preferences.prefs.getString(ctx.getResources().getString(R.string.settings_counter_key),
+
+    public static Integer getPreferredStartDelay(Context ctx) {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(ctx);
+        return Integer.parseInt(prefs.getString(ctx.getResources().getString(R.string.settings_counter_key),
                         "8"));
     }
 
-    private static String getResource(Integer stringId) {
+    private static String getResource(Context ctx, Integer stringId) {
         return ctx.getResources().getString(stringId);
     }
-    private static String getArrayResource(Integer arrayId, Integer idx) {
+    private static String getArrayResource(Context ctx, Integer arrayId, Integer idx) {
         return ctx.getResources().getStringArray(arrayId)[idx];
     }
 
-    private static Boolean notContains(Integer stringId) {
-        return !Preferences.prefs.contains(getResource(stringId));
+    private static Boolean notContains(Context ctx, Integer stringId) {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(ctx);
+        return !prefs.contains(getResource(ctx, stringId));
     }
 }

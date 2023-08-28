@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import br.org.eldorado.hiaac.BuildConfig;
 import br.org.eldorado.hiaac.R;
 import br.org.eldorado.hiaac.datacollector.api.ApiInterface;
 import br.org.eldorado.hiaac.datacollector.api.ClientAPI;
@@ -61,8 +62,15 @@ public class DataCollectorActivity extends AppCompatActivity {
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         }
+
+        // Initiate shared preferences
+        Preferences.init(getApplicationContext());
+
         setContentView(R.layout.data_collector_activity_main);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+
+        TextView footer = findViewById(R.id.version);
+        footer.setText(BuildConfig.HIAAC_VERSION);
 
         RecyclerView recyclerView = findViewById(R.id.label_recycle_view);
         adapter = new LabelRecyclerViewAdapter(this);
@@ -112,8 +120,8 @@ public class DataCollectorActivity extends AppCompatActivity {
         serverTimeTxt = findViewById(R.id.server_time);
         df = new SimpleDateFormat("HH:mm");
         ClientAPI api = new ClientAPI();
-        String address = Preferences.getPreferredServer().split(":")[0];
-        String port = Preferences.getPreferredServer().split(":")[1];
+        String address = Preferences.getPreferredServer(getApplicationContext()).split(":")[0];
+        String port = Preferences.getPreferredServer(getApplicationContext()).split(":")[1];
         ApiInterface apiInterface = api.getClient(address, port).create(ApiInterface.class);
         updateServerTime(apiInterface);
     }
