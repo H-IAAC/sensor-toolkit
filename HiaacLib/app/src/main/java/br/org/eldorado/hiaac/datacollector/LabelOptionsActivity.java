@@ -549,8 +549,8 @@ public class LabelOptionsActivity extends AppCompatActivity {
                         RequestBody.create(MediaType.parse("multipart/form-data"), config));
 
                 ClientAPI apiClient = new ClientAPI();
-                String address = Preferences.getPreferredServer().split(":")[0];
-                String port = Preferences.getPreferredServer().split(":")[1];
+                String address = Preferences.getPreferredServer(getApplicationContext()).split(":")[0];
+                String port = Preferences.getPreferredServer(getApplicationContext()).split(":")[1];
                 ApiInterface apiInterface = apiClient.getClient(address, port).create(ApiInterface.class);
                 Call<StatusResponse> call = apiInterface.uploadConfigFile(filePart, experimentPart, subjectPart, activityPart);
                 call.enqueue(uploadCallback(config));
@@ -565,8 +565,8 @@ public class LabelOptionsActivity extends AppCompatActivity {
         }
         mLoadConfigBtn.setEnabled(false);
         ClientAPI api = new ClientAPI();
-        String address = Preferences.getPreferredServer().split(":")[0];
-        String port = Preferences.getPreferredServer().split(":")[1];
+        String address = Preferences.getPreferredServer(getApplicationContext()).split(":")[0];
+        String port = Preferences.getPreferredServer(getApplicationContext()).split(":")[1];
         ApiInterface apiInterface = api.getClient(address, port).create(ApiInterface.class);
         Call<JsonObject> call = apiInterface.getAllExperiments();
         call.enqueue(new Callback<JsonObject>() {
