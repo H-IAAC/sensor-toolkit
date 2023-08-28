@@ -12,7 +12,7 @@ buildscript {
     }
 }
 allprojects {
-    version = "1.92.0"
+    version = "1.92.1"
     group = 'com.github.H-IAAC'
 }
 task clean(type: Delete) {
