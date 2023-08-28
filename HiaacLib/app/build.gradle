@@ -18,19 +18,19 @@ android {
     buildTypes {
 
         debug {
-            buildConfigField "Double", 'HIAAC_VERSION', project.version
+            buildConfigField "String", 'HIAAC_VERSION', "\"$project.version\""
             minifyEnabled false
         }
 
         release {
-            buildConfigField "Double", 'HIAAC_VERSION', project.version
+            buildConfigField "String", 'HIAAC_VERSION', "\"$project.version\""
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+        sourceCompatibility JavaVersion.VERSION_11
+        targetCompatibility JavaVersion.VERSION_11
     }
     buildFeatures {
         viewBinding true
