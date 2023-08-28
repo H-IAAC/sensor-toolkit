@@ -18,12 +18,12 @@ android {
     buildTypes {
 
         debug {
-            buildConfigField "Double", 'HIAAC_VERSION', project.version
+            buildConfigField "String", 'HIAAC_VERSION', "\"$project.version\""
             minifyEnabled false
         }
 
         release {
-            buildConfigField "Double", 'HIAAC_VERSION', project.version
+            buildConfigField "String", 'HIAAC_VERSION', "\"$project.version\""
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
