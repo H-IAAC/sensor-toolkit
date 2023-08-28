@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import br.org.eldorado.hiaac.BuildConfig;
 import br.org.eldorado.hiaac.R;
 import br.org.eldorado.hiaac.datacollector.api.ApiInterface;
 import br.org.eldorado.hiaac.datacollector.api.ClientAPI;
@@ -63,6 +64,9 @@ public class DataCollectorActivity extends AppCompatActivity {
         }
         setContentView(R.layout.data_collector_activity_main);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+
+        TextView footer = findViewById(R.id.version);
+        footer.setText(BuildConfig.HIAAC_VERSION);
 
         RecyclerView recyclerView = findViewById(R.id.label_recycle_view);
         adapter = new LabelRecyclerViewAdapter(this);

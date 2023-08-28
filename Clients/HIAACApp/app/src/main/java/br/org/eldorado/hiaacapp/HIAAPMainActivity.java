@@ -23,9 +23,6 @@ public class HIAAPMainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // Initiate shared preferences
-        Preferences.init(getApplicationContext());
-
         binding = HiaacActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
