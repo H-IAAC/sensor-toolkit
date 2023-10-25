@@ -1,5 +1,6 @@
 package br.org.eldorado.hiaac.datacollector.data;
 
+import androidx.annotation.Nullable;
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
 import androidx.room.Index;
@@ -59,6 +60,8 @@ public class LabeledData {
 
     private SensorBase sensor;
 
+    private boolean isValidData;
+
     public LabeledData(String experiment, SensorBase sensor, String devicePosition, String userId, String activity, long configId, long timestamp, String uid) {
         this.sensor = sensor;
         this.experiment = experiment;
@@ -74,6 +77,15 @@ public class LabeledData {
         this.activity = activity;
         this.configId = configId;
         this.uid = uid;
+        this.isValidData = true;
+    }
+
+    public void setValidData(boolean valid) {
+        isValidData = valid;
+    }
+
+    public boolean isValidData() {
+        return isValidData;
     }
 
     public long getConfigId() {
@@ -176,12 +188,12 @@ public class LabeledData {
         String[] values = sensorValues.split(",");
         return new String[]{experiment, sensorName, String.valueOf(power), String.valueOf(frequency), String.valueOf(timestamp),
                             values[0], values.length > 1 ? values[1] : "-",
-                            values.length > 2 ? values[2] : "-"};
+                            values.length > 2 ? values[2] : "-", isValidData() ? "VALID" : "INVALID"};
     }
 
     public String[] getCSVHeaders() {
         return new String[]{"Experiment Name", "Sensor Name", "Power Consumption (mAh)", "Sensor Frequency (Hz)",
-                            "Timestamp", "Value 1", "Value 2", "Value 3"};
+                            "Timestamp", "Value 1", "Value 2", "Value 3", "Data Status"};
     }
 
     public SensorBase getSensor() {
@@ -194,5 +206,11 @@ public class LabeledData {
 
     public void setIsDataUsed(int isDataUsed) {
         this.isDataUsed = isDataUsed;
+    }
+
+    @Override
+    public boolean equals(@Nullable Object obj) {
+        if (obj == null || !(obj instanceof LabeledData)) return false;
+        return ((LabeledData) obj).sensorName.equals(sensorName) && ((LabeledData) obj).timestamp == timestamp;
     }
 }

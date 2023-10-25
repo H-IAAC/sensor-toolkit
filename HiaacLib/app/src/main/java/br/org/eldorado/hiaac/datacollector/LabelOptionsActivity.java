@@ -17,6 +17,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
 import android.widget.EditText;
@@ -34,6 +35,7 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.material.navigation.NavigationBarView;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -45,6 +47,7 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -67,6 +70,7 @@ import br.org.eldorado.sensoragent.model.AmbientTemperature;
 import br.org.eldorado.sensoragent.model.GPS;
 import br.org.eldorado.sensoragent.model.Gravity;
 import br.org.eldorado.sensoragent.model.Gyroscope;
+import br.org.eldorado.sensoragent.model.LinearAccelerometer;
 import br.org.eldorado.sensoragent.model.Luminosity;
 import br.org.eldorado.sensoragent.model.MagneticField;
 import br.org.eldorado.sensoragent.model.Proximity;
@@ -92,6 +96,7 @@ public class LabelOptionsActivity extends AppCompatActivity {
             1 * MINUTE,
             2 * MINUTE,
             3 * MINUTE,
+            3 * MINUTE + 30,
             5 * MINUTE,
             10 * MINUTE,
             30 * MINUTE,
@@ -124,6 +129,7 @@ public class LabelOptionsActivity extends AppCompatActivity {
     private Log log;
     private boolean isConfigLoaded;
     private CsvFiles csvFiles;
+    private int lastPosition = 1;
 
     private SensorFrequencyViewAdapter.SensorFrequencyChangeListener mSensorFrequencyChangeListener =
             new SensorFrequencyViewAdapter.SensorFrequencyChangeListener() {
@@ -189,12 +195,60 @@ public class LabelOptionsActivity extends AppCompatActivity {
                 R.layout.custom_spinner, list);
         mStopTimeSpinner.setAdapter(arrayAdapter);
 
-        List<String> deviceLocationList = new ArrayList<>();
-        for (int i = 0; i < mDeviceLocation.getCount(); i++) {
-            deviceLocationList.add(mDeviceLocation.getItemAtPosition(i).toString());
-        }
-        mDeviceLocation.setAdapter(new ArrayAdapter(this,
-                R.layout.custom_spinner, deviceLocationList));
+        final ArrayAdapter<String> deviceLocationAdapter = new ArrayAdapter(this,
+                R.layout.custom_spinner, Preferences.getDeviceLocationsList());
+        mDeviceLocation.setAdapter(deviceLocationAdapter);
+        mDeviceLocation.setSelection(1);
+
+        mDeviceLocation.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> adapterView, View view, int position, long id) {
+                if (position == 0) {
+                    AlertDialog.Builder builder = new AlertDialog.Builder(LabelOptionsActivity.this);
+                    builder.setTitle(getResources().getString(R.string.device_location_add));
+
+                    // Set up the input
+                    final EditText input = new EditText(LabelOptionsActivity.this);
+                    builder.setView(input);
+
+                    // Set up the buttons
+                    builder.setPositiveButton(getResources().getString(R.string.button_ok), new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            if (input.getText().toString().isEmpty()) {
+                                dialog.cancel();
+                                mDeviceLocation.setSelection(lastPosition);
+                            } else {
+                                String newLocation = input.getText().toString();
+                                deviceLocationAdapter.add(newLocation);
+                                deviceLocationAdapter.sort(new Comparator<String>() {
+                                    @Override
+                                    public int compare(String s, String t1) {
+                                        return s.toLowerCase().compareTo(t1.toLowerCase());
+                                    }
+                                });
+                                mDeviceLocation.setSelection(deviceLocationAdapter.getPosition(newLocation));
+                                Preferences.addNewDeviceLocation(newLocation);
+                            }
+                        }
+                    });
+                    builder.setNegativeButton(getResources().getString(R.string.button_cancel), new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            dialog.cancel();
+                            mDeviceLocation.setSelection(lastPosition);
+                        }
+                    });
+
+                    builder.show();
+                } else {
+                    lastPosition = position;
+                }
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> adapterView) {}
+        });
 
 
         RecyclerView recyclerView = (RecyclerView) findViewById(R.id.sensors_recycler_view);
@@ -357,6 +411,8 @@ public class LabelOptionsActivity extends AppCompatActivity {
         }
 
         selectedSensorFrequencies.add(createSelectedSensorFrequency(sensorTypeFrequencyMap,
+                SensorBase.TYPE_LINEAR_ACCELEROMETER, LinearAccelerometer.TAG));
+        selectedSensorFrequencies.add(createSelectedSensorFrequency(sensorTypeFrequencyMap,
                 SensorBase.TYPE_ACCELEROMETER, Accelerometer.TAG));
         selectedSensorFrequencies.add(createSelectedSensorFrequency(sensorTypeFrequencyMap,
                 SensorBase.TYPE_AMBIENT_TEMPERATUR, AmbientTemperature.TAG));
@@ -462,6 +518,7 @@ public class LabelOptionsActivity extends AppCompatActivity {
         LabelConfig newConfig = new LabelConfig(label, stopTime, deviceLocation, userId, mSendFilesToServer.isChecked(), activity, scheduledTime);
 
         if (mIsUpdating) {
+            newConfig.id = mCurrentConfig.id;
             mLabelConfigViewModel.updateConfig(newConfig);
             finishSaveProcess(newConfig, mCurrentConfig.id);
         } else {
@@ -549,8 +606,8 @@ public class LabelOptionsActivity extends AppCompatActivity {
                         RequestBody.create(MediaType.parse("multipart/form-data"), config));
 
                 ClientAPI apiClient = new ClientAPI();
-                String address = Preferences.getPreferredServer(getApplicationContext()).split(":")[0];
-                String port = Preferences.getPreferredServer(getApplicationContext()).split(":")[1];
+                String address = Preferences.getPreferredServer().split(":")[0];
+                String port = Preferences.getPreferredServer().split(":")[1];
                 ApiInterface apiInterface = apiClient.getClient(address, port).create(ApiInterface.class);
                 Call<StatusResponse> call = apiInterface.uploadConfigFile(filePart, experimentPart, subjectPart, activityPart);
                 call.enqueue(uploadCallback(config));
@@ -565,8 +622,8 @@ public class LabelOptionsActivity extends AppCompatActivity {
         }
         mLoadConfigBtn.setEnabled(false);
         ClientAPI api = new ClientAPI();
-        String address = Preferences.getPreferredServer(getApplicationContext()).split(":")[0];
-        String port = Preferences.getPreferredServer(getApplicationContext()).split(":")[1];
+        String address = Preferences.getPreferredServer().split(":")[0];
+        String port = Preferences.getPreferredServer().split(":")[1];
         ApiInterface apiInterface = api.getClient(address, port).create(ApiInterface.class);
         Call<JsonObject> call = apiInterface.getAllExperiments();
         call.enqueue(new Callback<JsonObject>() {
@@ -584,6 +641,7 @@ public class LabelOptionsActivity extends AppCompatActivity {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
+                        mLoadConfigBtn.setEnabled(true);
                         AlertDialog.Builder builder = new AlertDialog.Builder(LabelOptionsActivity.this);
                         builder.setTitle(R.string.choose_experiment);
                         builder.setItems(experiments.toArray(new String[0]), new DialogInterface.OnClickListener() {

@@ -3,6 +3,7 @@ package br.org.eldorado.sensoragent.model;
 import android.hardware.Sensor;
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.util.AndroidException;
 
 import br.org.eldorado.sensorsdk.controller.SensorController;
 import br.org.eldorado.sensorsdk.listener.SensorSDKListener;
@@ -11,6 +12,7 @@ import br.org.eldorado.sensorsdk.util.Log;
 
 public class SensorBase implements Parcelable, Cloneable {
     public static final int TYPE_ACCELEROMETER = Sensor.TYPE_ACCELEROMETER;
+    public static final int TYPE_LINEAR_ACCELEROMETER = Sensor.TYPE_LINEAR_ACCELERATION;
     public static final int TYPE_AMBIENT_TEMPERATUR = Sensor.TYPE_AMBIENT_TEMPERATURE;
     public static final int TYPE_GYROSCOPE = Sensor.TYPE_GYROSCOPE;
     public static final int TYPE_LUMINOSITY = Sensor.TYPE_LIGHT;
@@ -63,7 +65,13 @@ public class SensorBase implements Parcelable, Cloneable {
                 unchangedValue++;
             }
         }
-        return (unchangedValue != values.length) || type == TYPE_PROXIMITY  || type == TYPE_LUMINOSITY;
+        int zeros = 0;
+        for (float value : values) {
+            if (value == 0f) {
+                zeros++;
+            }
+        }
+        return (unchangedValue != values.length) && ((zeros != values.length) ||  type == TYPE_PROXIMITY  || type == TYPE_LUMINOSITY);
     }
 
     public void setFrequency(int f) {
@@ -105,7 +113,6 @@ public class SensorBase implements Parcelable, Cloneable {
     }
 
     public void updateInformation(AgentSensorBase s) {
-
         if (s == null || s.getValuesArray() == null) {
             log.i(getName() + " sensor not started");
             isStarted = false;

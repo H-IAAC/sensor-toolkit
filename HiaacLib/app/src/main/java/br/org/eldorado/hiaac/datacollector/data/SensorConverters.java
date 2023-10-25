@@ -6,6 +6,7 @@ import br.org.eldorado.sensoragent.model.AmbientTemperature;
 import br.org.eldorado.sensoragent.model.GPS;
 import br.org.eldorado.sensoragent.model.Gravity;
 import br.org.eldorado.sensoragent.model.Gyroscope;
+import br.org.eldorado.sensoragent.model.LinearAccelerometer;
 import br.org.eldorado.sensoragent.model.Luminosity;
 import br.org.eldorado.sensoragent.model.MagneticField;
 import br.org.eldorado.sensoragent.model.Proximity;
@@ -17,6 +18,8 @@ public class SensorConverters {
         switch (name) {
             case "Accelerometer":
                 return new Accelerometer();
+            case "LinearAccelerometer":
+                return new LinearAccelerometer();
             case "AmbientTemperature":
                 return new AmbientTemperature();
             case "Gyroscope":
