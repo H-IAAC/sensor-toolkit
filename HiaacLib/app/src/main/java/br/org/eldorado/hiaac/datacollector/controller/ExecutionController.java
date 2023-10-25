@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModelProvider;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Random;
 
 import br.org.eldorado.hiaac.datacollector.data.ExperimentStatistics;
 import br.org.eldorado.hiaac.datacollector.data.LabelConfigViewModel;
@@ -229,11 +230,11 @@ public class ExecutionController {
         @Override
         public void onSensorChanged(SensorBase sensor) {
             try {
-                totalData++;
                 //if (sensor.isValidValues()) {
                     //log.d(dataTrack.getLabel() + " Active Threads: " + Thread.activeCount() + "  - " + num++ + " - " + sensor.toString());
 
                     long currentTimestamp = SensorSDK.getInstance().getRemoteTime();
+                    if (lastTimestamp == currentTimestamp) return;
                     if (collectedData > 0) {
                         // Ignore 'timestampAverage' when checking the first collectedData
                         if (lastTimestamp != 0)
@@ -244,6 +245,8 @@ public class ExecutionController {
                     }
                     lastTimestamp = currentTimestamp;
                     LabeledData data = new LabeledData(dataTrack.getLabel(), sensor, dataTrack.getDeviceLocation(), dataTrack.getUserId(), dataTrack.getActivity(), dataTrack.getConfigId(), currentTimestamp, dataTrack.getUid());
+                    //if (labeledData.contains(data)) return;
+                    totalData++;
                     labeledData.add(data);
                     collectedData++;
 

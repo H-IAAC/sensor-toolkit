@@ -31,6 +31,7 @@ import br.org.eldorado.hiaac.BuildConfig;
 import br.org.eldorado.hiaac.R;
 import br.org.eldorado.hiaac.datacollector.api.ApiInterface;
 import br.org.eldorado.hiaac.datacollector.api.ClientAPI;
+import br.org.eldorado.hiaac.datacollector.data.ExperimentStatistics;
 import br.org.eldorado.hiaac.datacollector.data.LabelConfig;
 import br.org.eldorado.hiaac.datacollector.data.LabelConfigViewModel;
 import br.org.eldorado.hiaac.datacollector.data.SensorFrequency;
@@ -62,9 +63,6 @@ public class DataCollectorActivity extends AppCompatActivity {
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         }
-
-        // Initiate shared preferences
-        Preferences.init(getApplicationContext());
 
         setContentView(R.layout.data_collector_activity_main);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
@@ -118,10 +116,10 @@ public class DataCollectorActivity extends AppCompatActivity {
         });
 
         serverTimeTxt = findViewById(R.id.server_time);
-        df = new SimpleDateFormat("HH:mm");
+        df = new SimpleDateFormat("HH:mm:ss");
         ClientAPI api = new ClientAPI();
-        String address = Preferences.getPreferredServer(getApplicationContext()).split(":")[0];
-        String port = Preferences.getPreferredServer(getApplicationContext()).split(":")[1];
+        String address = Preferences.getPreferredServer().split(":")[0];
+        String port = Preferences.getPreferredServer().split(":")[1];
         ApiInterface apiInterface = api.getClient(address, port).create(ApiInterface.class);
         updateServerTime(apiInterface);
     }
@@ -155,8 +153,8 @@ public class DataCollectorActivity extends AppCompatActivity {
                     int resync = 0;
                     Date date = new Date(System.currentTimeMillis());
                     while (true) {
-                        /** Resync with server every 3 minutes */
-                        if (resync++ % 3 == 0) {
+                        /** Resync with server every 2 minutes */
+                        if (resync++ % 2 == 0) {
                             Call<JsonObject> call = apiInterface.getServerTime();
                             call.enqueue(new Callback<JsonObject>() {
                                 @Override
@@ -164,7 +162,7 @@ public class DataCollectorActivity extends AppCompatActivity {
                                     long timeInMillis = response.body().get("currentTimeMillis").getAsLong();
                                     SensorSDK.getInstance().setRemoteTime(timeInMillis +
                                             (response.raw().receivedResponseAtMillis() - response.raw().sentRequestAtMillis())/2);
-                                    setRemoteTimeText(SensorSDK.getInstance().getRemoteTime());
+                                    //setRemoteTimeText(SensorSDK.getInstance().getRemoteTime());
                                     /*if (isActivityVisible) {
                                         runOnUiThread(new Runnable() {
                                             @Override
@@ -183,7 +181,7 @@ public class DataCollectorActivity extends AppCompatActivity {
                             Thread.sleep(2000);
                         } else {
                             long timeInMillis = SensorSDK.getInstance().getRemoteTime();
-                            setRemoteTimeText(timeInMillis);
+                            //setRemoteTimeText(timeInMillis);
                             /*date.setTime(timeInMillis);
                             String time = df.format(date);
                             if (isActivityVisible) {
@@ -200,6 +198,20 @@ public class DataCollectorActivity extends AppCompatActivity {
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
+                }
+            }
+        }).start();
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                while (true) {
+                    try {
+                        long time = SensorSDK.getInstance().getRemoteTime();
+                        setRemoteTimeText(time);
+                        Thread.sleep(50);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
                 }
             }
         }).start();

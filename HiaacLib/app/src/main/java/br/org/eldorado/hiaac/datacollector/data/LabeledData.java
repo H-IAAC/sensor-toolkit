@@ -1,5 +1,6 @@
 package br.org.eldorado.hiaac.datacollector.data;
 
+import androidx.annotation.Nullable;
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
 import androidx.room.Index;
@@ -205,5 +206,11 @@ public class LabeledData {
 
     public void setIsDataUsed(int isDataUsed) {
         this.isDataUsed = isDataUsed;
+    }
+
+    @Override
+    public boolean equals(@Nullable Object obj) {
+        if (obj == null || !(obj instanceof LabeledData)) return false;
+        return ((LabeledData) obj).sensorName.equals(sensorName) && ((LabeledData) obj).timestamp == timestamp;
     }
 }

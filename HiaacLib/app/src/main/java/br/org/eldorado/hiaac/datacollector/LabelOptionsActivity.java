@@ -96,6 +96,7 @@ public class LabelOptionsActivity extends AppCompatActivity {
             1 * MINUTE,
             2 * MINUTE,
             3 * MINUTE,
+            3 * MINUTE + 30,
             5 * MINUTE,
             10 * MINUTE,
             30 * MINUTE,
@@ -194,10 +195,6 @@ public class LabelOptionsActivity extends AppCompatActivity {
                 R.layout.custom_spinner, list);
         mStopTimeSpinner.setAdapter(arrayAdapter);
 
-//        List<String> deviceLocationList = new ArrayList<>();
-//        for (int i = 0; i < mDeviceLocation.getCount(); i++) {
-//            deviceLocationList.add(mDeviceLocation.getItemAtPosition(i).toString());
-//        }
         final ArrayAdapter<String> deviceLocationAdapter = new ArrayAdapter(this,
                 R.layout.custom_spinner, Preferences.getDeviceLocationsList());
         mDeviceLocation.setAdapter(deviceLocationAdapter);
@@ -208,14 +205,14 @@ public class LabelOptionsActivity extends AppCompatActivity {
             public void onItemSelected(AdapterView<?> adapterView, View view, int position, long id) {
                 if (position == 0) {
                     AlertDialog.Builder builder = new AlertDialog.Builder(LabelOptionsActivity.this);
-                    builder.setTitle("Title");
+                    builder.setTitle(getResources().getString(R.string.device_location_add));
 
                     // Set up the input
                     final EditText input = new EditText(LabelOptionsActivity.this);
                     builder.setView(input);
 
                     // Set up the buttons
-                    builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                    builder.setPositiveButton(getResources().getString(R.string.button_ok), new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
                             if (input.getText().toString().isEmpty()) {
@@ -235,7 +232,7 @@ public class LabelOptionsActivity extends AppCompatActivity {
                             }
                         }
                     });
-                    builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                    builder.setNegativeButton(getResources().getString(R.string.button_cancel), new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
                             dialog.cancel();
@@ -521,6 +518,7 @@ public class LabelOptionsActivity extends AppCompatActivity {
         LabelConfig newConfig = new LabelConfig(label, stopTime, deviceLocation, userId, mSendFilesToServer.isChecked(), activity, scheduledTime);
 
         if (mIsUpdating) {
+            newConfig.id = mCurrentConfig.id;
             mLabelConfigViewModel.updateConfig(newConfig);
             finishSaveProcess(newConfig, mCurrentConfig.id);
         } else {
@@ -608,8 +606,8 @@ public class LabelOptionsActivity extends AppCompatActivity {
                         RequestBody.create(MediaType.parse("multipart/form-data"), config));
 
                 ClientAPI apiClient = new ClientAPI();
-                String address = Preferences.getPreferredServer(getApplicationContext()).split(":")[0];
-                String port = Preferences.getPreferredServer(getApplicationContext()).split(":")[1];
+                String address = Preferences.getPreferredServer().split(":")[0];
+                String port = Preferences.getPreferredServer().split(":")[1];
                 ApiInterface apiInterface = apiClient.getClient(address, port).create(ApiInterface.class);
                 Call<StatusResponse> call = apiInterface.uploadConfigFile(filePart, experimentPart, subjectPart, activityPart);
                 call.enqueue(uploadCallback(config));
@@ -624,8 +622,8 @@ public class LabelOptionsActivity extends AppCompatActivity {
         }
         mLoadConfigBtn.setEnabled(false);
         ClientAPI api = new ClientAPI();
-        String address = Preferences.getPreferredServer(getApplicationContext()).split(":")[0];
-        String port = Preferences.getPreferredServer(getApplicationContext()).split(":")[1];
+        String address = Preferences.getPreferredServer().split(":")[0];
+        String port = Preferences.getPreferredServer().split(":")[1];
         ApiInterface apiInterface = api.getClient(address, port).create(ApiInterface.class);
         Call<JsonObject> call = apiInterface.getAllExperiments();
         call.enqueue(new Callback<JsonObject>() {
