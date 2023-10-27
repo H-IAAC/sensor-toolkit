@@ -2,6 +2,7 @@
     <string name="app_name">HIAAC</string>
     <string name="app_version">Version v1.9</string>
     <string name="action_settings">Settings</string>
+    <string name="action_camera">Camera</string>
     <string name="next">Next</string>
     <string name="previous">Previous</string>
 

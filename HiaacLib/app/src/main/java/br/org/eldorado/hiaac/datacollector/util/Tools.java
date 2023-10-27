@@ -129,4 +129,8 @@ public class Tools {
 
         return list;
     }
+
+    public static String getFileExtension(String filename) {
+        return filename.substring(filename.length() - 3);
+    }
 }

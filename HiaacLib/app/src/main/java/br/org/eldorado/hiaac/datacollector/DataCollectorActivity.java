@@ -131,6 +131,7 @@ public class DataCollectorActivity extends AppCompatActivity {
         super.onResume();
         isActivityVisible = true;
         setRemoteTimeText(SensorSDK.getInstance().getRemoteTime());
+        adapter.notifyDataSetChanged();
     }
 
     @Override

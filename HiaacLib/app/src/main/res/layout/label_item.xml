@@ -122,22 +122,10 @@
                     android:layout_marginLeft="2dp"
                     android:layout_marginRight="2dp"
                     android:backgroundTint="@android:color/holo_green_light"
-                    android:layout_weight="25"
+                    android:layout_weight="35"
                     android:autoSizeTextType="uniform"
                     android:maxLines="1"
                     android:text="@string/start" />
-
-                <Button
-                    android:id="@+id/stop_sampling_button"
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent"
-                    android:layout_marginLeft="2dp"
-                    android:layout_marginRight="2dp"
-                    android:backgroundTint="@android:color/holo_red_light"
-                    android:layout_weight="25"
-                    android:autoSizeTextType="uniform"
-                    android:maxLines="1"
-                    android:text="@string/stop" />
 
                  <Button
                      android:id="@+id/edit_sampling_button"
@@ -152,6 +140,14 @@
                      android:autoSizeTextType="uniform"
                      android:maxLines="1"
                      android:layout_weight="25" />
+
+                <ImageView
+                    android:id="@+id/film_sampling_button"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:padding="4dp"
+                    android:src="@drawable/baseline_camera_alt_24"
+                    android:layout_weight="15" />
 
                  <ImageView
                      android:id="@+id/share_sampling_button"

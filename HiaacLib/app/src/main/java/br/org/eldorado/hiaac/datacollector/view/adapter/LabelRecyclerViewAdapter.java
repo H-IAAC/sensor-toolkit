@@ -45,6 +45,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import br.org.eldorado.hiaac.datacollector.CameraActivity;
 import br.org.eldorado.hiaac.datacollector.LabelOptionsActivity;
 import br.org.eldorado.hiaac.R;
 import br.org.eldorado.hiaac.datacollector.api.ApiInterface;
@@ -91,7 +92,6 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
     private LabelConfigViewModel mLabelConfigViewModel;
     private Map<String, ViewHolder> holdersMap = new HashMap<>();
     private boolean deleteButtonClicked;
-
     private CsvFiles csvFiles;
 
     public LabelRecyclerViewAdapter(Context context) {
@@ -194,6 +194,18 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
             }
         });
 
+        ImageView filmButton = holder.getFilmButton();
+        filmButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(filmButton.getContext(), CameraActivity.class);
+                intent.putExtra("LABEL_ID", labelConfig.id);
+                intent.putExtra(LABEL_CONFIG_ACTIVITY_ID, labelConfig.id);
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                filmButton.getContext().startActivity(intent);
+            }
+        });
+
         ImageView deleteButton = holder.getDeleteButton();
         deleteButtonClicked = false;
         deleteButton.setOnClickListener(new View.OnClickListener() {
@@ -237,22 +249,17 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
             }
         });
 
-        Button stopButton = holder.getStopButton();
-        stopButton.setEnabled(false);
-        stopButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (execService != null) {
-                    execService.stopExecution();
-                }
-            }
-        });
-
         Button startButton = holder.getStartButton();
         startButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                startExecution(holder);
+                if (startButton.getText().equals(mContext.getResources().getString(R.string.start))) {
+                    startExecution(holder);
+                } else {
+                    if (execService != null) {
+                        execService.stopExecution();
+                    }
+                }
             }
         });
 
@@ -495,7 +502,6 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
             public void onServiceDisconnected(ComponentName name) {}
         };
         log.d("startExecution - disabling start button");
-        holder.getStartButton().setEnabled(false);
         holder.getExpCard().setCardBackgroundColor(ContextCompat.getColor(mContext, R.color.inprogress));
 
         //execService.setRemoteTime(System.currentTimeMillis() + (1000*60*60));
@@ -571,8 +577,7 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
                     if (dt.equals(execService.isRunning())) {
                         log.d("Experiment already running " + dt.getLabel());
                         holder.getEditButton().setEnabled(false);
-                        holder.getStartButton().setEnabled(false);
-                        holder.getStopButton().setEnabled(true);
+                        setAsStop(holder.getStartButton());
                         execService.changeExecutionServiceListener(new MyExecutionListener(dt, holder));
                         //startExecution(holder);
                     } else {
@@ -600,6 +605,16 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
         return 0;
     }
 
+    private void setAsStop(Button button) {
+        button.setText(mContext.getResources().getString(R.string.stop));
+        button.setBackgroundTintList(mContext.getResources().getColorStateList(android.R.color.holo_red_light));
+    }
+
+    private void setAsStart(Button button) {
+        button.setText(mContext.getResources().getString(R.string.start));
+        button.setBackgroundTintList(mContext.getResources().getColorStateList(android.R.color.holo_green_light));
+    }
+
     public class ViewHolder extends RecyclerView.ViewHolder {
         private boolean isOpened;
 
@@ -615,6 +630,7 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
         private Button stopButton;
         private Button editButton;
         private ImageView shareButton;
+        private ImageView filmButton;
         private ImageView deleteButton;
         private ImageView statisticsButton;
         private RecyclerView csvRecyclerView;
@@ -633,9 +649,9 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
             labelTimer = itemView.findViewById(R.id.label_timer);
             buttonContainer = itemView.findViewById(R.id.label_button_container);
             startButton = itemView.findViewById(R.id.start_sampling_button);
-            stopButton = itemView.findViewById(R.id.stop_sampling_button);
             editButton = itemView.findViewById(R.id.edit_sampling_button);
             shareButton = itemView.findViewById(R.id.share_sampling_button);
+            filmButton = itemView.findViewById(R.id.film_sampling_button);
             deleteButton = itemView.findViewById(R.id.delete_button);
             csvRecyclerView = itemView.findViewById(R.id.csvfiles_reclyclerView);
             csvRecyclerView.addOnItemTouchListener(new RecyclerView.OnItemTouchListener() {
@@ -706,16 +722,16 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
             return startButton;
         }
 
-        public Button getStopButton() {
-            return stopButton;
-        }
-
         public Button getEditButton() {
             return editButton;
         }
 
         public ImageView getShareButton() {
             return shareButton;
+        }
+
+        public ImageView getFilmButton() {
+            return filmButton;
         }
 
         public ImageView getDeleteButton() {
@@ -738,8 +754,7 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
                 public void run() {
                     log.d("MyExecutionListener - onError - " + message);
                     holder.getEditButton().setEnabled(true);
-                    holder.getStartButton().setEnabled(true);
-                    holder.getStopButton().setEnabled(true);
+                    setAsStart(holder.getStartButton());
                     holder.getExpCard().setCardBackgroundColor(holder.getExpCardColor());
                     AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
                     builder.setTitle("Error");
@@ -772,8 +787,7 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
                                         /*execService.stopSelf();
                                         execService.stopForeground(true);*/
                         holder.getEditButton().setEnabled(true);
-                        holder.getStartButton().setEnabled(true);
-                        holder.getStopButton().setEnabled(false);
+                        setAsStart(holder.getStartButton());
                         holder.getExpCard().setCardBackgroundColor(holder.getExpCardColor());
                         holder.getLabelTimer().setText(
                                 Tools.getFormatedTime(labelConfigs.get(holder.getAdapterPosition()).stopTime, Tools.CHRONOMETER));
@@ -823,8 +837,7 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
                 public void run() {
                     log.d("MyExecutionListener - disbling buttons");
                     holder.getEditButton().setEnabled(false);
-                    holder.getStartButton().setEnabled(false);
-                    holder.getStopButton().setEnabled(true);
+                    setAsStop(holder.getStartButton());
                     holder.getExpCard().setCardBackgroundColor(ContextCompat.getColor(mContext, R.color.inprogress));
                 }
             });

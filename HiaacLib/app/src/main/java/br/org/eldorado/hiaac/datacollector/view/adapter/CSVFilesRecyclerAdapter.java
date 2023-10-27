@@ -27,6 +27,7 @@ import br.org.eldorado.hiaac.datacollector.data.ExperimentStatistics;
 import br.org.eldorado.hiaac.datacollector.data.LabelConfigRepository;
 import br.org.eldorado.hiaac.datacollector.util.CsvFiles;
 import br.org.eldorado.hiaac.datacollector.util.Log;
+import br.org.eldorado.hiaac.datacollector.util.Tools;
 
 public class CSVFilesRecyclerAdapter extends RecyclerView.Adapter<CSVFilesRecyclerAdapter.ViewHolder> {
 
@@ -91,44 +92,56 @@ public class CSVFilesRecyclerAdapter extends RecyclerView.Adapter<CSVFilesRecycl
             }
         });
 
+        // Delete file
         holder.getDeleteBtn().setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                String clickedFileName = csvFileList.get(holder.getAdapterPosition()).getName();
+
+                // If needs to delete a .csv file, then data from db must be removed also.
+                if ("csv".equals(Tools.getFileExtension(clickedFileName))) {
+                    CsvFiles.CsvFileName csvFileName = CsvFiles.decomposeFileName(clickedFileName);
+                    String startTimeEpoch = CsvFiles.CsvFileNameConvertTimestamp(csvFileName.startTime);
+                    mRepository.deleteExperimentStatistics(configId, startTimeEpoch.substring(0, 9) + '%');
+                }
+
                 csvFileList.remove(holder.getAdapterPosition());
                 csvFile.delete();
-
-                String clickedFileName = csvFileList.get(holder.getAdapterPosition()).getName();
-                CsvFiles.CsvFileName csvFileName = CsvFiles.decomposeFileName(clickedFileName);
-                String startTimeEpoch = CsvFiles.CsvFileNameConvertTimestamp(csvFileName.startTime);
-                mRepository.deleteExperimentStatistics(configId, startTimeEpoch.substring(0, 9) + '%');
 
                 notifyItemRemoved(holder.getAdapterPosition());
             }
         });
 
-        holder.getStatisticsBtn().setOnClickListener(new View.OnClickListener() {
-            String clickedFileName = csvFileList.get(holder.getAdapterPosition()).getName();
-            CsvFiles.CsvFileName csvFileName = CsvFiles.decomposeFileName(clickedFileName);
-            String startTimeEpoch = CsvFiles.CsvFileNameConvertTimestamp(csvFileName.startTime);
+        // Statistics are present only for CSV file
+        if ("csv".equals(Tools.getFileExtension(csvFile.getName()))) {
+            // Handle statistics click
+            holder.getStatisticsBtn().setOnClickListener(new View.OnClickListener() {
+                String clickedFileName = csvFileList.get(holder.getAdapterPosition()).getName();
+                final CsvFiles.CsvFileName csvFileName = CsvFiles.decomposeFileName(clickedFileName);
+                String startTimeEpoch = CsvFiles.CsvFileNameConvertTimestamp(csvFileName.startTime);
 
-             @Override
-             public void onClick(View v) {
-                 // startTime parameter is used to match a db field that contains its value, as startTime for different sensors may vary
-                 // here is consider only the first 10 chars, the addictional '%' is used as SQL wildcards.
-                 mRepository.getExperimentStatisticsByExpId(configId, startTimeEpoch.substring(0, 9) + '%').observe((LifecycleOwner)mContext,
-                         new Observer<List<ExperimentStatistics>>() {
-                             @Override
-                             public void onChanged(List<ExperimentStatistics> statistics) {
-                                 if (statistics != null && statistics.size() > 0) {
-                                     Intent intent = new Intent(mContext, StatisticsActivity.class);
-                                     intent.putExtra("statistics", new Gson().toJson(statistics));
-                                     intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                                     mContext.startActivity(intent);
-                                 }
-                             }
-                         });
-             }
-        });
+                @Override
+                public void onClick(View v) {
+                    // startTime parameter is used to match a db field that contains its value, as startTime for different sensors may vary
+                    // here is consider only the first 10 chars, the addictional '%' is used as SQL wildcards.
+                    mRepository.getExperimentStatisticsByExpId(configId, startTimeEpoch.substring(0, 9) + '%').observe((LifecycleOwner)mContext,
+                            new Observer<List<ExperimentStatistics>>() {
+                                @Override
+                                public void onChanged(List<ExperimentStatistics> statistics) {
+                                    if (statistics != null && statistics.size() > 0) {
+                                        Intent intent = new Intent(mContext, StatisticsActivity.class);
+                                        intent.putExtra("statistics", new Gson().toJson(statistics));
+                                        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                                        mContext.startActivity(intent);
+                                    }
+                                }
+                            });
+                }
+            });
+        } else {
+            // Hide statistics button for non-csv files.
+            holder.getStatisticsBtn().setVisibility(View.INVISIBLE);
+        }
     }
 
     @Override
