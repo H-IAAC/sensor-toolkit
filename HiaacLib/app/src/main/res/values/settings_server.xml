@@ -6,7 +6,10 @@
     </string-array>
 
     <string-array name="server_urls">
+        <!-- UNICAMP -->
         <item>vm.hiaac.ic.unicamp.br:8081</item>
+        <!-- MOTOROLA -->
+        <!--<item>vm.hiaac.ic.unicamp.br:8085</item>-->
         <item>vm.hiaac.ic.unicamp.br:7999</item>
     </string-array>
 

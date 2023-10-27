@@ -15,6 +15,7 @@ import br.org.eldorado.sensoragent.model.AgentAmbientTemperature;
 import br.org.eldorado.sensoragent.model.AgentGPS;
 import br.org.eldorado.sensoragent.model.AgentGravity;
 import br.org.eldorado.sensoragent.model.AgentGyroscope;
+import br.org.eldorado.sensoragent.model.AgentLinearAccelerometer;
 import br.org.eldorado.sensoragent.model.AgentLuminosity;
 import br.org.eldorado.sensoragent.model.AgentMagneticField;
 import br.org.eldorado.sensoragent.model.AgentProximity;
@@ -54,6 +55,9 @@ public class SensorController {
                 switch (sensorType) {
                     case AgentSensorBase.TYPE_ACCELEROMETER:
                         sensor = new AgentAccelerometer();
+                        break;
+                    case AgentSensorBase.TYPE_LINEAR_ACCELEROMETER:
+                        sensor = new AgentLinearAccelerometer();
                         break;
                     case AgentSensorBase.TYPE_AMBIENT_TEMPERATURE:
                         sensor = new AgentAmbientTemperature();

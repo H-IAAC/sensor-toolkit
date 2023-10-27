@@ -14,6 +14,7 @@ import br.org.eldorado.sensoragent.model.AmbientTemperature;
 import br.org.eldorado.sensoragent.model.GPS;
 import br.org.eldorado.sensoragent.model.Gravity;
 import br.org.eldorado.sensoragent.model.Gyroscope;
+import br.org.eldorado.sensoragent.model.LinearAccelerometer;
 import br.org.eldorado.sensoragent.model.Luminosity;
 import br.org.eldorado.sensoragent.model.MagneticField;
 import br.org.eldorado.sensoragent.model.Proximity;
@@ -99,6 +100,8 @@ public class Tools {
         switch (title) {
             case Accelerometer.TAG:
                 return new Accelerometer();
+            case LinearAccelerometer.TAG:
+                return new LinearAccelerometer();
             case AmbientTemperature.TAG:
                 return new AmbientTemperature();
             case Gyroscope.TAG:

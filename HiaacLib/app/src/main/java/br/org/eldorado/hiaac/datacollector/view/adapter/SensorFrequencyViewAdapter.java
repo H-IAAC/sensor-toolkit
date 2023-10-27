@@ -3,6 +3,7 @@ package br.org.eldorado.hiaac.datacollector.view.adapter;
 import android.Manifest;
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.pm.PackageManager;
@@ -13,6 +14,7 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
+import android.widget.NumberPicker;
 import android.widget.Spinner;
 import android.widget.Toast;
 
@@ -47,8 +49,7 @@ public class SensorFrequencyViewAdapter extends RecyclerView.Adapter<SensorFrequ
                             40,
                             50,
                             100,
-                            500,
-                            1000
+                            200
                         )
     );
 
@@ -84,25 +85,48 @@ public class SensorFrequencyViewAdapter extends RecyclerView.Adapter<SensorFrequ
         ArrayAdapter<String> adapter = new ArrayAdapter<>(frequenciesSpinner.getContext(),
                 R.layout.custom_spinner, list);
         frequenciesSpinner.setAdapter(adapter);
+        frequenciesSpinner.setSelection(getFrequencySpinnerPositionForSelected(selectedSensorFrequency));
         if (selectedSensorFrequency.isSelected()) {
             frequencyContainer.expand(60);
             checkBox.setChecked(true);
         }
-
-        frequenciesSpinner.setSelection(getFrequencySpinnerPositionForSelected(selectedSensorFrequency));
-
         frequenciesSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 if (position == 0) {
                     /* Abrir popup */
-                    /*addFrequency(29);
-                    adapter.clear();
-                    adapter.addAll(Tools.createHertzList(frequencyOptions));
-                    frequenciesSpinner.setAdapter(adapter);
-                    selectedSensorFrequency.setFrequency(29);
-                    frequenciesSpinner.setSelection(getFrequencySpinnerPositionForSelected(selectedSensorFrequency));
-                    notifySensorFrequencyChanged();*/
+                    final AlertDialog.Builder d = new AlertDialog.Builder(mContext);
+                    LayoutInflater inflater = ((Activity)(mContext)).getLayoutInflater();
+                    View dialogView = inflater.inflate(R.layout.number_picker_dialog, null);
+                    d.setTitle(R.string.add_new_frequency_title);
+                    d.setMessage(R.string.add_new_frequency_msg);
+                    d.setView(dialogView);
+                    final NumberPicker numberPicker = (NumberPicker) dialogView.findViewById(R.id.dialog_number_picker);
+                    numberPicker.setMaxValue(200);
+                    numberPicker.setMinValue(1);
+                    numberPicker.setWrapSelectorWheel(true);
+                    d.setPositiveButton(R.string.button_ok, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                            int newFreq = numberPicker.getValue();
+                            addFrequency(newFreq);
+                            adapter.clear();
+                            adapter.addAll(Tools.createHertzList(frequencyOptions));
+                            frequenciesSpinner.setAdapter(adapter);
+                            selectedSensorFrequency.setFrequency(newFreq);
+                            frequenciesSpinner.setSelection(getFrequencySpinnerPositionForSelected(selectedSensorFrequency));
+                            notifySensorFrequencyChanged();
+                        }
+                    });
+                    d.setNegativeButton(R.string.button_cancel, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                            frequenciesSpinner.setSelection(getFrequencySpinnerPositionForSelected(selectedSensorFrequency));
+                            dialogInterface.dismiss();
+                        }
+                    });
+                    AlertDialog alertDialog = d.create();
+                    alertDialog.show();
                 } else {
                     selectedSensorFrequency.setFrequency(frequencyOptions.get(position));
                     notifySensorFrequencyChanged();
@@ -127,13 +151,14 @@ public class SensorFrequencyViewAdapter extends RecyclerView.Adapter<SensorFrequ
     }
 
     private int getFrequencySpinnerPositionForSelected(SensorFrequencyViewAdapter.SelectedSensorFrequency selectedSensorFrequency) {
-        int spinnerPosition = 0;
-        for (int i = 0; i < frequencyOptions.size(); i++) {
+        int spinnerPosition = 1;
+        for (int i = 1; i < frequencyOptions.size(); i++) {
             if (selectedSensorFrequency.getFrequency() == frequencyOptions.get(i)) {
                 spinnerPosition = i;
                 break;
             }
         }
+        selectedSensorFrequency.setFrequency(spinnerPosition);
         return spinnerPosition;
     }
 
@@ -148,7 +173,7 @@ public class SensorFrequencyViewAdapter extends RecyclerView.Adapter<SensorFrequ
     }
 
     public void addFrequency(int freq) {
-        if (!frequencyOptions.contains(freq)) {
+        if (!frequencyOptions.contains(freq) && freq > 0 && freq < 200) {
             frequencyOptions.add(freq);
             Collections.sort(frequencyOptions);
         }
@@ -203,7 +228,13 @@ public class SensorFrequencyViewAdapter extends RecyclerView.Adapter<SensorFrequ
         if (!SensorSDK.getInstance().checkSensorAvailability(Tools.getSensorFromTitleName(sensorName).getType())) {
             AlertDialog alert = new AlertDialog.Builder(mContext)
                     .setMessage(mContext.getString(R.string.sensor_not_available, sensorName))
-                    .setCancelable(true)
+                    .setCancelable(false)
+                    .setPositiveButton(mContext.getString(R.string.button_ok), new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            dialog.dismiss();
+                        }
+                    })
                     .create();
             alert.setTitle(mContext.getString(R.string.dialog_alert_title));
             alert.show();

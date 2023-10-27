@@ -42,6 +42,7 @@ public class AgentSensorBase
         implements SensorEventListener, Parcelable {
 
     public static final int TYPE_ACCELEROMETER = Sensor.TYPE_ACCELEROMETER;
+    public static final int TYPE_LINEAR_ACCELEROMETER = Sensor.TYPE_LINEAR_ACCELERATION;
     public static final int TYPE_AMBIENT_TEMPERATURE = Sensor.TYPE_AMBIENT_TEMPERATURE;
     public static final int TYPE_GYROSCOPE = Sensor.TYPE_GYROSCOPE;
     public static final int TYPE_LIGHT = Sensor.TYPE_LIGHT;

@@ -110,7 +110,7 @@ public class SensorController {
 
     public void startSensor(SensorBase sensor) {
         try {
-            log.i("Starting sensor " + sensor.getName());
+            log.i("Starting sensor " + sensor.getName() + " type " + sensor.getType());
             addSensor(sensor);
             sensorAgent.startSensor(sensor.getType());
         } catch (RemoteException e) {
@@ -129,7 +129,7 @@ public class SensorController {
 
     public void getInformation(SensorBase sensor) {
         try {
-            //log.i("Getting information of " + sensor.getName() + " " + sensorAgent);
+            //log.i("Getting information of " + sensor.getName() + " " + sensorAgent + " Type " + sensor.getType());
             sensor.updateInformation(sensorAgent.getInformation(sensor.getType()));
         } catch (RemoteException e) {
             e.printStackTrace();
@@ -152,7 +152,7 @@ public class SensorController {
             new Thread(new Runnable() {
                 @Override
                 public void run() {
-                    log.i("Starting getting information thread for " + sensor.getName() + " isSatrted: " + sensor.isStarted() + " Frequency: " + sensor.getFrequency());
+                    log.i("Starting getting information thread for " + sensor.getName() + " isSatrted: " + sensor.isStarted() + " Frequency: " + sensor.getFrequency() + " Type " + sensor.getType());
                     while (sensor.isStarted()) {
                         try {
                             getInformation(sensor);
@@ -173,7 +173,7 @@ public class SensorController {
         @Override
         public void onSensorStarted(int sensorType) throws RemoteException {
             SensorBase sensor = sensorMap.get(sensorType);
-            log.d("onSensorStarted " + sensor.getName() + " " + sensor.getFrequency());
+            log.d("onSensorStarted " + sensor.getName() + " " + sensor.getFrequency() + " Type " + sensor.getType());
             if (sensor != null && sensor.getListener() != null) {
                 try {
                     //Thread.sleep(1000);

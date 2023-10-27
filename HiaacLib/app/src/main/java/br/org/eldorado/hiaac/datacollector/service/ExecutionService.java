@@ -13,6 +13,8 @@ import android.net.Uri;
 import android.os.Binder;
 import android.os.Build;
 import android.os.IBinder;
+import android.os.PowerManager;
+
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
 
@@ -34,6 +36,8 @@ public class ExecutionService extends Service {
     private Log log;
     private IBinder mBinder = new MyBinder();
     private DataTrack dataTrack;
+
+    private PowerManager.WakeLock wakeLock;
 
     public class MyBinder extends Binder {
         public ExecutionService getServer() {
@@ -84,7 +88,10 @@ public class ExecutionService extends Service {
 
     public void startExecution(ExecutionServiceListener l) {
         DateFormat df = new SimpleDateFormat("yyyyMMdd.HHmmss");
-
+        PowerManager powerManager = (PowerManager) getSystemService(POWER_SERVICE);
+        wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK,
+                "DataCollector::DataCollectorWakeLock");
+        wakeLock.acquire();
         ExecutionController ctrl = ExecutionController.getInstance();
         log.d("startExecution: " + (l.getDataTrack().equals(this.dataTrack)));
         if (!ctrl.isRunning() || l.getDataTrack().equals(this.dataTrack)) {
@@ -108,6 +115,7 @@ public class ExecutionService extends Service {
     }
 
     public void stopExecution() {
+        wakeLock.release();
         if (dataTrack != null) {
             ExecutionController.getInstance().stopExecution(dataTrack);
             sendNotification(dataTrack);
