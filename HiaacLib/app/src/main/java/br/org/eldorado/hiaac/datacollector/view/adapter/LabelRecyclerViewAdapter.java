@@ -404,7 +404,15 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
                 MultipartBody.Part.createFormData("subject", labelConfigs.get(holder.getAdapterPosition()).userId);
         filesToUpload = files.size();
         files.forEach((file) -> {
-            MultipartBody.Part filePart = filePart = MultipartBody.Part.createFormData(
+
+            if (!"csv".equals(Tools.getFileExtension(file.getName()))) {
+                log.i("sendFilesToServer Ignore: " + file.getName());
+                return;
+            } else {
+                log.i("sendFilesToServer sending: " + file.getName());
+            }
+
+            MultipartBody.Part filePart = MultipartBody.Part.createFormData(
                     "file", file.getName(),
                     RequestBody.create(MediaType.parse("multipart/form-data"), file));
 
@@ -577,7 +585,7 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
                     if (dt.equals(execService.isRunning())) {
                         log.d("Experiment already running " + dt.getLabel());
                         holder.getEditButton().setEnabled(false);
-                        setAsStop(holder.getStartButton());
+                        setAsStop(holder.getStartButton(), holder);
                         execService.changeExecutionServiceListener(new MyExecutionListener(dt, holder));
                         //startExecution(holder);
                     } else {
@@ -605,14 +613,24 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
         return 0;
     }
 
-    private void setAsStop(Button button) {
+    private void setAsStop(Button button, LabelRecyclerViewAdapter.ViewHolder holder) {
         button.setText(mContext.getResources().getString(R.string.stop));
         button.setBackgroundTintList(mContext.getResources().getColorStateList(android.R.color.holo_red_light));
+
+        holder.filmButton.setClickable(false);
+        holder.shareButton.setClickable(false);
+        holder.deleteButton.setClickable(false);
+        holder.editButton.setClickable(false);
     }
 
-    private void setAsStart(Button button) {
+    private void setAsStart(Button button, LabelRecyclerViewAdapter.ViewHolder holder) {
         button.setText(mContext.getResources().getString(R.string.start));
         button.setBackgroundTintList(mContext.getResources().getColorStateList(android.R.color.holo_green_light));
+
+        holder.filmButton.setClickable(true);
+        holder.shareButton.setClickable(true);
+        holder.deleteButton.setClickable(true);
+        holder.editButton.setClickable(true);
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {
@@ -754,7 +772,7 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
                 public void run() {
                     log.d("MyExecutionListener - onError - " + message);
                     holder.getEditButton().setEnabled(true);
-                    setAsStart(holder.getStartButton());
+                    setAsStart(holder.getStartButton(), holder);
                     holder.getExpCard().setCardBackgroundColor(holder.getExpCardColor());
                     AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
                     builder.setTitle("Error");
@@ -787,7 +805,7 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
                                         /*execService.stopSelf();
                                         execService.stopForeground(true);*/
                         holder.getEditButton().setEnabled(true);
-                        setAsStart(holder.getStartButton());
+                        setAsStart(holder.getStartButton(), holder);
                         holder.getExpCard().setCardBackgroundColor(holder.getExpCardColor());
                         holder.getLabelTimer().setText(
                                 Tools.getFormatedTime(labelConfigs.get(holder.getAdapterPosition()).stopTime, Tools.CHRONOMETER));
@@ -837,7 +855,7 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
                 public void run() {
                     log.d("MyExecutionListener - disbling buttons");
                     holder.getEditButton().setEnabled(false);
-                    setAsStop(holder.getStartButton());
+                    setAsStop(holder.getStartButton(), holder);
                     holder.getExpCard().setCardBackgroundColor(ContextCompat.getColor(mContext, R.color.inprogress));
                 }
             });
