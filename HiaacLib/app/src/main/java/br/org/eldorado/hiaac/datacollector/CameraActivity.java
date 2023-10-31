@@ -5,6 +5,7 @@ import static br.org.eldorado.hiaac.datacollector.DataCollectorActivity.FOLDER_N
 import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.camera.core.CameraSelector;
 import androidx.camera.core.ImageCapture;
@@ -25,6 +26,7 @@ import androidx.core.util.Consumer;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.view.View;
@@ -91,6 +93,9 @@ public class CameraActivity extends AppCompatActivity {
                 }
             }
         });
+
+        if (videoFileExists())
+            showDialog();
 
         rpl = registerForActivityResult(new ActivityResultContracts.RequestMultiplePermissions(),
                 new ActivityResultCallback<Map<String, Boolean>>() {
@@ -225,6 +230,26 @@ public class CameraActivity extends AppCompatActivity {
         }
 
         return directory;
+    }
+
+    private Boolean videoFileExists() {
+        for (File file : getPath().listFiles()) {
+            if ("mp4".equals(Tools.getFileExtension(file.getName())))
+                return true;
+        }
+        return false;
+    }
+
+    private void showDialog() {
+        new AlertDialog.Builder(this)
+        .setTitle(R.string.camera_dialog_title)
+        .setMessage(R.string.camera_dialog_msg)
+        .setPositiveButton(R.string.camera_dialog_btn, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                dialog.cancel();
+            }
+        })
+        .show();
     }
 
     private void setButtonAsRecord(Button button) {
