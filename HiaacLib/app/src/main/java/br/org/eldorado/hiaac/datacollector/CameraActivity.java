@@ -196,20 +196,6 @@ public class CameraActivity extends AppCompatActivity {
                                 // Filming has stop
                                 currentRecording = null;
 
-                                try {
-                                    BasicFileAttributes attr = Files.readAttributes(Paths.get(outputFile.getAbsolutePath()), BasicFileAttributes.class);
-                                    long modifiedAt = attr.lastModifiedTime().toMillis();
-                                    long lastAccessAt = attr.lastAccessTime().toMillis();
-
-                                    createVideoMetadataFile(outputFile.getName(),
-                                                            outputFile.getName(),
-                                                            modifiedAt - lastAccessAt,
-                                                            lastAccessAt,
-                                                            modifiedAt);
-                                } catch (Exception e) {
-                                    Toast.makeText(ctx, "Failed to access video metadata", Toast.LENGTH_SHORT).show();
-                                }
-
                                 List<File> filesList = new ArrayList<File>();
                                 File directory = getPath();
                                 if (directory.exists()) {
@@ -224,6 +210,20 @@ public class CameraActivity extends AppCompatActivity {
                                             !file.getName().equals(outputFile.getName())) {
                                             file.delete();
                                         }
+                                    }
+
+                                    try {
+                                        BasicFileAttributes attr = Files.readAttributes(Paths.get(outputFile.getAbsolutePath()), BasicFileAttributes.class);
+                                        long modifiedAt = attr.lastModifiedTime().toMillis();
+                                        long lastAccessAt = attr.lastAccessTime().toMillis();
+
+                                        createVideoMetadataFile(outputFile.getName(),
+                                                outputFile.getName(),
+                                                modifiedAt - lastAccessAt,
+                                                lastAccessAt,
+                                                modifiedAt);
+                                    } catch (Exception e) {
+                                        Toast.makeText(ctx, "Failed to access video metadata", Toast.LENGTH_SHORT).show();
                                     }
                                 }
 
