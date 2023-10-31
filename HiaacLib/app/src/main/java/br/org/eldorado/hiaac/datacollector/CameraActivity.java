@@ -36,7 +36,11 @@ import android.widget.Toast;
 import com.google.common.util.concurrent.ListenableFuture;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -168,6 +172,8 @@ public class CameraActivity extends AppCompatActivity {
     @SuppressLint({"RestrictedApi", "MissingPermission"})
     public final void startFilming() throws IOException {
 
+        Context ctx = this.getApplicationContext();
+
         if (videoCapture == null) return;
         if (executor == null) return;
 
@@ -187,8 +193,22 @@ public class CameraActivity extends AppCompatActivity {
                         @Override
                         public void accept(VideoRecordEvent videoRecordEvent) {
                             if (videoRecordEvent instanceof VideoRecordEvent.Finalize) {
-                                // Filming stops
+                                // Filming has stop
                                 currentRecording = null;
+
+                                try {
+                                    BasicFileAttributes attr = Files.readAttributes(Paths.get(outputFile.getAbsolutePath()), BasicFileAttributes.class);
+                                    long modifiedAt = attr.lastModifiedTime().toMillis();
+                                    long lastAccessAt = attr.lastAccessTime().toMillis();
+
+                                    createVideoMetadataFile(outputFile.getName(),
+                                                            outputFile.getName(),
+                                                            modifiedAt - lastAccessAt,
+                                                            lastAccessAt,
+                                                            modifiedAt);
+                                } catch (Exception e) {
+                                    Toast.makeText(ctx, "Failed to access video metadata", Toast.LENGTH_SHORT).show();
+                                }
 
                                 List<File> filesList = new ArrayList<File>();
                                 File directory = getPath();
@@ -250,6 +270,34 @@ public class CameraActivity extends AppCompatActivity {
             }
         })
         .show();
+    }
+
+    private void createVideoMetadataFile(String filename,
+                                         String videoFilename,
+                                         float videoDuration,
+                                         long startTime,
+                                         long endTime) {
+
+        String content = "[Metadata]\n";
+        content += "filename = " + videoFilename + "\n";
+        content += "videoDuration = " + videoDuration + "\n";
+        content += "startTimestamp = " + startTime + "\n";
+        content += "endTimestamp = " + endTime;
+
+        File metadataFile = new File(getPath().getAbsoluteFile() + File.separator + filename + ".video");
+
+        try {
+            metadataFile.deleteOnExit();
+            metadataFile.createNewFile();
+
+            FileOutputStream writer = new FileOutputStream(metadataFile);
+            writer.write(content.getBytes());
+            writer.close();
+        } catch (IOException e) {
+            log.i("Error creating video metadata file.");
+        }
+
+        log.i("File: " + metadataFile.getAbsolutePath() + " created.");
     }
 
     private void setButtonAsRecord(Button button) {
