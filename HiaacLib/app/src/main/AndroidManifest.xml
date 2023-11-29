@@ -21,7 +21,8 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:screenOrientation="portrait"
         android:supportsRtl="true"
-        android:usesCleartextTraffic="true">
+        android:usesCleartextTraffic="true"
+        android:largeHeap="true">
         <activity
             android:name=".datacollector.CameraActivity"
             android:exported="false"

@@ -41,8 +41,11 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
@@ -50,6 +53,7 @@ import java.util.concurrent.Executors;
 
 import br.org.eldorado.hiaac.R;
 import br.org.eldorado.hiaac.datacollector.util.Tools;
+import br.org.eldorado.hiaac.datacollector.util.VideoMetadata;
 import br.org.eldorado.sensorsdk.util.Log;
 
 public class CameraActivity extends AppCompatActivity {
@@ -217,11 +221,11 @@ public class CameraActivity extends AppCompatActivity {
                                         long modifiedAt = attr.lastModifiedTime().toMillis();
                                         long lastAccessAt = attr.lastAccessTime().toMillis();
 
-                                        createVideoMetadataFile(outputFile.getName(),
-                                                outputFile.getName(),
-                                                modifiedAt - lastAccessAt,
-                                                lastAccessAt,
-                                                modifiedAt);
+                                        VideoMetadata.create(outputFile.getName(),
+                                                             modifiedAt - lastAccessAt,
+                                                             lastAccessAt,
+                                                             modifiedAt,
+                                                             getPath());
                                     } catch (Exception e) {
                                         Toast.makeText(ctx, "Failed to access video metadata", Toast.LENGTH_SHORT).show();
                                     }
@@ -270,34 +274,6 @@ public class CameraActivity extends AppCompatActivity {
             }
         })
         .show();
-    }
-
-    private void createVideoMetadataFile(String filename,
-                                         String videoFilename,
-                                         float videoDuration,
-                                         long startTime,
-                                         long endTime) {
-
-        String content = "[Metadata]\n";
-        content += "filename = " + videoFilename + "\n";
-        content += "videoDuration = " + videoDuration + "\n";
-        content += "startTimestamp = " + startTime + "\n";
-        content += "endTimestamp = " + endTime;
-
-        File metadataFile = new File(getPath().getAbsoluteFile() + File.separator + filename + ".video");
-
-        try {
-            metadataFile.deleteOnExit();
-            metadataFile.createNewFile();
-
-            FileOutputStream writer = new FileOutputStream(metadataFile);
-            writer.write(content.getBytes());
-            writer.close();
-        } catch (IOException e) {
-            log.i("Error creating video metadata file.");
-        }
-
-        log.i("File: " + metadataFile.getAbsolutePath() + " created.");
     }
 
     private void setButtonAsRecord(Button button) {
