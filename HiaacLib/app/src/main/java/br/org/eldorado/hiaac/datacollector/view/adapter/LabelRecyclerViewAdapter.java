@@ -427,12 +427,14 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
 
                     MultipartBody.Part directoryPart =
                             MultipartBody.Part.createFormData("directory", directory);
-                    MultipartBody.Part timestampPart =
-                            MultipartBody.Part.createFormData("timestamp", metadata.endTimestamp);
+                    MultipartBody.Part startTimePart =
+                            MultipartBody.Part.createFormData("startTimestamp", metadata.startTimestamp);
+                    MultipartBody.Part endtTimePart =
+                            MultipartBody.Part.createFormData("endTimestamp", metadata.endTimestamp);
                     MultipartBody.Part videoDurationPart =
                             MultipartBody.Part.createFormData("videoduration", metadata.videoDuration);
 
-                    uploadVideo(file, directoryPart, timestampPart, videoDurationPart, holder);
+                    uploadVideo(file, directoryPart, startTimePart, endtTimePart, videoDurationPart, holder);
 
                 } catch (FileNotFoundException e) {
                     Toast.makeText(mContext, "Video missing metadata file ('<file>.video')", Toast.LENGTH_SHORT).show();
@@ -468,12 +470,12 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
         call.enqueue(uploadCallback(file, holder));
     }
 
-    private void uploadVideo(File file, MultipartBody.Part directory, MultipartBody.Part timestamp, MultipartBody.Part videoDuration, ViewHolder holder) {
+    private void uploadVideo(File file, MultipartBody.Part directory, MultipartBody.Part start, MultipartBody.Part end, MultipartBody.Part videoDuration, ViewHolder holder) {
         MultipartBody.Part filePart = MultipartBody.Part.createFormData(
                 "file", file.getName(),
                 RequestBody.create(MediaType.parse("multipart/form-data"), file));
 
-        Call<StatusResponse> call = getApiInterface().uploadVideo(filePart, directory, timestamp, videoDuration);
+        Call<StatusResponse> call = getApiInterface().uploadVideo(filePart, directory, start, end, videoDuration);
         call.enqueue(uploadCallback(file, holder));
     }
 

@@ -43,6 +43,7 @@ import java.nio.file.Paths;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -67,6 +68,8 @@ public class CameraActivity extends AppCompatActivity {
     ExecutorService executor = Executors.newSingleThreadExecutor();
     Boolean recording = false;
     long labelId;
+    private Long startEpochMilli;
+    private Long endEpochMilli;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -196,7 +199,12 @@ public class CameraActivity extends AppCompatActivity {
                     .start(executor, new Consumer<VideoRecordEvent>() {
                         @Override
                         public void accept(VideoRecordEvent videoRecordEvent) {
-                            if (videoRecordEvent instanceof VideoRecordEvent.Finalize) {
+                            if (videoRecordEvent instanceof VideoRecordEvent.Start) {
+                                startEpochMilli = Instant.now().toEpochMilli();
+                            }
+                            else if (videoRecordEvent instanceof VideoRecordEvent.Finalize) {
+                                endEpochMilli = Instant.now().toEpochMilli();
+
                                 // Filming has stop
                                 currentRecording = null;
 
@@ -218,13 +226,11 @@ public class CameraActivity extends AppCompatActivity {
 
                                     try {
                                         BasicFileAttributes attr = Files.readAttributes(Paths.get(outputFile.getAbsolutePath()), BasicFileAttributes.class);
-                                        long modifiedAt = attr.lastModifiedTime().toMillis();
-                                        long lastAccessAt = attr.lastAccessTime().toMillis();
 
                                         VideoMetadata.create(outputFile.getName(),
-                                                             modifiedAt - lastAccessAt,
-                                                             lastAccessAt,
-                                                             modifiedAt,
+                                                 endEpochMilli - startEpochMilli,
+                                                             startEpochMilli,
+                                                             endEpochMilli,
                                                              getPath());
                                     } catch (Exception e) {
                                         Toast.makeText(ctx, "Failed to access video metadata", Toast.LENGTH_SHORT).show();

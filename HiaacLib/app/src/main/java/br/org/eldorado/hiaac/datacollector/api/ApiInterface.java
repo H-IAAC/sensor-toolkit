@@ -19,7 +19,8 @@ public interface ApiInterface {
     @Multipart
     @POST("/api/video")
     Call<StatusResponse> uploadVideo(@Part MultipartBody.Part file, @Part MultipartBody.Part directory,
-                                     @Part MultipartBody.Part timestamp, @Part MultipartBody.Part videoDuration);
+                                     @Part MultipartBody.Part startTimestamp, @Part MultipartBody.Part endTimestamp,
+                                     @Part MultipartBody.Part videoDuration);
 
     @Multipart
     @POST("/api/config")

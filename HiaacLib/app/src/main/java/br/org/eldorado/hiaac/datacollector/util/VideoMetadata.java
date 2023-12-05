@@ -21,7 +21,7 @@ public class VideoMetadata {
                               long startTime,
                               long endTime,
                               File outputPath) {
-        DateFormat dateFormat = new SimpleDateFormat("EEE MMM dd yyyy '00:00:00'  zZ");
+        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS  zZ");
 
         Date startTimeDate = new Date(startTime);
         Date endTimeDate = new Date(endTime);
@@ -29,8 +29,12 @@ public class VideoMetadata {
         String content = "[Metadata]\n";
         content += "filename = " + filename + "\n";
         content += "videoDuration = " + videoDuration + "\n";
-        content += "startTimestamp = " + dateFormat.format(startTimeDate) + "\n";
-        content += "endTimestamp = " + dateFormat.format(endTimeDate);
+        content += "startTimestamp = " + startTime + "\n";
+        content += "endTimestamp = " + endTime;
+
+        log.d("VideoMetadata filename: " + filename);
+        log.d("VideoMetadata startTimeDate: " + startTimeDate + " - " + dateFormat.format(startTimeDate));
+        log.d("VideoMetadata endTimeDate: " + endTimeDate + " " + dateFormat.format(endTimeDate));
 
         File metadataFile = new File(outputPath.getAbsoluteFile() + File.separator + filename + ".video");
 
