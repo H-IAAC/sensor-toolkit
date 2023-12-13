@@ -195,8 +195,28 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
         shareButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                shareButton.setEnabled(false);
-                sendData(holder, SEND_DATA_TO_HIAAC,false, "0");
+                AlertDialog alert = new AlertDialog.Builder(mContext).setMessage(mContext.getString(R.string.
+                                share_with_server))
+                        .setCancelable(false)
+                        .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                dialog.dismiss();
+                                shareButton.setEnabled(false);
+                                sendData(holder, SEND_DATA_TO_HIAAC,false, "0");
+                            }
+                        }
+                        )
+                        .setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+                                dialogInterface.dismiss();
+                            }
+                        })
+                        .create();
+                alert.setTitle(mContext.getString(R.string.share_with_server_title));
+                alert.show();
+
             }
         });
 
@@ -411,6 +431,23 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
     private void sendFilesToServer(List<File> files, ViewHolder holder) {
         log.d("sendFilesToServer - " + files);
         numberOfFilesToUpload = files.size();
+        if (numberOfFilesToUpload == 0) {
+            holder.getShareButton().setEnabled(true);
+            AlertDialog alert = new AlertDialog.Builder(mContext).setMessage(mContext.getString(R.string.
+                            share_with_server_no_files))
+                    .setCancelable(false)
+                    .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    dialog.dismiss();
+                                }
+                            }
+                    )
+                    .create();
+            alert.setTitle(mContext.getString(R.string.share_with_server_title));
+            alert.show();
+            return;
+        }
 
         String experiment = labelConfigs.get(holder.getAdapterPosition()).experiment;
         String activity = labelConfigs.get(holder.getAdapterPosition()).activity;
@@ -433,6 +470,8 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
                             MultipartBody.Part.createFormData("endTimestamp", metadata.endTimestamp);
                     MultipartBody.Part videoDurationPart =
                             MultipartBody.Part.createFormData("videoduration", metadata.videoDuration);
+
+                    android.util.Log.d("TAGTAGTAG", "dir " + directory + " starttime " + metadata.startTimestamp + " end " + metadata.endTimestamp + " dur " + metadata.videoDuration );
 
                     uploadVideo(file, directoryPart, startTimePart, endtTimePart, videoDurationPart, holder);
 
