@@ -29,6 +29,7 @@
     <string name="add_new_frequency_msg">Choose a new frequency to be added</string>
     <string name="gps_permission_description">To use GPS sensor, application needs the Background permission. If you want to use GPS, please select the Always Use permission.</string>
     <string name="sensor_not_available">This Sensor (%s) is not available on this device!</string>
+    <string name="too_many_sensors_checked">Using too many sensors at same time may cause data loss due to Android limitations.</string>
     <string name="dialog_alert_title">ALERT!</string>
 
     <!-- Notifications -->

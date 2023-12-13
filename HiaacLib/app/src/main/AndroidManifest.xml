@@ -10,6 +10,7 @@
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
     <uses-permission
         android:name="android.permission.WRITE_SETTINGS"
         tools:ignore="ProtectedPermissions" />
@@ -23,22 +24,27 @@
         android:supportsRtl="true"
         android:usesCleartextTraffic="true">
         <activity
+            android:configChanges="uiMode"
             android:name=".datacollector.CameraActivity"
             android:exported="false"
             android:theme="@style/Theme.AppCompat" />
         <activity
+            android:configChanges="uiMode"
             android:name=".datacollector.SettingsActivity"
             android:exported="false"
             android:theme="@style/PreferenceScreen" />
         <activity
+            android:configChanges="uiMode"
             android:name=".datacollector.LabelOptionsActivity"
             android:exported="false"
             android:screenOrientation="portrait" />
         <activity
+            android:configChanges="uiMode"
             android:name=".datacollector.StatisticsActivity"
             android:exported="false"
             android:screenOrientation="portrait" />
         <activity
+            android:configChanges="uiMode"
             android:name=".datacollector.DataCollectorActivity"
             android:exported="true"
             android:label="@string/app_name"

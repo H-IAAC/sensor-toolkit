@@ -12,9 +12,11 @@
         tools:replace="android:theme">
         <activity
             android:name=".LicenseActivity"
+            android:configChanges="uiMode"
             android:exported="false" />
         <activity
             android:name=".HIAAPMainActivity"
+            android:configChanges="uiMode"
             android:exported="true"
             android:label="@string/app_name"
             android:theme="@style/Theme.HIAACApp.NoActionBar">
