@@ -5,6 +5,7 @@ import static br.org.eldorado.hiaac.datacollector.DataCollectorActivity.FOLDER_N
 import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.camera.core.CameraSelector;
 import androidx.camera.core.ImageCapture;
@@ -25,6 +26,7 @@ import androidx.core.util.Consumer;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.view.View;
@@ -34,9 +36,17 @@ import android.widget.Toast;
 import com.google.common.util.concurrent.ListenableFuture;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
@@ -44,6 +54,7 @@ import java.util.concurrent.Executors;
 
 import br.org.eldorado.hiaac.R;
 import br.org.eldorado.hiaac.datacollector.util.Tools;
+import br.org.eldorado.hiaac.datacollector.util.VideoMetadata;
 import br.org.eldorado.sensorsdk.util.Log;
 
 public class CameraActivity extends AppCompatActivity {
@@ -57,6 +68,8 @@ public class CameraActivity extends AppCompatActivity {
     ExecutorService executor = Executors.newSingleThreadExecutor();
     Boolean recording = false;
     long labelId;
+    private Long startEpochMilli;
+    private Long endEpochMilli;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -91,6 +104,9 @@ public class CameraActivity extends AppCompatActivity {
                 }
             }
         });
+
+        if (videoFileExists())
+            showDialog();
 
         rpl = registerForActivityResult(new ActivityResultContracts.RequestMultiplePermissions(),
                 new ActivityResultCallback<Map<String, Boolean>>() {
@@ -163,6 +179,8 @@ public class CameraActivity extends AppCompatActivity {
     @SuppressLint({"RestrictedApi", "MissingPermission"})
     public final void startFilming() throws IOException {
 
+        Context ctx = this.getApplicationContext();
+
         if (videoCapture == null) return;
         if (executor == null) return;
 
@@ -181,8 +199,13 @@ public class CameraActivity extends AppCompatActivity {
                     .start(executor, new Consumer<VideoRecordEvent>() {
                         @Override
                         public void accept(VideoRecordEvent videoRecordEvent) {
-                            if (videoRecordEvent instanceof VideoRecordEvent.Finalize) {
-                                // Filming stops
+                            if (videoRecordEvent instanceof VideoRecordEvent.Start) {
+                                startEpochMilli = Instant.now().toEpochMilli();
+                            }
+                            else if (videoRecordEvent instanceof VideoRecordEvent.Finalize) {
+                                endEpochMilli = Instant.now().toEpochMilli();
+
+                                // Filming has stop
                                 currentRecording = null;
 
                                 List<File> filesList = new ArrayList<File>();
@@ -199,6 +222,18 @@ public class CameraActivity extends AppCompatActivity {
                                             !file.getName().equals(outputFile.getName())) {
                                             file.delete();
                                         }
+                                    }
+
+                                    try {
+                                        BasicFileAttributes attr = Files.readAttributes(Paths.get(outputFile.getAbsolutePath()), BasicFileAttributes.class);
+
+                                        VideoMetadata.create(outputFile.getName(),
+                                                 endEpochMilli - startEpochMilli,
+                                                             startEpochMilli,
+                                                             endEpochMilli,
+                                                             getPath());
+                                    } catch (Exception e) {
+                                        Toast.makeText(ctx, "Failed to access video metadata", Toast.LENGTH_SHORT).show();
                                     }
                                 }
 
@@ -225,6 +260,26 @@ public class CameraActivity extends AppCompatActivity {
         }
 
         return directory;
+    }
+
+    private Boolean videoFileExists() {
+        for (File file : getPath().listFiles()) {
+            if ("mp4".equals(Tools.getFileExtension(file.getName())))
+                return true;
+        }
+        return false;
+    }
+
+    private void showDialog() {
+        new AlertDialog.Builder(this)
+        .setTitle(R.string.camera_dialog_title)
+        .setMessage(R.string.camera_dialog_msg)
+        .setPositiveButton(R.string.camera_dialog_btn, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                dialog.cancel();
+            }
+        })
+        .show();
     }
 
     private void setButtonAsRecord(Button button) {

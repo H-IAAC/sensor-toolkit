@@ -93,6 +93,9 @@
     <string name="settings_counter_key">Start Collect Config</string>
     <string name="settings_device_locations">Device Locations</string>
 
+    <string name="camera_dialog_title">Video Overwrite Alert</string>
+    <string name="camera_dialog_msg">This experiment already contains a video. New video record will replace the existing one.</string>
+    <string name="camera_dialog_btn">Ok</string>
 
     <string-array name="device_location_items">
         <item>Cabeça</item>

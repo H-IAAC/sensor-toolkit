@@ -27,6 +27,7 @@ import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.cardview.widget.CardView;
@@ -37,7 +38,11 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import org.json.JSONObject;
+
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -64,6 +69,7 @@ import br.org.eldorado.hiaac.datacollector.util.CsvFiles;
 import br.org.eldorado.hiaac.datacollector.util.Log;
 import br.org.eldorado.hiaac.datacollector.util.Preferences;
 import br.org.eldorado.hiaac.datacollector.util.Tools;
+import br.org.eldorado.hiaac.datacollector.util.VideoMetadata;
 import br.org.eldorado.sensorsdk.SensorSDK;
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
@@ -393,46 +399,94 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
         });
     }
 
-    private int filesToUpload = 0;
+    private int numberOfFilesToUpload = 0;
+
+    private ApiInterface getApiInterface() {
+        ClientAPI apiClient = new ClientAPI();
+        String address = Preferences.getPreferredServer().split(":")[0];
+        String port = Preferences.getPreferredServer().split(":")[1];
+        return apiClient.getClient(address, port).create(ApiInterface.class);
+    }
+
     private void sendFilesToServer(List<File> files, ViewHolder holder) {
         log.d("sendFilesToServer - " + files);
-        MultipartBody.Part experimentPart =
-                MultipartBody.Part.createFormData("experiment", labelConfigs.get(holder.getAdapterPosition()).experiment);
-        MultipartBody.Part namePart =
-                MultipartBody.Part.createFormData("activity", labelConfigs.get(holder.getAdapterPosition()).activity);
-        MultipartBody.Part subjectPart =
-                MultipartBody.Part.createFormData("subject", labelConfigs.get(holder.getAdapterPosition()).userId);
-        filesToUpload = files.size();
+        numberOfFilesToUpload = files.size();
+
+        String experiment = labelConfigs.get(holder.getAdapterPosition()).experiment;
+        String activity = labelConfigs.get(holder.getAdapterPosition()).activity;
+        String userId = labelConfigs.get(holder.getAdapterPosition()).userId;
+
         files.forEach((file) -> {
+            if ("mp4".equals(Tools.getFileExtension(file.getName()))) {
+                log.i("sendFilesToServer sending video: " + file.getName());
 
-            if (!"csv".equals(Tools.getFileExtension(file.getName()))) {
-                log.i("sendFilesToServer Ignore: " + file.getName());
-                return;
+                try {
+                    VideoMetadata.Metadata metadata = VideoMetadata.read(file.getAbsoluteFile() + ".video");
+
+                    String directory = experiment + " [" + activity + "] [" + userId + "]";
+
+                    MultipartBody.Part directoryPart =
+                            MultipartBody.Part.createFormData("directory", directory);
+                    MultipartBody.Part startTimePart =
+                            MultipartBody.Part.createFormData("startTimestamp", metadata.startTimestamp);
+                    MultipartBody.Part endtTimePart =
+                            MultipartBody.Part.createFormData("endTimestamp", metadata.endTimestamp);
+                    MultipartBody.Part videoDurationPart =
+                            MultipartBody.Part.createFormData("videoduration", metadata.videoDuration);
+
+                    uploadVideo(file, directoryPart, startTimePart, endtTimePart, videoDurationPart, holder);
+
+                } catch (FileNotFoundException e) {
+                    Toast.makeText(mContext, "Video missing metadata file ('<file>.video')", Toast.LENGTH_SHORT).show();
+                    holder.getShareButton().setEnabled(true);
+                } catch (IOException e) {
+                    Toast.makeText(mContext, "Error reading Video metadata file ('<file>.video')", Toast.LENGTH_SHORT).show();
+                    holder.getShareButton().setEnabled(true);
+                }
+
+            } else if ("csv".equals(Tools.getFileExtension(file.getName()))) {
+                MultipartBody.Part experimentPart =
+                        MultipartBody.Part.createFormData("experiment", experiment);
+                MultipartBody.Part namePart =
+                        MultipartBody.Part.createFormData("activity", activity);
+                MultipartBody.Part subjectPart =
+                        MultipartBody.Part.createFormData("subject", userId);
+
+                log.i("sendFilesToServer sending file: " + file.getName());
+                uploadFile(file, experimentPart, subjectPart, namePart, holder);
             } else {
-                log.i("sendFilesToServer sending: " + file.getName());
+                // Files different from mp4 and csv arent sent to the server.
+                numberOfFilesToUpload--;
             }
-
-            MultipartBody.Part filePart = MultipartBody.Part.createFormData(
-                    "file", file.getName(),
-                    RequestBody.create(MediaType.parse("multipart/form-data"), file));
-
-            ClientAPI apiClient = new ClientAPI();
-            String address = Preferences.getPreferredServer().split(":")[0];
-            String port = Preferences.getPreferredServer().split(":")[1];
-            ApiInterface apiInterface = apiClient.getClient(address, port).create(ApiInterface.class);
-            Call<StatusResponse> call = apiInterface.uploadFile(filePart, experimentPart, subjectPart, namePart);
-            call.enqueue(uploadCallback(file, holder));
-
         });
     }
 
-    private synchronized void updateFilesUpdated(ViewHolder holder, String errorMessage) {
-        filesToUpload--;
-        if (filesToUpload <= 0) {
+    private void uploadFile(File file, MultipartBody.Part experiment, MultipartBody.Part subject, MultipartBody.Part name, ViewHolder holder) {
+        MultipartBody.Part filePart = MultipartBody.Part.createFormData(
+                "file", file.getName(),
+                RequestBody.create(MediaType.parse("multipart/form-data"), file));
+
+        Call<StatusResponse> call = getApiInterface().uploadFile(filePart, experiment, subject, name);
+        call.enqueue(uploadCallback(file, holder));
+    }
+
+    private void uploadVideo(File file, MultipartBody.Part directory, MultipartBody.Part start, MultipartBody.Part end, MultipartBody.Part videoDuration, ViewHolder holder) {
+        MultipartBody.Part filePart = MultipartBody.Part.createFormData(
+                "file", file.getName(),
+                RequestBody.create(MediaType.parse("multipart/form-data"), file));
+
+        Call<StatusResponse> call = getApiInterface().uploadVideo(filePart, directory, start, end, videoDuration);
+        call.enqueue(uploadCallback(file, holder));
+    }
+
+    private synchronized void updateFilesUpdated(ViewHolder holder, String filename, String errorMessage) {
+        numberOfFilesToUpload--;
+        if (numberOfFilesToUpload <= 0) {
             AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
             if (errorMessage != null) {
                 builder.setTitle("Error");
-                builder.setMessage(errorMessage);
+                String message = filename + "\n" + errorMessage;
+                builder.setMessage(message);
             } else {
                 builder.setTitle("Success");
             }
@@ -447,17 +501,31 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
         return new Callback<StatusResponse>() {
             @Override
             public void onResponse(Call<StatusResponse> call, Response<StatusResponse> response) {
-                if (response.body().getStatus().equals("200") || response.body().getStatus().equalsIgnoreCase("success")) {
-                    updateFilesUpdated(holder, null);
-                } else {
-                    onFailure(call, new Exception("File: " + file.getName() + " -\n" + response.body().toString()));
+
+                switch (response.code()) {
+                    case 200:
+                        updateFilesUpdated(holder, file.getName(), null);
+                        break;
+                    case 400:
+                    case 409:
+                    case 500:
+                            try {
+                                JSONObject jObjError = new JSONObject(response.errorBody().string());
+                                log.d("upload status body: " + jObjError.getString("status"));
+                                updateFilesUpdated(holder, file.getName(), jObjError.getString("status"));
+                            } catch (Exception e) {
+                                log.d(file.getName() + " upload failed: " + e.getMessage());
+                            }
+                        break;
+                    default:
+                        onFailure(call, new Exception("File: " + file.getName() + " -\n" + response.body().toString()));
                 }
             }
 
             @Override
             public void onFailure(Call<StatusResponse> call, Throwable t) {
-                filesToUpload = 0;
-                updateFilesUpdated(holder, t.getMessage());
+                numberOfFilesToUpload = 0;
+                updateFilesUpdated(holder, file.getName(), t.getMessage());
                 t.printStackTrace();
                 log.d("FAIL " + t);
                 call.cancel();
