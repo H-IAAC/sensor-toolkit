@@ -25,14 +25,17 @@ class ProfilingData {
     private String batteryLevel;
     private String cpuUsage;
 
+    private String extra;
+
     private Intent battery;
 
-    protected ProfilingData(long st, Context ctx, String tp, Intent bat) {
+    protected ProfilingData(long st, Context ctx, String tp, Intent bat, String extra) {
         battery = bat;
         type = tp;
         startTime = st;
         currentTime = System.currentTimeMillis();
         mContext = ctx;
+        this.extra = extra;
         setRAMInfo();
         setBatteryLevel();
         setApplicationUsedMemory();
@@ -73,9 +76,13 @@ class ProfilingData {
         return type;
     }
 
+    protected String getExtra() {
+        return extra;
+    }
+
     protected String[] getCSVFormattedString() {
         String str[] = {getTimestamp(), getElapsedTime(), getUsedMemory(), getRAMMB(), getRAMPercentage(), getCpuUsage(),
-                        getBatteryLevel(), getType()};
+                        getBatteryLevel(), getExtra(), getType()};
         return str;
     }
 
@@ -117,7 +124,8 @@ class ProfilingData {
                 .append("Used RAM Memory: ").append(getRAMMB()).append("MB, ")
                 .append("Used RAM Memory: ").append(getRAMPercentage()).append("%, ")
                 .append("Used CPU: ").append(getCpuUsage()).append("%, ")
-                .append("Battery Level: ").append(getBatteryLevel());
+                .append("Battery Level: ").append(getBatteryLevel())
+                .append("Extra: ").append(getExtra());
 
         return sb.toString();
     }

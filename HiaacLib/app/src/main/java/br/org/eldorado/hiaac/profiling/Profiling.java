@@ -65,12 +65,12 @@ public class Profiling {
         }
     }
 
-    public void checkPoint() {
+    public void checkPoint(String... extra) {
         if (controller == null) {
             controller = new ProfilingController();
             controller.setContext(mContext);
         }
-        controller.checkPoint();
+        controller.checkPoint(extra);
     }
 
     public File finishProfiling() {

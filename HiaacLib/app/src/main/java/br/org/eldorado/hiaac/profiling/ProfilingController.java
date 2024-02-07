@@ -27,6 +27,7 @@ class ProfilingController {
     private List<ProfilingData> data;
     private long frequency;
     private String csvFileName;
+    private String extra;
     private Thread profilingThread;
     private String[] csvHeader = {"Timestamp", "Elapsed Time", "Used Memory from Application (bytes)", "Used System`s RAM (MB)",
             "Used System`s RAM (%)", "Used System`s CPU (%)", "Battery Level", "Profiling Type"};
@@ -42,6 +43,7 @@ class ProfilingController {
         frequency = 1000;
         DateFormat df = new SimpleDateFormat("yyyyMMdd.HHmmss");
         setCsvFileName(df.format(System.currentTimeMillis()));
+        extra = "";
     }
 
     protected void setContext(Context ctx) {
@@ -166,13 +168,14 @@ class ProfilingController {
             @Override
             public void run() {
                 synchronized (data) {
-                    data.add(new ProfilingData(initialTime, mContext, type, batteryStatus));
+                    data.add(new ProfilingData(initialTime, mContext, type, batteryStatus, extra));
                 }
             }
         }).start();
     }
 
-    protected void checkPoint() {
+    protected void checkPoint(String... extra) {
+        this.extra = extra.length > 0 ? extra[0] : "";
         createData(ProfilingData.TYPE_CHECKPOINT);
     }
 }
