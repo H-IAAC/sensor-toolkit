@@ -153,8 +153,8 @@ public class CameraActivity extends AppCompatActivity {
 
                             Recorder recorder = new Recorder.Builder()
                                     .setQualitySelector(QualitySelector.from(
-                                            Quality.HD,
-                                            FallbackStrategy.higherQualityOrLowerThan(Quality.SD)))
+                                            Quality.SD,
+                                            FallbackStrategy.higherQualityOrLowerThan(Quality.LOWEST)))
                                     .build();
                             videoCapture = VideoCapture.withOutput(recorder);
 
@@ -225,8 +225,6 @@ public class CameraActivity extends AppCompatActivity {
                                     }
 
                                     try {
-                                        BasicFileAttributes attr = Files.readAttributes(Paths.get(outputFile.getAbsolutePath()), BasicFileAttributes.class);
-
                                         VideoMetadata.create(outputFile.getName(),
                                                  endEpochMilli - startEpochMilli,
                                                              startEpochMilli,
