@@ -36,17 +36,10 @@ import android.widget.Toast;
 import com.google.common.util.concurrent.ListenableFuture;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.nio.file.attribute.BasicFileAttributes;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
@@ -66,7 +59,7 @@ public class CameraActivity extends AppCompatActivity {
     PreviewView viewFinder;
     Button captureButton;
     ExecutorService executor = Executors.newSingleThreadExecutor();
-    Boolean recording = false;
+    Boolean isRecording = false;
     long labelId;
     private Long startEpochMilli;
     private Long endEpochMilli;
@@ -74,7 +67,7 @@ public class CameraActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Context ctx = this.getApplicationContext();
+        Context ctx = this;
 
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
@@ -97,8 +90,9 @@ public class CameraActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 try {
-                    startFilming();
+                    startFilming(ctx);
                 } catch (Exception e) {
+                    log.d("Exception while filming: " + e.getMessage());
                     Toast.makeText(ctx, "Check permissions", Toast.LENGTH_SHORT).show();
                     setButtonAsStop(captureButton);
                 }
@@ -130,7 +124,21 @@ public class CameraActivity extends AppCompatActivity {
     }
 
     @Override
+    public void onBackPressed() {
+        if (isRecording) {
+            log.d("Ignore back button while filming");
+        } else {
+            super.onBackPressed();
+        }
+    }
+
+    @Override
     public boolean onSupportNavigateUp() {
+        if (isRecording) {
+            log.d("Ignore back button while filming");
+            return false;
+        }
+
         finish();
         return true;
     }
@@ -177,17 +185,24 @@ public class CameraActivity extends AppCompatActivity {
     }
 
     @SuppressLint({"RestrictedApi", "MissingPermission"})
-    public final void startFilming() throws IOException {
-
-        Context ctx = this.getApplicationContext();
+    public final void startFilming(Context ctx) throws IOException {
 
         if (videoCapture == null) return;
         if (executor == null) return;
 
-        if (recording) {
-            currentRecording.stop();
-            recording = false;
-            setButtonAsRecord(captureButton);
+        if (isRecording) {
+             new AlertDialog.Builder(ctx)
+                    .setMessage(R.string.stop_filming_msg)
+                    .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+
+                        public void onClick(DialogInterface dialog, int whichButton) {
+                            // Cancel filming
+                            log.d("Stop filming confirmed");
+                            currentRecording.stop();
+                            isRecording = false;
+                            setButtonAsRecord(captureButton);
+                        }})
+                    .setNegativeButton(android.R.string.no, null).create().show();
         } else {
             final File outputFile = File.createTempFile("video_", ".mp4", getPath());
 
@@ -239,7 +254,7 @@ public class CameraActivity extends AppCompatActivity {
                         }
                     });
 
-            recording = true;
+            isRecording = true;
             setButtonAsStop(captureButton);
         }
     }
