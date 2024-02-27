@@ -96,6 +96,8 @@
     <string name="camera_dialog_msg">This experiment already contains a video. New video record will replace the existing one.</string>
     <string name="camera_dialog_btn">Ok</string>
 
+    <string name="stop_filming_msg">Confirm Stop?</string>
+
     <string-array name="device_location_items">
         <item>Cabeça</item>
         <item>Braço Direito</item>
