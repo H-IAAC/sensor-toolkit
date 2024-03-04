@@ -7,6 +7,7 @@ import android.content.IntentFilter;
 import android.os.BatteryManager;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.TimeZone;
 
 class ProfilingData {
@@ -25,11 +26,11 @@ class ProfilingData {
     private String batteryLevel;
     private String cpuUsage;
 
-    private String extra;
+    private ArrayList<String> extra;
 
     private Intent battery;
 
-    protected ProfilingData(long st, Context ctx, String tp, Intent bat, String extra) {
+    protected ProfilingData(long st, Context ctx, String tp, Intent bat, ArrayList<String> extra) {
         battery = bat;
         type = tp;
         startTime = st;
@@ -76,14 +77,26 @@ class ProfilingData {
         return type;
     }
 
-    protected String getExtra() {
+    protected ArrayList<String> getExtra() {
         return extra;
     }
 
     protected String[] getCSVFormattedString() {
-        String str[] = {getTimestamp(), getElapsedTime(), getUsedMemory(), getRAMMB(), getRAMPercentage(), getCpuUsage(),
-                        getBatteryLevel(), getExtra(), getType()};
-        return str;
+        ArrayList<String> values = new ArrayList<>();
+        values.add(getTimestamp());
+        values.add(getElapsedTime());
+        values.add(getUsedMemory());
+        values.add(getRAMMB());
+        values.add(getRAMPercentage());
+        values.add(getCpuUsage());
+        values.add(getBatteryLevel());
+        values.add(getType());
+
+        for (String extraValue : getExtra()) {
+            values.add(extraValue);
+        }
+
+        return values.toArray(new String[0]);
     }
 
     private void setCpuUsage() {

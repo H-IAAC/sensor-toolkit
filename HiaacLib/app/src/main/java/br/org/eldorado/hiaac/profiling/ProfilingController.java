@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.BatteryManager;
+import android.text.TextUtils;
 
 import com.opencsv.CSVWriter;
 import java.io.File;
@@ -11,6 +12,8 @@ import java.io.FileWriter;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import br.org.eldorado.hiaac.datacollector.util.Log;
@@ -27,11 +30,16 @@ class ProfilingController {
     private List<ProfilingData> data;
     private long frequency;
     private String csvFileName;
-    private String extra;
+    private ArrayList<String> extraValues;
     private Thread profilingThread;
-    private String[] csvHeader = {"Timestamp", "Elapsed Time", "Used Memory from Application (bytes)", "Used System`s RAM (MB)",
-            "Used System`s RAM (%)", "Used System`s CPU (%)", "Battery Level", "Profiling Type"};
-
+    private ArrayList<String> csvHeader = new ArrayList<>(Arrays.asList("Timestamp",
+                                                             "Elapsed Time",
+                                                             "Used Memory from Application (bytes)",
+                                                             "Used System`s RAM (MB)",
+                                                             "Used System`s RAM (%)",
+                                                             "Used System`s CPU (%)",
+                                                             "Battery Level",
+                                                             "Profiling Type"));
     private Intent batteryStatus;
 
     protected ProfilingController() {
@@ -43,7 +51,7 @@ class ProfilingController {
         frequency = 1000;
         DateFormat df = new SimpleDateFormat("yyyyMMdd.HHmmss");
         setCsvFileName(df.format(System.currentTimeMillis()));
-        extra = "";
+        extraValues = new ArrayList<>();
     }
 
     protected void setContext(Context ctx) {
@@ -85,7 +93,7 @@ class ProfilingController {
     protected File finishProfiling() {
         log.d("Finishing profiling . . .");
         shouldFinish = true;
-        checkPoint();
+        checkPoint(new HashMap<String, String>());
         stop();
         File f = createCSVFile();
         showData();
@@ -117,7 +125,7 @@ class ProfilingController {
                                CSVWriter.NO_QUOTE_CHARACTER,
                                CSVWriter.DEFAULT_ESCAPE_CHARACTER,
                                CSVWriter.DEFAULT_LINE_END);
-            writer.writeNext(csvHeader);
+            writer.writeNext(csvHeader.toArray(new String[0]));
             for (ProfilingData dt : data) {
                 writer.writeNext(dt.getCSVFormattedString());
             }
@@ -168,14 +176,24 @@ class ProfilingController {
             @Override
             public void run() {
                 synchronized (data) {
-                    data.add(new ProfilingData(initialTime, mContext, type, batteryStatus, extra));
+                    data.add(new ProfilingData(initialTime, mContext, type, batteryStatus, extraValues));
                 }
             }
         }).start();
     }
 
-    protected void checkPoint(String... extra) {
-        this.extra = extra.length > 0 ? extra[0] : "";
+    protected void checkPoint(HashMap<String, String> extra) {
+
+        // Add all keys as part of the CSV header
+        for (String key : extra.keySet()) {
+            csvHeader.add(key);
+        }
+
+        // Get all values as a values for Extra fields
+        for (String value : extra.values()) {
+            extraValues.add(value);
+        }
+
         createData(ProfilingData.TYPE_CHECKPOINT);
     }
 }

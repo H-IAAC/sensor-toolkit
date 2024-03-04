@@ -6,6 +6,8 @@ import android.content.IntentFilter;
 import android.os.BatteryManager;
 
 import java.io.File;
+import java.util.HashMap;
+
 import br.org.eldorado.sensorsdk.SensorSDKContext;
 
 public class Profiling {
@@ -65,7 +67,7 @@ public class Profiling {
         }
     }
 
-    public void checkPoint(String... extra) {
+    public void checkPoint(HashMap<String, String> extra) {
         if (controller == null) {
             controller = new ProfilingController();
             controller.setContext(mContext);
