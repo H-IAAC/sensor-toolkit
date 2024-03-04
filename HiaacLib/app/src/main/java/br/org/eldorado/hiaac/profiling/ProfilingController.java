@@ -30,7 +30,6 @@ class ProfilingController {
     private List<ProfilingData> data;
     private long frequency;
     private String csvFileName;
-    private ArrayList<String> extraValues;
     private Thread profilingThread;
     private ArrayList<String> csvHeader = new ArrayList<>(Arrays.asList("Timestamp",
                                                              "Elapsed Time",
@@ -51,7 +50,6 @@ class ProfilingController {
         frequency = 1000;
         DateFormat df = new SimpleDateFormat("yyyyMMdd.HHmmss");
         setCsvFileName(df.format(System.currentTimeMillis()));
-        extraValues = new ArrayList<>();
     }
 
     protected void setContext(Context ctx) {
@@ -172,6 +170,10 @@ class ProfilingController {
     }
 
     private void createData(String type) {
+        createData(type, new ArrayList<>());
+    }
+
+    private void createData(String type, List<String> extraValues) {
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -186,14 +188,16 @@ class ProfilingController {
 
         // Add all keys as part of the CSV header
         for (String key : extra.keySet()) {
-            csvHeader.add(key);
+            if (!csvHeader.contains(key))
+                csvHeader.add(key);
         }
 
         // Get all values as a values for Extra fields
+        ArrayList<String> extraValues = new ArrayList<>();
         for (String value : extra.values()) {
             extraValues.add(value);
         }
 
-        createData(ProfilingData.TYPE_CHECKPOINT);
+        createData(ProfilingData.TYPE_CHECKPOINT, extraValues);
     }
 }

@@ -8,6 +8,7 @@ import android.os.BatteryManager;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.TimeZone;
 
 class ProfilingData {
@@ -26,11 +27,11 @@ class ProfilingData {
     private String batteryLevel;
     private String cpuUsage;
 
-    private ArrayList<String> extra;
+    private List<String> extra;
 
     private Intent battery;
 
-    protected ProfilingData(long st, Context ctx, String tp, Intent bat, ArrayList<String> extra) {
+    protected ProfilingData(long st, Context ctx, String tp, Intent bat, List<String> extra) {
         battery = bat;
         type = tp;
         startTime = st;
@@ -77,7 +78,7 @@ class ProfilingData {
         return type;
     }
 
-    protected ArrayList<String> getExtra() {
+    protected List<String> getExtra() {
         return extra;
     }
 
