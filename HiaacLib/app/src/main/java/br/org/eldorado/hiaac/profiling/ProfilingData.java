@@ -127,7 +127,7 @@ class ProfilingData {
 
         double percentUsed = (mi.totalMem - mi.availMem) / (double)mi.totalMem * 100.0;
         ramMB = String.valueOf(usedMegs);
-        ramPercentage = String.format("%.2f", percentUsed);
+        ramPercentage = String.format("%.2f", percentUsed).replace(',', '.');
     }
 
     @Override
