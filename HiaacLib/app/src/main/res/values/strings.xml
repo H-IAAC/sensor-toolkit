@@ -85,6 +85,9 @@
     <string name="settings_server">Environment</string>
     <string name="settings_server_address">Destination</string>
     <string name="settings_server_config">Server Config</string>
+    <string name="settings_custom_server_config">Custom Sever Config</string>
+    <string name="settings_custom_server_dialog_title">Custom Address</string>
+    <string name="settings_custom_server_dialog_message">Put server IP and port (IP:Port)</string>
 
     <string name="settings_collect_title">Collect config</string>
     <string name="settings_collect_summary">Options to customize the collect process.</string>

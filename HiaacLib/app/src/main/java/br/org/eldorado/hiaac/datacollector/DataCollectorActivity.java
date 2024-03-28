@@ -5,6 +5,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.PowerManager;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -77,7 +79,23 @@ public class DataCollectorActivity extends AppCompatActivity {
             public void onReceive(Context c, Intent i) {
                 LabelRecyclerViewAdapter.ViewHolder holder = adapter.getViewHolder(i.getStringExtra("holder"));
                 if (holder != null && !holder.isStarted()) {
-                    adapter.startExecution(holder);
+                    long startsTime = i.getLongExtra("startTime", SensorSDK.getInstance().getRemoteTime()) - SensorSDK.getInstance().getRemoteTime();
+                    new Handler().postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            if (LabelRecyclerViewAdapter.wakeLock != null) {
+                                LabelRecyclerViewAdapter.wakeLock.release();
+                            }
+                            PowerManager powerManager = (PowerManager) getApplicationContext().getSystemService(getApplicationContext().POWER_SERVICE);
+                            PowerManager.WakeLock  wakeLock = powerManager.newWakeLock(PowerManager.FULL_WAKE_LOCK |
+                                    PowerManager.ACQUIRE_CAUSES_WAKEUP |
+                                    PowerManager.ON_AFTER_RELEASE, "HIAACApp::WakeLock");
+
+                            wakeLock.acquire();
+                            adapter.startExecution(holder);
+                        }
+                    }, startsTime);
+
                 }
             }
         };

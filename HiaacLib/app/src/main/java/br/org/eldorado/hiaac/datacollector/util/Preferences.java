@@ -83,8 +83,14 @@ public class Preferences {
         String serverAddr = Preferences.prefs.getString(ctx.getResources().getString(R.string.settings_server_config), "1:2");
         if (serverAddr.equals(getArrayResource(R.array.server_urls, 2))) {
             serverAddr = getGatewayIP();
+        } else if (serverAddr.equals(getArrayResource(R.array.server_urls, 3))) {
+            serverAddr = Preferences.prefs.getString(getResource(R.string.settings_custom_server_config), "192.168.0.1:8080");
         }
         return serverAddr;
+    }
+
+    public static void setCustomServerAddress(String addr) {
+        Preferences.prefs.edit().putString(getResource(R.string.settings_custom_server_config), addr).apply();
     }
 
     public static Integer getPreferredStartDelay() {
