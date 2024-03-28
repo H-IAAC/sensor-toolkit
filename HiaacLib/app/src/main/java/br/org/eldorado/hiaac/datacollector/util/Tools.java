@@ -6,8 +6,18 @@ import android.content.Context;
 import android.util.TypedValue;
 import android.view.View;
 import android.view.animation.AccelerateDecelerateInterpolator;
+
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 import br.org.eldorado.sensoragent.model.Accelerometer;
 import br.org.eldorado.sensoragent.model.AmbientTemperature;
@@ -136,4 +146,69 @@ public class Tools {
     public static String getFileExtension(String filename) {
         return filename.substring(filename.length() - 3);
     }
+
+    public static File zipFile(File source) throws IOException {
+        if (source == null) {
+            throw new IllegalArgumentException("The file to be zipped must not be null!");
+        }
+        File zipFile = null;
+        String zipFileName = source.getName();
+        zipFileName = zipFileName.substring(0, zipFileName.lastIndexOf(".")+1) + "zip";
+        File zipFileDestination = new File(source.getParent(), zipFileName);
+        if (zipFileDestination.exists()) {
+            zipFileDestination.delete();
+        }
+        zipFile = zip(source, zipFileDestination);
+        return zipFile;
+    }
+
+    private static File zip(File source, File zipFile) throws IOException {
+        int relativeStartingPathIndex = zipFile.getAbsolutePath().lastIndexOf("/") + 1;
+        if (source != null && zipFile != null) {
+            try (ZipOutputStream out = new ZipOutputStream(new BufferedOutputStream( new FileOutputStream(zipFile)))) {
+                if (source.isDirectory()) {
+                    zipSubDir(out, source, relativeStartingPathIndex);
+                } else {
+                    try (BufferedInputStream origin = new BufferedInputStream(new FileInputStream(source))) {
+                        zipEntryFile(origin, out, source, relativeStartingPathIndex);
+                    }
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+        return zipFile;
+    }
+
+    private static void zipSubDir(ZipOutputStream out, File dir, int relativeStartingPathIndex) throws IOException {
+
+        File[] files = dir.listFiles();
+        if (files != null) {
+
+            for(File file : files) {
+                if(file.isDirectory()) {
+                    zipSubDir(out, file, relativeStartingPathIndex);
+                } else {
+                    try (BufferedInputStream origin = new BufferedInputStream(new FileInputStream(file))) {
+                        zipEntryFile(origin, out, file, relativeStartingPathIndex);
+                    }
+                }
+            }
+
+        }
+    }
+
+    private static void zipEntryFile(BufferedInputStream origin, ZipOutputStream out, File file, int relativeStartingPathIndex) throws IOException {
+        String relativePath = file.getAbsolutePath().substring(relativeStartingPathIndex);
+        ZipEntry entry = new ZipEntry(relativePath);
+        entry.setTime(file.lastModified()); // to keep modification time after unzipping
+        out.putNextEntry(entry);
+        byte[] data = new byte[2048];
+        int count;
+        while ((count = origin.read(data, 0, 2048)) != -1) {
+            out.write(data, 0, count);
+        }
+    }
+
 }

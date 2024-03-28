@@ -73,7 +73,7 @@ public class CsvFiles {
 
     public static String CsvFileNameConvertTimestamp(String startTime) {
 
-        if (startTime == null) return "time";
+        if (startTime == null || "0".equals(startTime) || "null".equals(startTime)) return "time";
 
         SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd.HHmmss");
 

@@ -234,6 +234,7 @@ public class ExecutionController {
                     //log.d(dataTrack.getLabel() + " Active Threads: " + Thread.activeCount() + "  - " + num++ + " - " + sensor.toString());
 
                     long currentTimestamp = SensorSDK.getInstance().getRemoteTime();
+                    long localCurrentTimestamp = System.currentTimeMillis();
                     if (lastTimestamp == currentTimestamp) return;
                     if (collectedData > 0) {
                         // Ignore 'timestampAverage' when checking the first collectedData

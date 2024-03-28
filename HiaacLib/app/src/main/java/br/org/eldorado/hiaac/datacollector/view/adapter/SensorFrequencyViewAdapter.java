@@ -179,23 +179,48 @@ public class SensorFrequencyViewAdapter extends RecyclerView.Adapter<SensorFrequ
         }
     }
 
+
+    private int nOfCheckedSensors = 0;
     private void handleCheckBox(ViewHolder holder, SelectedSensorFrequency selectedSensorFrequency, AnimatedLinearLayout frequencyContainer) {
         if (GPS.TAG.equals(holder.getSelectSensorCheckBox().getText())) {
             // Check if we have GPS permission
             //gpsHolder = holder;
             checkGPSPermission();
         } else {
+            boolean isSensorAvailable = checkSensorAvailability(selectedSensorFrequency.sensor);
             if (holder.getSelectSensorCheckBox().isChecked()
-                    && checkSensorAvailability(selectedSensorFrequency.sensor)) {
+                    && isSensorAvailable) {
                 selectedSensorFrequency.setSelected(true);
                 frequencyContainer.expand(60);
+                nOfCheckedSensors++;
+                if (nOfCheckedSensors == 3) {
+                    showToManySensorsSelectedWarning();
+                }
             } else {
                 holder.getSelectSensorCheckBox().setChecked(false);
                 selectedSensorFrequency.setSelected(false);
                 frequencyContainer.close();
+
+                if (isSensorAvailable) {
+                    nOfCheckedSensors--;
+                }
             }
+
             notifySensorFrequencyChanged();
         }
+    }
+
+    private void showToManySensorsSelectedWarning() {
+        AlertDialog alert = new AlertDialog.Builder(mContext).setMessage(mContext.getString(R.string.too_many_sensors_checked))
+                .setCancelable(false)
+                .setPositiveButton(mContext.getString(R.string.gps_ok), new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                    }
+                }).create();
+        alert.setTitle(mContext.getString(R.string.dialog_alert_title));
+        alert.show();
     }
 
     public void checkGPSPermission() {

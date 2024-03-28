@@ -146,19 +146,25 @@ public class FirebaseUploadController {
         }).start();
     }
 
-    public void exportToCSV(String uid, long labelId) {
+    public void exportToCSV(final String uid, long labelId) {
         new Thread(new Runnable() {
             @Override
             public void run() {
                 long start = System.currentTimeMillis();
-                log.d("Starting creating csv file labelId: " + labelId + " uid: " + uid);
+                String innerUid = uid;
                 List<LabeledData> labeledData = dbView.getLabeledData(labelId, LabelConfigRepository.TYPE_CSV, 0);
+                log.d("exportToCSV - Starting creating csv file labelId: " + labelId + " uid: " + uid + " size " + labeledData.size());
                 if (labeledData == null || labeledData.size() == 0) {
+                    log.d("exportToCSV - Any data to export! ");
                     fireListener(ERROR, mContext.getString(R.string.error_no_data_create_csc));
                     return;
                 }
+                if (uid == null || "0".equals(uid) || "null".equals(uid)) {
+                    innerUid = labeledData.get(0).getUid();
+                    log.d("exportToCSV - uid was wrong! New uid = " + innerUid);
+                }
                 fireListener(ON_PROGRESS, mContext.getString(R.string.creating_csv_file));
-                File csvFile = csvBuilder.create(labeledData, uid);
+                File csvFile = csvBuilder.create(labeledData, innerUid);
                 labeledData.clear();
                 int index = 0;
                 while ((labeledData = dbView.getLabeledData(labelId, LabelConfigRepository.TYPE_CSV, 0)).size() > 0) {

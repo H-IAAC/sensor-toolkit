@@ -14,6 +14,7 @@
     <string name="share_with_firebase">Would you like to send data to Firebase Server?</string>
     <string name="share_with_firebase_title">Send to Firebase.</string>
     <string name="share_with_server">Would you like to send data to IC Server?</string>
+    <string name="share_with_server_no_files">There are no files to be shared!</string>
     <string name="share_with_server_title">Send to IC Server.</string>
     <string name="download_progress">Uploading . . .  %1$d%%</string>
     <string name="success">Success</string>
@@ -29,6 +30,7 @@
     <string name="add_new_frequency_msg">Choose a new frequency to be added</string>
     <string name="gps_permission_description">To use GPS sensor, application needs the Background permission. If you want to use GPS, please select the Always Use permission.</string>
     <string name="sensor_not_available">This Sensor (%s) is not available on this device!</string>
+    <string name="too_many_sensors_checked">Using too many sensors at same time may cause data loss due to Android limitations.</string>
     <string name="dialog_alert_title">ALERT!</string>
 
     <!-- Notifications -->
@@ -83,6 +85,9 @@
     <string name="settings_server">Environment</string>
     <string name="settings_server_address">Destination</string>
     <string name="settings_server_config">Server Config</string>
+    <string name="settings_custom_server_config">Custom Sever Config</string>
+    <string name="settings_custom_server_dialog_title">Custom Address</string>
+    <string name="settings_custom_server_dialog_message">Put server IP and port (IP:Port)</string>
 
     <string name="settings_collect_title">Collect config</string>
     <string name="settings_collect_summary">Options to customize the collect process.</string>

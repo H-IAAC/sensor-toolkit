@@ -1,5 +1,6 @@
 package br.org.eldorado.hiaac.datacollector.view.adapter;
 
+import static android.content.Context.POWER_SERVICE;
 import static br.org.eldorado.hiaac.datacollector.DataCollectorActivity.LABEL_CONFIG_ACTIVITY_ID;
 import static br.org.eldorado.hiaac.datacollector.DataCollectorActivity.LABEL_CONFIG_ACTIVITY_TYPE;
 import static br.org.eldorado.hiaac.datacollector.DataCollectorActivity.UPDATE_LABEL_CONFIG_ACTIVITY;
@@ -16,8 +17,12 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.res.ColorStateList;
+import android.media.AudioManager;
+import android.media.ToneGenerator;
 import android.os.CountDownTimer;
+import android.os.Handler;
 import android.os.IBinder;
+import android.os.PowerManager;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -43,6 +48,7 @@ import org.json.JSONObject;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -84,7 +90,7 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
     private final int CREATE_CSV_FILE = 1;
     private final int SEND_DATA_TO_HIAAC = 2;
 
-
+    public static PowerManager.WakeLock wakeLock;
     private static final String TAG = "LabelRecyclerViewAdapter";
     private final LayoutInflater mInflater;
     private List<LabelConfig> labelConfigs;
@@ -195,8 +201,28 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
         shareButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                shareButton.setEnabled(false);
-                sendData(holder, SEND_DATA_TO_HIAAC,false, "0");
+                AlertDialog alert = new AlertDialog.Builder(mContext).setMessage(mContext.getString(R.string.
+                                share_with_server))
+                        .setCancelable(false)
+                        .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                dialog.dismiss();
+                                shareButton.setEnabled(false);
+                                sendData(holder, SEND_DATA_TO_HIAAC,false, "0");
+                            }
+                        }
+                        )
+                        .setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+                                dialogInterface.dismiss();
+                            }
+                        })
+                        .create();
+                alert.setTitle(mContext.getString(R.string.share_with_server_title));
+                alert.show();
+
             }
         });
 
@@ -281,13 +307,20 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
                 String action = "br.org.eldorado.schedule_collect_data";
                 Intent i = new Intent(action);
                 i.putExtra("holder", labelConfig.experiment);
+                i.putExtra("startTime", labelConfig.scheduledTime);
+                PowerManager powerManager = (PowerManager) mContext.getSystemService(POWER_SERVICE);
+                wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK,
+                        "DataCollector::ScheduleWakeLock");
+                wakeLock.acquire();
+
                 AlarmManager mgr = (AlarmManager) mContext.getSystemService(Context.ALARM_SERVICE);
                 PendingIntent pi = PendingIntent.getBroadcast(mContext, 0, i, PendingIntent.FLAG_MUTABLE | PendingIntent.FLAG_UPDATE_CURRENT);
-                long startsTime = labelConfig.scheduledTime - SensorSDK.getInstance().getRemoteTime();
-                mgr.setExact(AlarmManager.RTC_WAKEUP, System.currentTimeMillis() + startsTime, pi);
+                long startsTime = labelConfig.scheduledTime - SensorSDK.getInstance().getRemoteTime() - 10000;
+                //mgr.setExact(AlarmManager.RTC_WAKEUP, System.currentTimeMillis() + startsTime, pi);
+                mgr.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, SensorSDK.getInstance().getRemoteTime() + startsTime, pi);
             }
 
-            startButton.setEnabled(false);
+            //startButton.setEnabled(false);
         }
     }
 
@@ -411,6 +444,23 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
     private void sendFilesToServer(List<File> files, ViewHolder holder) {
         log.d("sendFilesToServer - " + files);
         numberOfFilesToUpload = files.size();
+        if (numberOfFilesToUpload == 0) {
+            holder.getShareButton().setEnabled(true);
+            AlertDialog alert = new AlertDialog.Builder(mContext).setMessage(mContext.getString(R.string.
+                            share_with_server_no_files))
+                    .setCancelable(false)
+                    .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    dialog.dismiss();
+                                }
+                            }
+                    )
+                    .create();
+            alert.setTitle(mContext.getString(R.string.share_with_server_title));
+            alert.show();
+            return;
+        }
 
         String experiment = labelConfigs.get(holder.getAdapterPosition()).experiment;
         String activity = labelConfigs.get(holder.getAdapterPosition()).activity;
@@ -452,8 +502,15 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
                 MultipartBody.Part subjectPart =
                         MultipartBody.Part.createFormData("subject", userId);
 
-                log.i("sendFilesToServer sending file: " + file.getName());
-                uploadFile(file, experimentPart, subjectPart, namePart, holder);
+                try {
+                    File zippedFile = Tools.zipFile(file);
+                    log.i("sendFilesToServer sending file: " + file.getName());
+                    log.i("sendFilesToServer File was compressed! Original size: " + Files.size(file.toPath()) + " Compressed Size: " + Files.size(zippedFile.toPath()));
+                    uploadFile(zippedFile, experimentPart, subjectPart, namePart, holder);
+                } catch (IOException e) {
+                    numberOfFilesToUpload--;
+                    e.printStackTrace();
+                }
             } else {
                 // Files different from mp4 and csv arent sent to the server.
                 numberOfFilesToUpload--;
@@ -519,6 +576,9 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
                         break;
                     default:
                         onFailure(call, new Exception("File: " + file.getName() + " -\n" + response.body().toString()));
+                }
+                if (file.getName().endsWith(".zip")) {
+                    file.delete();
                 }
             }
 
@@ -589,6 +649,16 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
             dialog.setMessage("\t 10");
             dialog.setCancelable(false);
 
+            ToneGenerator startBeep = new ToneGenerator(AudioManager.STREAM_RING, 9999);
+            startBeep.startTone(ToneGenerator.TONE_CDMA_ABBR_INTERCEPT, 150);
+            new Handler().postDelayed(new Runnable() {
+                                          @Override
+                                          public void run() {
+                                              startBeep.startTone(ToneGenerator.TONE_CDMA_ABBR_INTERCEPT, 150);
+                                          }
+                                      }, 300);
+
+
             Integer counterStartDelay = Preferences.getPreferredStartDelay() * 1000;
             CountDownTimer countDown = new CountDownTimer(counterStartDelay, 1000) {
                 @Override
@@ -611,6 +681,9 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
                     Intent execServiceIntent = new Intent(mContext, ExecutionService.class);
                     mContext.startForegroundService(execServiceIntent);
                     mContext.bindService(execServiceIntent, svc, Context.BIND_AUTO_CREATE);
+                    ToneGenerator startBeep = new ToneGenerator(AudioManager.STREAM_RING, 9999);
+                    startBeep.startTone(ToneGenerator.TONE_CDMA_ABBR_INTERCEPT, 800);
+
                 }
             };
             try {
@@ -688,6 +761,7 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
         holder.filmButton.setClickable(false);
         holder.shareButton.setClickable(false);
         holder.deleteButton.setClickable(false);
+        holder.deleteButton.setEnabled(false);
         holder.editButton.setClickable(false);
     }
 
@@ -698,6 +772,7 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
         holder.filmButton.setClickable(true);
         holder.shareButton.setClickable(true);
         holder.deleteButton.setClickable(true);
+        holder.deleteButton.setEnabled(true);
         holder.editButton.setClickable(true);
     }
 

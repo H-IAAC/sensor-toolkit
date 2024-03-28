@@ -6,6 +6,8 @@ import androidx.room.Entity;
 import androidx.room.Index;
 import androidx.room.PrimaryKey;
 import com.opencsv.bean.CsvNumber;
+
+import br.org.eldorado.hiaac.BuildConfig;
 import br.org.eldorado.sensoragent.model.SensorBase;
 
 @Entity(indices = {
@@ -35,6 +37,9 @@ public class LabeledData {
     @CsvNumber("#")
     @ColumnInfo(name = "sensor-timestamp")
     private long timestamp;
+
+    @ColumnInfo(name = "sensor-timestamp-local")
+    private long localTimestamp;
 
     @ColumnInfo(name = "sensor-frequency")
     private int frequency;
@@ -68,6 +73,7 @@ public class LabeledData {
         this.sensorName = sensor.getName();
         //this.timestamp = sensor.getTimestamp();
         this.timestamp = timestamp;
+        this.localTimestamp = System.currentTimeMillis();
         this.frequency = sensor.getFrequency();
         this.sensorValues = sensor.getValuesString();
         this.power = sensor.getPower();
@@ -152,6 +158,12 @@ public class LabeledData {
         this.timestamp = timestamp;
     }
 
+    public long getLocalTimestamp() { return localTimestamp; }
+
+    public void setLocalTimestamp(long timestamp) {
+        this.localTimestamp = timestamp;
+    }
+
     public int getFrequency() {
         return frequency;
     }
@@ -186,14 +198,14 @@ public class LabeledData {
 
     public String[] getCSVFormattedString() {
         String[] values = sensorValues.split(",");
-        return new String[]{experiment, sensorName, String.valueOf(power), String.valueOf(frequency), String.valueOf(timestamp),
+        return new String[]{experiment, sensorName, String.valueOf(power), String.valueOf(frequency), String.valueOf(timestamp), String.valueOf(localTimestamp),
                             values[0], values.length > 1 ? values[1] : "-",
-                            values.length > 2 ? values[2] : "-", isValidData() ? "VALID" : "INVALID"};
+                            values.length > 2 ? values[2] : "-", isValidData() ? "VALID" : "INVALID", ""};
     }
 
     public String[] getCSVHeaders() {
         return new String[]{"Experiment Name", "Sensor Name", "Power Consumption (mAh)", "Sensor Frequency (Hz)",
-                            "Timestamp", "Value 1", "Value 2", "Value 3", "Data Status"};
+                            "Timestamp Server", "Timestamp Local", "Value 1", "Value 2", "Value 3", "Data Status", "HIAACApp v" + BuildConfig.HIAAC_VERSION};
     }
 
     public SensorBase getSensor() {

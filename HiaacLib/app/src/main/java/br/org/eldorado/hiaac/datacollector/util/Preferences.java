@@ -2,6 +2,9 @@ package br.org.eldorado.hiaac.datacollector.util;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.net.DhcpInfo;
+import android.net.wifi.WifiManager;
+import android.text.format.Formatter;
 
 import androidx.preference.PreferenceManager;
 
@@ -17,6 +20,7 @@ import br.org.eldorado.hiaac.R;
 public class Preferences {
     private static Context ctx;
     private static SharedPreferences prefs;
+
 
     public static void init(Context ctx) {
         Preferences.ctx = ctx;
@@ -57,6 +61,14 @@ public class Preferences {
         return locations;
     }
 
+    public static String getGatewayIP() {
+        DhcpInfo d;
+        WifiManager wifii;
+        wifii= (WifiManager) ctx.getSystemService(Context.WIFI_SERVICE);
+        d=wifii.getDhcpInfo();
+        return Formatter.formatIpAddress(d.gateway) + ":8080";
+    }
+
     public static void addNewDeviceLocation(String location) {
         Set<String> locationsList = new HashSet<String>();
         locationsList = Preferences.prefs.getStringSet(getResource(R.string.settings_device_locations), locationsList);
@@ -68,7 +80,17 @@ public class Preferences {
     }
 
     public static String getPreferredServer() {
-        return Preferences.prefs.getString(ctx.getResources().getString(R.string.settings_server_config), "1:2");
+        String serverAddr = Preferences.prefs.getString(ctx.getResources().getString(R.string.settings_server_config), "1:2");
+        if (serverAddr.equals(getArrayResource(R.array.server_urls, 2))) {
+            serverAddr = getGatewayIP();
+        } else if (serverAddr.equals(getArrayResource(R.array.server_urls, 3))) {
+            serverAddr = Preferences.prefs.getString(getResource(R.string.settings_custom_server_config), "192.168.0.1:8080");
+        }
+        return serverAddr;
+    }
+
+    public static void setCustomServerAddress(String addr) {
+        Preferences.prefs.edit().putString(getResource(R.string.settings_custom_server_config), addr).apply();
     }
 
     public static Integer getPreferredStartDelay() {
