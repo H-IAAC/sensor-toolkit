@@ -24,7 +24,7 @@
         android:usesCleartextTraffic="true"
         android:largeHeap="true">
         <activity
-            android:configChanges="uiMode"
+            android:configChanges="uiMode|orientation|screenSize"
             android:name=".datacollector.CameraActivity"
             android:exported="false"
             android:theme="@style/Theme.AppCompat" />
