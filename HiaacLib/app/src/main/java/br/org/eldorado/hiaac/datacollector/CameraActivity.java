@@ -29,6 +29,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.os.PowerManager;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
@@ -63,6 +64,7 @@ public class CameraActivity extends AppCompatActivity {
     long labelId;
     private Long startEpochMilli;
     private Long endEpochMilli;
+    private PowerManager.WakeLock mWakeLock;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -83,6 +85,10 @@ public class CameraActivity extends AppCompatActivity {
         } else {
             labelId = (Long) savedInstanceState.getSerializable("LABEL_ID");
         }
+
+        PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
+        mWakeLock = pm.newWakeLock(PowerManager.SCREEN_DIM_WAKE_LOCK | PowerManager.ON_AFTER_RELEASE, "HIAAC:VIDEO_RECORD");
+        mWakeLock.acquire();
 
         viewFinder = findViewById(R.id.viewFinder);
         captureButton = findViewById(R.id.capture_button);
@@ -121,6 +127,12 @@ public class CameraActivity extends AppCompatActivity {
         } else {
             rpl.launch(REQUIRED_PERMISSIONS);
         }
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle savedInstanceState) {
+        super.onSaveInstanceState(savedInstanceState);
+        savedInstanceState.putLong("LABEL_ID", labelId);
     }
 
     @Override
@@ -310,5 +322,13 @@ public class CameraActivity extends AppCompatActivity {
             }
         }
         return true;
+    }
+
+    @Override
+    protected void onDestroy() {
+        if (mWakeLock != null) {
+            mWakeLock.release();
+        }
+        super.onDestroy();
     }
 }
