@@ -25,6 +25,7 @@ import androidx.core.util.Consumer;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.pm.PackageManager;
@@ -56,7 +57,7 @@ public class CameraActivity extends AppCompatActivity {
     private Recording currentRecording;
     private Log log = new Log("H-IAAC Camera");
     ActivityResultLauncher<String[]> rpl;
-    private String[] REQUIRED_PERMISSIONS = new String[]{Manifest.permission.CAMERA, Manifest.permission.RECORD_AUDIO};
+    private String[] REQUIRED_PERMISSIONS = new String[]{Manifest.permission.CAMERA};
     PreviewView viewFinder;
     Button captureButton;
     ExecutorService executor = Executors.newSingleThreadExecutor();
@@ -65,11 +66,13 @@ public class CameraActivity extends AppCompatActivity {
     private Long startEpochMilli;
     private Long endEpochMilli;
     private PowerManager.WakeLock mWakeLock;
+    private Context appContext;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Context ctx = this;
+        appContext = this.getApplicationContext();
 
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
@@ -98,9 +101,10 @@ public class CameraActivity extends AppCompatActivity {
                 try {
                     startFilming(ctx);
                 } catch (Exception e) {
+                    isRecording = false;
                     log.d("Exception while filming: " + e.getMessage());
-                    Toast.makeText(ctx, "Check permissions", Toast.LENGTH_SHORT).show();
-                    setButtonAsStop(captureButton);
+                    Toast.makeText(ctx, "Fail: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    setButtonAsStop();
                 }
             }
         });
@@ -130,15 +134,21 @@ public class CameraActivity extends AppCompatActivity {
     }
 
     @Override
-    public void onSaveInstanceState(Bundle savedInstanceState) {
-        super.onSaveInstanceState(savedInstanceState);
-        savedInstanceState.putLong("LABEL_ID", labelId);
+    public void onPause() {
+        // If activity goes to pause state, and is recording
+        if (isRecording) {
+            // then stop the record
+            Toast.makeText(appContext, "Filming is now stopped!", Toast.LENGTH_LONG).show();
+            stopRecording();
+        }
+        super.onPause();
     }
 
     @Override
     public void onBackPressed() {
         if (isRecording) {
             log.d("Ignore back button while filming");
+            Toast.makeText(appContext, "Can't go back while filming.", Toast.LENGTH_SHORT).show();
         } else {
             super.onBackPressed();
         }
@@ -148,6 +158,7 @@ public class CameraActivity extends AppCompatActivity {
     public boolean onSupportNavigateUp() {
         if (isRecording) {
             log.d("Ignore back button while filming");
+            Toast.makeText(appContext, "Can't go back while filming.", Toast.LENGTH_SHORT).show();
             return false;
         }
 
@@ -206,13 +217,9 @@ public class CameraActivity extends AppCompatActivity {
              new AlertDialog.Builder(ctx)
                     .setMessage(R.string.stop_filming_msg)
                     .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
-
                         public void onClick(DialogInterface dialog, int whichButton) {
                             // Cancel filming
-                            log.d("Stop filming confirmed");
-                            currentRecording.stop();
-                            isRecording = false;
-                            setButtonAsRecord(captureButton);
+                            stopRecording();
                         }})
                     .setNegativeButton(android.R.string.no, null).create().show();
         } else {
@@ -222,7 +229,6 @@ public class CameraActivity extends AppCompatActivity {
 
             currentRecording = ((Recorder) videoCapture.getOutput())
                     .prepareRecording(CameraActivity.this, fileOutputOptions)
-                    .withAudioEnabled()
                     .start(executor, new Consumer<VideoRecordEvent>() {
                         @Override
                         public void accept(VideoRecordEvent videoRecordEvent) {
@@ -261,13 +267,12 @@ public class CameraActivity extends AppCompatActivity {
                                         Toast.makeText(ctx, "Failed to access video metadata", Toast.LENGTH_SHORT).show();
                                     }
                                 }
-
                             }
                         }
                     });
 
             isRecording = true;
-            setButtonAsStop(captureButton);
+            setButtonAsStop();
         }
     }
 
@@ -307,12 +312,18 @@ public class CameraActivity extends AppCompatActivity {
         .show();
     }
 
-    private void setButtonAsRecord(Button button) {
-        button.setBackground(this.getResources().getDrawable(R.drawable.baseline_record_24));
+    private void stopRecording() {
+        log.d("Stop filming confirmed");
+        currentRecording.stop();
+        isRecording = false;
+        setButtonAsRecord();
+    }
+    private void setButtonAsRecord() {
+        captureButton.setBackground(this.getResources().getDrawable(R.drawable.baseline_record_24));
     }
 
-    private void setButtonAsStop(Button button) {
-        button.setBackground(this.getResources().getDrawable(R.drawable.baseline_stop_24));
+    private void setButtonAsStop() {
+        captureButton.setBackground(this.getResources().getDrawable(R.drawable.baseline_stop_24));
     }
 
     private boolean allPermissionsGranted() {
@@ -330,5 +341,11 @@ public class CameraActivity extends AppCompatActivity {
             mWakeLock.release();
         }
         super.onDestroy();
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle savedInstanceState) {
+        super.onSaveInstanceState(savedInstanceState);
+        savedInstanceState.putLong("LABEL_ID", labelId);
     }
 }
