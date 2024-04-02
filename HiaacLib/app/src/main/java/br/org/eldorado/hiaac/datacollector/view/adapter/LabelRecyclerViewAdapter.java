@@ -159,6 +159,8 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
         String labelTitle = labelConfig.experiment;
         holdersMap.put(labelTitle, holder);
 
+        holder.getExpCard().setCardBackgroundColor(holder.getExpCardColor());
+
         mLabelConfigViewModel = ViewModelProvider.AndroidViewModelFactory
                 .getInstance((Application)mContext.getApplicationContext()).create(LabelConfigViewModel.class);
 
@@ -315,6 +317,7 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
 
                 AlarmManager mgr = (AlarmManager) mContext.getSystemService(Context.ALARM_SERVICE);
                 PendingIntent pi = PendingIntent.getBroadcast(mContext, 0, i, PendingIntent.FLAG_MUTABLE | PendingIntent.FLAG_UPDATE_CURRENT);
+                mgr.cancel(pi);
                 long startsTime = labelConfig.scheduledTime - SensorSDK.getInstance().getRemoteTime() - 10000;
                 //mgr.setExact(AlarmManager.RTC_WAKEUP, System.currentTimeMillis() + startsTime, pi);
                 mgr.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, SensorSDK.getInstance().getRemoteTime() + startsTime, pi);
