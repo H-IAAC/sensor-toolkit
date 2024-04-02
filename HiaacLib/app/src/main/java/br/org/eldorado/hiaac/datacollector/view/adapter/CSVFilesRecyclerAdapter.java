@@ -2,6 +2,7 @@ package br.org.eldorado.hiaac.datacollector.view.adapter;
 
 import android.content.ActivityNotFoundException;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.view.LayoutInflater;
@@ -11,6 +12,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.cardview.widget.CardView;
 import androidx.core.content.FileProvider;
 import androidx.lifecycle.LifecycleOwner;
@@ -27,6 +29,7 @@ import br.org.eldorado.hiaac.datacollector.data.ExperimentStatistics;
 import br.org.eldorado.hiaac.datacollector.data.LabelConfigRepository;
 import br.org.eldorado.hiaac.datacollector.util.CsvFiles;
 import br.org.eldorado.hiaac.datacollector.util.Log;
+import br.org.eldorado.hiaac.datacollector.util.Preferences;
 import br.org.eldorado.hiaac.datacollector.util.Tools;
 
 public class CSVFilesRecyclerAdapter extends RecyclerView.Adapter<CSVFilesRecyclerAdapter.ViewHolder> {
@@ -96,19 +99,22 @@ public class CSVFilesRecyclerAdapter extends RecyclerView.Adapter<CSVFilesRecycl
         holder.getDeleteBtn().setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String clickedFileName = csvFileList.get(holder.getAdapterPosition()).getName();
-
-                // If needs to delete a .csv file, then data from db must be removed also.
-                if ("csv".equals(Tools.getFileExtension(clickedFileName))) {
-                    CsvFiles.CsvFileName csvFileName = CsvFiles.decomposeFileName(clickedFileName);
-                    String startTimeEpoch = CsvFiles.CsvFileNameConvertTimestamp(csvFileName.startTime);
-                    mRepository.deleteExperimentStatistics(configId, startTimeEpoch.substring(0, 9) + '%');
-                }
-
-                csvFileList.remove(holder.getAdapterPosition());
-                csvFile.delete();
-
-                notifyItemRemoved(holder.getAdapterPosition());
+                AlertDialog dialog = new AlertDialog.Builder(mContext)
+                        .setTitle(mContext.getString(R.string.delete_experiment_file_title))
+                        .setMessage(mContext.getString(R.string.delete_experiment_file, csvFile.getName()))
+                        .setPositiveButton(mContext.getString(R.string.button_ok), new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                deleteFile(holder, csvFile);
+                            }
+                        }).setNegativeButton(mContext.getString(R.string.button_cancel), new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+                                dialogInterface.dismiss();
+                            }
+                        })
+                        .create();
+                dialog.show();
             }
         });
 
@@ -142,6 +148,22 @@ public class CSVFilesRecyclerAdapter extends RecyclerView.Adapter<CSVFilesRecycl
             // Hide statistics button for non-csv files.
             holder.getStatisticsBtn().setVisibility(View.INVISIBLE);
         }
+    }
+
+    private void deleteFile(ViewHolder holder, File csvFile) {
+        String clickedFileName = csvFileList.get(holder.getAdapterPosition()).getName();
+
+        // If needs to delete a .csv file, then data from db must be removed also.
+        if ("csv".equals(Tools.getFileExtension(clickedFileName))) {
+            CsvFiles.CsvFileName csvFileName = CsvFiles.decomposeFileName(clickedFileName);
+            String startTimeEpoch = CsvFiles.CsvFileNameConvertTimestamp(csvFileName.startTime);
+            mRepository.deleteExperimentStatistics(configId, startTimeEpoch.substring(0, 9) + '%');
+        }
+
+        csvFileList.remove(holder.getAdapterPosition());
+        csvFile.delete();
+
+        notifyItemRemoved(holder.getAdapterPosition());
     }
 
     @Override

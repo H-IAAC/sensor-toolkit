@@ -7,6 +7,7 @@
     <string name="previous">Previous</string>
 
     <string name="server_time">Server Time: </string>
+    <string name="local_time">Local Time: </string>
     <string name="csv_files">Files:</string>
     <string name="creating_csv_file">Creating CSV File . . .</string>
     <string name="before_create_csv_file">Finishing getting data to create CSV file. Please wait . . .</string>
@@ -78,6 +79,10 @@
     <string name="statistics_collect_timestamp">Time frame details:</string>
     <string name="statistics_samples">Samples:</string>
     <string name="conflict">CONFLICT</string>
+
+
+    <string name="delete_experiment_file_title">Delete File</string>
+    <string name="delete_experiment_file">Would you like to delete this file? (%s)</string>
 
     <string name="settings_upload_title">File upload</string>
     <string name="settings_upload_summary">Choose where collected data should be sent.</string>

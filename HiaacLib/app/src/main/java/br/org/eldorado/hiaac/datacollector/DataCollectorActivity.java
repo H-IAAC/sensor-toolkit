@@ -62,6 +62,8 @@ public class DataCollectorActivity extends AppCompatActivity {
     private BroadcastReceiver br;
     private Log log;
     private Context appContext;
+    private boolean updateTimeFail;
+    private ApiInterface apiInterface;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -143,11 +145,7 @@ public class DataCollectorActivity extends AppCompatActivity {
 
         serverTimeTxt = findViewById(R.id.server_time);
         df = new SimpleDateFormat("HH:mm:ss");
-        ClientAPI api = new ClientAPI();
-        String address = Preferences.getPreferredServer().split(":")[0];
-        String port = Preferences.getPreferredServer().split(":")[1];
-        ApiInterface apiInterface = api.getClient(address, port).create(ApiInterface.class);
-        updateServerTime(apiInterface);
+        updateServerTime();
     }
 
     @Override
@@ -172,7 +170,12 @@ public class DataCollectorActivity extends AppCompatActivity {
         }
     }
 
-    private void updateServerTime(ApiInterface apiInterface) {
+    private void updateServerTime() {
+        updateTimeFail = false;
+        ClientAPI api = new ClientAPI();
+        String address = Preferences.getPreferredServer().split(":")[0];
+        String port = Preferences.getPreferredServer().split(":")[1];
+        apiInterface = api.getClient(address, port).create(ApiInterface.class);
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -182,6 +185,10 @@ public class DataCollectorActivity extends AppCompatActivity {
                     while (true) {
                         /** Resync with server every 2 minutes */
                         if (resync++ % 2 == 0) {
+                            String address = Preferences.getPreferredServer();
+                            if (!api.getAddress().equals(address)) {
+                                apiInterface = api.getClient(address.split(":")[0], address.split(":")[1]).create(ApiInterface.class);
+                            }
                             Call<JsonObject> call = apiInterface.getServerTime();
                             call.enqueue(new Callback<JsonObject>() {
                                 @Override
@@ -189,6 +196,7 @@ public class DataCollectorActivity extends AppCompatActivity {
                                     long timeInMillis = response.body().get("currentTimeMillis").getAsLong();
                                     SensorSDK.getInstance().setRemoteTime(timeInMillis +
                                             (response.raw().receivedResponseAtMillis() - response.raw().sentRequestAtMillis())/2);
+                                    updateTimeFail = false;
                                     //setRemoteTimeText(SensorSDK.getInstance().getRemoteTime());
                                     /*if (isActivityVisible) {
                                         runOnUiThread(new Runnable() {
@@ -201,8 +209,9 @@ public class DataCollectorActivity extends AppCompatActivity {
                                 }
                                 @Override
                                 public void onFailure(Call<JsonObject> call, Throwable t) {
-                                    Toast.makeText(appContext, "Time sync failed", Toast.LENGTH_SHORT).show();
-                                    log.d("Get ServerTime failed: " + t.getCause());
+                                    updateTimeFail = true;
+                                    //Toast.makeText(appContext, "Time sync failed", Toast.LENGTH_SHORT).show();
+                                    log.d("Get ServerTime failed at: " + Preferences.getPreferredServer() + " " + t.getCause());
                                     call.cancel();
                                 }
                             });
@@ -252,7 +261,11 @@ public class DataCollectorActivity extends AppCompatActivity {
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    serverTimeTxt.setText(getString(R.string.server_time) + " " + time);
+                    if (updateTimeFail) {
+                        serverTimeTxt.setText(getString(R.string.local_time) + " " + time);
+                    } else {
+                        serverTimeTxt.setText(getString(R.string.server_time) + " " + time);
+                    }
                 }
             });
         }
