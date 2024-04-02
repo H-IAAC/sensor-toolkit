@@ -11,9 +11,17 @@ import retrofit2.converter.gson.GsonConverterFactory;
 public class ClientAPI {
 
     private static Retrofit retrofit = null;
+    private String address, port;
 
-    public static Retrofit getClient(String address, String port) {
+    public String getAddress() {
+        return address+":"+port;
+    }
+
+    public Retrofit getClient(String addr, String pt) {
+        address = addr;
+        port = pt;
         HttpLoggingInterceptor interceptor = new HttpLoggingInterceptor();
+        //interceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
         interceptor.setLevel(HttpLoggingInterceptor.Level.NONE);
         OkHttpClient client = new OkHttpClient.Builder()
                 .addInterceptor(interceptor)

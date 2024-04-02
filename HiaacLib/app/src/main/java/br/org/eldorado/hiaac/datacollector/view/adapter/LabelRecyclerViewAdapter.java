@@ -544,10 +544,12 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
                 builder.setTitle("Error");
                 String message = filename + "\n" + errorMessage;
                 builder.setMessage(message);
+                builder.setIcon(R.drawable.ic_baseline_error);
             } else {
                 builder.setTitle("Success");
+                builder.setIcon(R.drawable.ic_baseline_success);
             }
-            builder.setIcon(R.drawable.ic_baseline_success);
+
             AlertDialog dl = builder.create();
             dl.show();
             holder.getShareButton().setEnabled(true);

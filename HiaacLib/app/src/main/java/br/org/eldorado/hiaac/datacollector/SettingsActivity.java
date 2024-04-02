@@ -13,6 +13,8 @@ import androidx.preference.ListPreference;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
 import br.org.eldorado.hiaac.R;
+import br.org.eldorado.hiaac.datacollector.api.ApiInterface;
+import br.org.eldorado.hiaac.datacollector.api.ClientAPI;
 import br.org.eldorado.hiaac.datacollector.util.Preferences;
 
 public class SettingsActivity extends AppCompatActivity {
@@ -59,12 +61,19 @@ public class SettingsActivity extends AppCompatActivity {
             actualSelectedServerAddressValue = ((ListPreference)preference).getValue();
             if ("custom:8080".equals(newValue)) {
                 showServerAddressDialog(getContext());
+                return true;
             }
+            serverAddressPreference.setValue((String)newValue);
             return true;
         }
 
+
+
         private void showServerAddressDialog(Context c) {
             final EditText serverAddress = new EditText(c);
+            if (actualSelectedServerAddress.equalsIgnoreCase("custom")) {
+                serverAddress.setText(Preferences.getPreferredServer());
+            }
             AlertDialog dialog = new AlertDialog.Builder(c)
                     .setTitle(getString(R.string.settings_custom_server_dialog_title))
                     .setMessage(getString(R.string.settings_custom_server_dialog_message))
@@ -76,18 +85,17 @@ public class SettingsActivity extends AppCompatActivity {
                             try {
                                 if (addr.split(":").length == 2) {
                                     Preferences.setCustomServerAddress(addr);
+                                    serverAddressPreference.setValue("custom:8080");
                                     return;
                                 }
                             } catch (Exception e) {
                                 e.printStackTrace();
                             }
-                            serverAddressPreference.setSummary(actualSelectedServerAddress);
                             serverAddressPreference.setValue(actualSelectedServerAddressValue);
                         }
                     }).setNegativeButton(getString(R.string.button_cancel), new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialogInterface, int i) {
-                            serverAddressPreference.setSummary(actualSelectedServerAddress);
                             serverAddressPreference.setValue(actualSelectedServerAddressValue);
                         }
                     })
