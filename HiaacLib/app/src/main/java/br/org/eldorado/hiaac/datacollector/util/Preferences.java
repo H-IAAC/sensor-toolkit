@@ -5,6 +5,9 @@ import android.content.SharedPreferences;
 import android.net.DhcpInfo;
 import android.net.wifi.WifiManager;
 import android.text.format.Formatter;
+import android.util.Patterns;
+import android.webkit.URLUtil;
+import android.widget.Toast;
 
 import androidx.preference.PreferenceManager;
 
@@ -81,22 +84,43 @@ public class Preferences {
     }
 
     public static String getPreferredServer() {
-        String serverAddr = "1:2";
-        try {
-            serverAddr = Preferences.prefs.getString(ctx.getResources().getString(R.string.settings_server_config), "1:2");
-            if (serverAddr.equals(getArrayResource(R.array.server_urls, 2))) {
-                serverAddr = getGatewayIP();
-            } else if (serverAddr.equals(getArrayResource(R.array.server_urls, 3))) {
-                serverAddr = Preferences.prefs.getString(getResource(R.string.settings_custom_server_config), "192.168.0.1:8080");
-            }
-        } catch (Exception e) {
-            log.d("Failed to get preferred server config: " + e.getMessage());
+
+        String optionSelected = Preferences.prefs.getString(getResource(R.string.settings_server_config), "default");
+        String localhost = "" + getArrayResource(R.array.server_urls, 2);
+        String custom = "" + getArrayResource(R.array.server_urls, 3);
+        String ret;
+
+        if (optionSelected.equals(localhost)) {
+            ret = getGatewayIP();
+        } else if (optionSelected.equals(custom)) {
+            ret = Preferences.prefs.getString(getResource(R.string.settings_custom_server_config), "");
+        } else {
+            ret = Preferences.prefs.getString(getResource(R.string.settings_server_config), "");
         }
-        return serverAddr;
+
+        if (!Patterns.WEB_URL.matcher("http://" + ret).matches()) {
+            log.d("Invalid server URL configured: " + ret);
+            ret = "127.0.0.1:8080";
+        }
+
+        return ret;
     }
 
-    public static void setCustomServerAddress(String addr) {
+    public static Boolean setCustomServerAddress(String addr) {
+
+        if (!(addr.split(":").length == 2) ||
+            !Patterns.WEB_URL.matcher("http://" + addr).matches()) {
+            Toast.makeText(ctx, "Invalid address: " + addr, Toast.LENGTH_LONG).show();
+
+            return false;
+        }
+
         Preferences.prefs.edit().putString(getResource(R.string.settings_custom_server_config), addr).apply();
+
+        String address = Preferences.getPreferredServer();
+        Toast.makeText(ctx, "Server address: " + address, Toast.LENGTH_LONG).show();
+
+        return true;
     }
 
     public static Integer getPreferredStartDelay() {
