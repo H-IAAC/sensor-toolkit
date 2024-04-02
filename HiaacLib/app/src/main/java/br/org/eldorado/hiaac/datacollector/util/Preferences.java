@@ -20,11 +20,12 @@ import br.org.eldorado.hiaac.R;
 public class Preferences {
     private static Context ctx;
     private static SharedPreferences prefs;
-
+    private static Log log;
 
     public static void init(Context ctx) {
         Preferences.ctx = ctx;
         Preferences.prefs = PreferenceManager.getDefaultSharedPreferences(ctx);
+        log = new Log("Preferences");
 
         if (notContains(R.string.settings_server_config)) {
             String server = getArrayResource(R.array.server_urls, 0);
@@ -81,13 +82,15 @@ public class Preferences {
 
     public static String getPreferredServer() {
         String serverAddr = "1:2";
-        if (ctx != null) {
+        try {
             serverAddr = Preferences.prefs.getString(ctx.getResources().getString(R.string.settings_server_config), "1:2");
             if (serverAddr.equals(getArrayResource(R.array.server_urls, 2))) {
                 serverAddr = getGatewayIP();
             } else if (serverAddr.equals(getArrayResource(R.array.server_urls, 3))) {
                 serverAddr = Preferences.prefs.getString(getResource(R.string.settings_custom_server_config), "192.168.0.1:8080");
             }
+        } catch (Exception e) {
+            log.d("Failed to get preferred server config: " + e.getMessage());
         }
         return serverAddr;
     }

@@ -25,6 +25,7 @@ public class SettingsActivity extends AppCompatActivity {
             getSupportActionBar().setTitle(R.string.action_settings);
         }
 
+        Preferences.init(this.getApplicationContext());
         setContentView(R.layout.activity_settings);
 
         // Insert the settings fragment in the FrameLayout we added earlier

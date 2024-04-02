@@ -7,6 +7,7 @@ import static br.org.eldorado.hiaac.datacollector.DataCollectorActivity.NEW_LABE
 import static br.org.eldorado.hiaac.datacollector.DataCollectorActivity.UPDATE_LABEL_CONFIG_ACTIVITY;
 import static br.org.eldorado.hiaac.datacollector.view.adapter.SensorFrequencyViewAdapter.frequencyOptions;
 
+import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.TimePickerDialog;
@@ -124,6 +125,7 @@ public class LabelOptionsActivity extends AppCompatActivity {
     private CheckBox mSendFilesToServer;
     private EditText mUserIdTxt;
     private TextView mWarnTxt;
+    @SuppressLint("RestrictedApi")
     private ActionMenuItemView mLoadConfigBtn;
     private static final String TAG = "LabelOptionsActivity";
     private Log log;
@@ -148,6 +150,7 @@ public class LabelOptionsActivity extends AppCompatActivity {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         }
         log = new Log(TAG);
+        Preferences.init(this.getApplicationContext());
         setContentView(R.layout.activity_label_options);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         mLabelTile = findViewById(R.id.edit_label_name);
@@ -658,7 +661,7 @@ public class LabelOptionsActivity extends AppCompatActivity {
             }
             @Override
             public void onFailure(Call<JsonObject> call, Throwable t) {
-                t.printStackTrace();
+                log.d("Get Experiments list from server failed: " + t.getCause());
                 call.cancel();
                 runOnUiThread(new Runnable() {
                     @Override
@@ -726,7 +729,7 @@ public class LabelOptionsActivity extends AppCompatActivity {
                 }
                 @Override
                 public void onFailure(Call<JsonObject> call, Throwable t) {
-                    t.printStackTrace();
+                    log.d("Get Configs from server failed: " + t.getCause());
                     call.cancel();
                     runOnUiThread(new Runnable() {
                         @Override

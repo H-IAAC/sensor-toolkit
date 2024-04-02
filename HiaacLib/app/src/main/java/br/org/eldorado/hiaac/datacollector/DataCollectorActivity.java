@@ -12,6 +12,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.Observer;
@@ -37,6 +38,7 @@ import br.org.eldorado.hiaac.datacollector.data.ExperimentStatistics;
 import br.org.eldorado.hiaac.datacollector.data.LabelConfig;
 import br.org.eldorado.hiaac.datacollector.data.LabelConfigViewModel;
 import br.org.eldorado.hiaac.datacollector.data.SensorFrequency;
+import br.org.eldorado.hiaac.datacollector.util.Log;
 import br.org.eldorado.hiaac.datacollector.util.Preferences;
 import br.org.eldorado.hiaac.datacollector.view.adapter.LabelRecyclerViewAdapter;
 import br.org.eldorado.sensorsdk.SensorSDK;
@@ -58,6 +60,8 @@ public class DataCollectorActivity extends AppCompatActivity {
     private DateFormat df;
     private LabelRecyclerViewAdapter adapter;
     private BroadcastReceiver br;
+    private Log log;
+    private Context appContext;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -65,6 +69,10 @@ public class DataCollectorActivity extends AppCompatActivity {
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         }
+
+        appContext = this.getApplicationContext();
+        Preferences.init(this.getApplicationContext());
+        log = new Log("DataCollectorActivity");
 
         setContentView(R.layout.data_collector_activity_main);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
@@ -193,7 +201,8 @@ public class DataCollectorActivity extends AppCompatActivity {
                                 }
                                 @Override
                                 public void onFailure(Call<JsonObject> call, Throwable t) {
-                                    t.printStackTrace();
+                                    Toast.makeText(appContext, "Time sync failed", Toast.LENGTH_SHORT).show();
+                                    log.d("Get ServerTime failed: " + t.getCause());
                                     call.cancel();
                                 }
                             });
