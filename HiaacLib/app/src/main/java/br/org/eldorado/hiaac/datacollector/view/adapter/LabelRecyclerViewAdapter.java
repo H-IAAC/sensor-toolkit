@@ -159,8 +159,6 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
         String labelTitle = labelConfig.experiment;
         holdersMap.put(labelTitle, holder);
 
-        holder.getExpCard().setCardBackgroundColor(holder.getExpCardColor());
-
         mLabelConfigViewModel = ViewModelProvider.AndroidViewModelFactory
                 .getInstance((Application)mContext.getApplicationContext()).create(LabelConfigViewModel.class);
 
@@ -643,8 +641,6 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
             public void onServiceDisconnected(ComponentName name) {}
         };
         log.d("startExecution - disabling start button");
-        holder.getExpCard().setCardBackgroundColor(ContextCompat.getColor(mContext, R.color.inprogress));
-
         //execService.setRemoteTime(System.currentTimeMillis() + (1000*60*60));
 
         if (execService.isRunning() == null) {
@@ -760,6 +756,8 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
     }
 
     private void setAsStop(Button button, LabelRecyclerViewAdapter.ViewHolder holder) {
+        holder.getExpCard().setCardBackgroundColor(ContextCompat.getColor(mContext, R.color.inprogress));
+
         button.setText(mContext.getResources().getString(R.string.stop));
         button.setBackgroundTintList(mContext.getResources().getColorStateList(android.R.color.holo_red_light));
 
@@ -771,6 +769,8 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
     }
 
     private void setAsStart(Button button, LabelRecyclerViewAdapter.ViewHolder holder) {
+        holder.getExpCard().setCardBackgroundColor(holder.getExpCardColor());
+
         button.setText(mContext.getResources().getString(R.string.start));
         button.setBackgroundTintList(mContext.getResources().getColorStateList(android.R.color.holo_green_light));
 
@@ -921,7 +921,6 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
                     log.d("MyExecutionListener - onError - " + message);
                     holder.getEditButton().setEnabled(true);
                     setAsStart(holder.getStartButton(), holder);
-                    holder.getExpCard().setCardBackgroundColor(holder.getExpCardColor());
                     AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
                     builder.setTitle("Error");
                     builder.setMessage(message);
@@ -954,7 +953,6 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
                                         execService.stopForeground(true);*/
                         holder.getEditButton().setEnabled(true);
                         setAsStart(holder.getStartButton(), holder);
-                        holder.getExpCard().setCardBackgroundColor(holder.getExpCardColor());
                         holder.getLabelTimer().setText(
                                 Tools.getFormatedTime(labelConfigs.get(holder.getAdapterPosition()).stopTime, Tools.CHRONOMETER));
 
@@ -1004,9 +1002,9 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
                     log.d("MyExecutionListener - disbling buttons");
                     holder.getEditButton().setEnabled(false);
                     setAsStop(holder.getStartButton(), holder);
-                    holder.getExpCard().setCardBackgroundColor(ContextCompat.getColor(mContext, R.color.inprogress));
                 }
             });
         }
+
     }
 }
