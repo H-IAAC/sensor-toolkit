@@ -82,16 +82,9 @@ public class SettingsActivity extends AppCompatActivity {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
                             String addr = String.valueOf(serverAddress.getText());
-                            try {
-                                if (addr.split(":").length == 2) {
-                                    Preferences.setCustomServerAddress(addr);
-                                    serverAddressPreference.setValue("custom:8080");
-                                    return;
-                                }
-                            } catch (Exception e) {
-                                e.printStackTrace();
+                            if (!Preferences.setCustomServerAddress(addr)) {
+                                serverAddressPreference.setValue(actualSelectedServerAddressValue);
                             }
-                            serverAddressPreference.setValue(actualSelectedServerAddressValue);
                         }
                     }).setNegativeButton(getString(R.string.button_cancel), new DialogInterface.OnClickListener() {
                         @Override
