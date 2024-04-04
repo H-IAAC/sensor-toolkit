@@ -64,6 +64,7 @@ public class DataCollectorActivity extends AppCompatActivity {
     private Context appContext;
     private boolean updateTimeFail;
     private ApiInterface apiInterface;
+    private Thread syncServerTimeThread, updateTimeLabelThread;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -168,6 +169,12 @@ public class DataCollectorActivity extends AppCompatActivity {
         if (br != null) {
             unregisterReceiver(br);
         }
+        if (syncServerTimeThread != null) {
+            syncServerTimeThread.interrupt();
+        }
+        if (updateTimeLabelThread != null) {
+            updateTimeLabelThread.interrupt();
+        }
     }
 
     private void updateServerTime() {
@@ -176,15 +183,17 @@ public class DataCollectorActivity extends AppCompatActivity {
         String address = Preferences.getPreferredServer().split(":")[0];
         String port = Preferences.getPreferredServer().split(":")[1];
         apiInterface = api.getClient(address, port).create(ApiInterface.class);
-        new Thread(new Runnable() {
+        syncServerTimeThread = new Thread(new Runnable() {
             @Override
             public void run() {
+                log.i("Update Server Time - Starting Thread");
                 try {
                     int resync = 0;
                     Date date = new Date(System.currentTimeMillis());
                     while (true) {
                         /** Resync with server every 2 minutes */
                         if (resync++ % 2 == 0) {
+                            log.i("Update Server Time - Resynchronizing server time");
                             String address = Preferences.getPreferredServer();
                             if (!api.getAddress().equals(address)) {
                                 apiInterface = api.getClient(address.split(":")[0], address.split(":")[1]).create(ApiInterface.class);
@@ -237,8 +246,8 @@ public class DataCollectorActivity extends AppCompatActivity {
                     e.printStackTrace();
                 }
             }
-        }).start();
-        new Thread(new Runnable() {
+        });
+        updateTimeLabelThread = new Thread(new Runnable() {
             @Override
             public void run() {
                 while (true) {
@@ -251,7 +260,9 @@ public class DataCollectorActivity extends AppCompatActivity {
                     }
                 }
             }
-        }).start();
+        });
+        syncServerTimeThread.start();
+        updateTimeLabelThread.start();
     }
 
     private void setRemoteTimeText(long timeInMillis) {
