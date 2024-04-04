@@ -297,6 +297,18 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
 
         checkExecution(holder);
 
+        configureScheduler(labelConfig);
+    }
+
+    private void configureScheduler(LabelConfig labelConfig) {
+        String action = "br.org.eldorado.schedule_collect_data";
+        Intent i = new Intent(action);
+        i.putExtra("holder", labelConfig.experiment);
+        i.putExtra("startTime", labelConfig.scheduledTime);
+        AlarmManager mgr = (AlarmManager) mContext.getSystemService(Context.ALARM_SERVICE);
+        PendingIntent pi = PendingIntent.getBroadcast(mContext, 0, i, PendingIntent.FLAG_MUTABLE | PendingIntent.FLAG_UPDATE_CURRENT);
+        mgr.cancel(pi);
+
         if (labelConfig.scheduledTime > 0) {
             Calendar c = Calendar.getInstance();
             c.setTimeInMillis(labelConfig.scheduledTime);
@@ -304,24 +316,15 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
             Calendar now = Calendar.getInstance();
             now.setTimeInMillis(SensorSDK.getInstance().getRemoteTime());
             if (c.after(now)) {
-                String action = "br.org.eldorado.schedule_collect_data";
-                Intent i = new Intent(action);
-                i.putExtra("holder", labelConfig.experiment);
-                i.putExtra("startTime", labelConfig.scheduledTime);
                 PowerManager powerManager = (PowerManager) mContext.getSystemService(POWER_SERVICE);
                 wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK,
                         "DataCollector::ScheduleWakeLock");
                 wakeLock.acquire();
-
-                AlarmManager mgr = (AlarmManager) mContext.getSystemService(Context.ALARM_SERVICE);
-                PendingIntent pi = PendingIntent.getBroadcast(mContext, 0, i, PendingIntent.FLAG_MUTABLE | PendingIntent.FLAG_UPDATE_CURRENT);
-                mgr.cancel(pi);
-                long startsTime = labelConfig.scheduledTime - SensorSDK.getInstance().getRemoteTime() - 10000;
+                log.i("Scheduling start for " + labelConfig.experiment + " at " + c.getTime().toString());
+                long startsTime = labelConfig.scheduledTime - SensorSDK.getInstance().getRemoteTime() - 7000;
                 //mgr.setExact(AlarmManager.RTC_WAKEUP, System.currentTimeMillis() + startsTime, pi);
                 mgr.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, SensorSDK.getInstance().getRemoteTime() + startsTime, pi);
             }
-
-            //startButton.setEnabled(false);
         }
     }
 
@@ -607,9 +610,18 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
         return null;
     }
 
+    private boolean labelConfigContains(ViewHolder holder) {
+        for (LabelConfig lbl : labelConfigs) {
+            if (lbl.experiment.equals(holder.getLabelTitle().getText())
+                    && lbl.activity.equals(holder.getLabelActivity().getText()))
+                return true;
+        }
+        return false;
+    }
+
     private AlertDialog dialog;
     public void startExecution(ViewHolder holder) {
-        if (holder.isStarted() || (execService != null && execService.isRunning() != null)) return;
+        if (!labelConfigContains(holder) || holder.isStarted() || (execService != null && execService.isRunning() != null)) return;
         holder.setStarted(true);
         svc = new ServiceConnection() {
             @Override
