@@ -54,7 +54,7 @@ public class ExecutionService extends Service {
 
     private void initService() {
         log.d("initService");
-        setRemoteTime(System.currentTimeMillis());
+        //setRemoteTime(System.currentTimeMillis());
         NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         String channelId = createNotificationChannel(notificationManager);
         NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this, channelId);
@@ -120,7 +120,7 @@ public class ExecutionService extends Service {
             ExecutionController.getInstance().stopExecution(dataTrack);
             sendNotification(dataTrack);
             dataTrack = null;
-            setRemoteTime(System.currentTimeMillis());
+            //setRemoteTime(System.currentTimeMillis());
             stopForeground(true);
         }
     }

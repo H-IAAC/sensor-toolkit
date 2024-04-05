@@ -25,9 +25,9 @@ public class ClientAPI {
         interceptor.setLevel(HttpLoggingInterceptor.Level.NONE);
         OkHttpClient client = new OkHttpClient.Builder()
                 .addInterceptor(interceptor)
-                .readTimeout(5, TimeUnit.MINUTES)
+                .readTimeout(20, TimeUnit.SECONDS)
                 .callTimeout(5, TimeUnit.MINUTES)
-                .connectTimeout(5, TimeUnit.MINUTES)
+                .connectTimeout(10, TimeUnit.SECONDS)
                 .writeTimeout(5, TimeUnit.MINUTES)
                 .build();
 
