@@ -50,6 +50,7 @@ import java.util.concurrent.Executors;
 import br.org.eldorado.hiaac.R;
 import br.org.eldorado.hiaac.datacollector.util.Tools;
 import br.org.eldorado.hiaac.datacollector.util.VideoMetadata;
+import br.org.eldorado.sensorsdk.SensorSDK;
 import br.org.eldorado.sensorsdk.util.Log;
 
 public class CameraActivity extends AppCompatActivity {
@@ -233,10 +234,10 @@ public class CameraActivity extends AppCompatActivity {
                         @Override
                         public void accept(VideoRecordEvent videoRecordEvent) {
                             if (videoRecordEvent instanceof VideoRecordEvent.Start) {
-                                startEpochMilli = Instant.now().toEpochMilli();
+                                startEpochMilli = SensorSDK.getInstance().getRemoteTime();
                             }
                             else if (videoRecordEvent instanceof VideoRecordEvent.Finalize) {
-                                endEpochMilli = Instant.now().toEpochMilli();
+                                endEpochMilli = SensorSDK.getInstance().getRemoteTime();
 
                                 // Filming has stop
                                 currentRecording = null;
