@@ -153,7 +153,7 @@ public class DataCollectorActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         isActivityVisible = true;
-        setRemoteTimeText(SensorSDK.getInstance().getRemoteTime());
+        syncServerTime(new ClientAPI());
         adapter.notifyDataSetChanged();
     }
 
@@ -177,8 +177,34 @@ public class DataCollectorActivity extends AppCompatActivity {
         }
     }
 
+
+    private void syncServerTime(ClientAPI api) {
+        log.i("Update Server Time - Resynchronizing server time");
+        String address = Preferences.getPreferredServer();
+        if (!api.getAddress().equals(address)) {
+            apiInterface = api.getClient(address.split(":")[0], address.split(":")[1]).create(ApiInterface.class);
+        }
+        Call<JsonObject> call = apiInterface.getServerTime();
+        call.enqueue(new Callback<JsonObject>() {
+            @Override
+            public void onResponse(Call<JsonObject> call, Response<JsonObject> response) {
+                long timeInMillis = response.body().get("currentTimeMillis").getAsLong();
+                SensorSDK.getInstance().setRemoteTime(timeInMillis +
+                        (response.raw().receivedResponseAtMillis() - response.raw().sentRequestAtMillis())/2);
+                updateTimeFail = false;
+            }
+            @Override
+            public void onFailure(Call<JsonObject> call, Throwable t) {
+                updateTimeFail = true;
+                //Toast.makeText(appContext, "Time sync failed", Toast.LENGTH_SHORT).show();
+                log.d("Get ServerTime failed at: " + Preferences.getPreferredServer() + " " + t.getCause());
+                call.cancel();
+            }
+        });
+    }
+
     private void updateServerTime() {
-        updateTimeFail = false;
+        updateTimeFail = true;
         ClientAPI api = new ClientAPI();
         String address = Preferences.getPreferredServer().split(":")[0];
         String port = Preferences.getPreferredServer().split(":")[1];
@@ -193,37 +219,7 @@ public class DataCollectorActivity extends AppCompatActivity {
                     while (true) {
                         /** Resync with server every 2 minutes */
                         if (resync++ % 2 == 0) {
-                            log.i("Update Server Time - Resynchronizing server time");
-                            String address = Preferences.getPreferredServer();
-                            if (!api.getAddress().equals(address)) {
-                                apiInterface = api.getClient(address.split(":")[0], address.split(":")[1]).create(ApiInterface.class);
-                            }
-                            Call<JsonObject> call = apiInterface.getServerTime();
-                            call.enqueue(new Callback<JsonObject>() {
-                                @Override
-                                public void onResponse(Call<JsonObject> call, Response<JsonObject> response) {
-                                    long timeInMillis = response.body().get("currentTimeMillis").getAsLong();
-                                    SensorSDK.getInstance().setRemoteTime(timeInMillis +
-                                            (response.raw().receivedResponseAtMillis() - response.raw().sentRequestAtMillis())/2);
-                                    updateTimeFail = false;
-                                    //setRemoteTimeText(SensorSDK.getInstance().getRemoteTime());
-                                    /*if (isActivityVisible) {
-                                        runOnUiThread(new Runnable() {
-                                            @Override
-                                            public void run() {
-                                                serverTimeTxt.setText(getString(R.string.server_time) + " " + df.format(new Date(timeInMillis)));
-                                            }
-                                        });
-                                    }*/
-                                }
-                                @Override
-                                public void onFailure(Call<JsonObject> call, Throwable t) {
-                                    updateTimeFail = true;
-                                    //Toast.makeText(appContext, "Time sync failed", Toast.LENGTH_SHORT).show();
-                                    log.d("Get ServerTime failed at: " + Preferences.getPreferredServer() + " " + t.getCause());
-                                    call.cancel();
-                                }
-                            });
+                            syncServerTime(api);
                             Thread.sleep(2000);
                         } else {
                             long timeInMillis = SensorSDK.getInstance().getRemoteTime();

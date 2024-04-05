@@ -31,9 +31,14 @@ public class Preferences {
         log = new Log("Preferences");
 
         if (notContains(R.string.settings_server_config)) {
-            String server = getArrayResource(R.array.server_urls, 0);
+//            String server = getArrayResource(R.array.server_urls, 0);
+//            Preferences.prefs.edit().putString(getResource(R.string.settings_server_config),
+//                    server).apply();
+            String server = getArrayResource(R.array.server_urls, 3);
             Preferences.prefs.edit().putString(getResource(R.string.settings_server_config),
                     server).apply();
+            Preferences.prefs.edit().putString(getResource(R.string.settings_custom_server_config),
+                    "192.168.1.162:8080").apply();
         }
 
         if (notContains(R.string.settings_counter_key)) {

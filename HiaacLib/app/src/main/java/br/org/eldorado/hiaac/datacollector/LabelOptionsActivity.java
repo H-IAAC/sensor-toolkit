@@ -13,6 +13,7 @@ import android.app.Dialog;
 import android.app.TimePickerDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.opengl.Visibility;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -190,6 +191,7 @@ public class LabelOptionsActivity extends AppCompatActivity {
         mWarnTxt = findViewById(R.id.edit_warn_txt);
         //mLoadConfigBtn = findViewById(R.id.load_config_button);
         mSendFilesToServer = findViewById(R.id.send_files_to_server_checkbox);
+        mSendFilesToServer.setVisibility(View.INVISIBLE);
         mLabelConfigViewModel = ViewModelProvider.AndroidViewModelFactory
                 .getInstance(getApplication()).create(LabelConfigViewModel.class);
 
