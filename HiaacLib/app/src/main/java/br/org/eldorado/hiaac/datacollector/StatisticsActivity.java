@@ -98,6 +98,14 @@ public class StatisticsActivity extends AppCompatActivity {
         @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
+            // Calculate the time frame with "start time - end time"
+            long totalTimeFrame = statistic.getEndTime() - statistic.getStartTime();
+            String timeFrame = String.format("%02d min, %02d sec",
+                    TimeUnit.MILLISECONDS.toMinutes(totalTimeFrame),
+                    TimeUnit.MILLISECONDS.toSeconds(totalTimeFrame) -
+                            TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(totalTimeFrame))
+            );
+
             View statisticsElementView = inflater.inflate(R.layout.statistics_element, container,false);
 
             TextView textView = (TextView) statisticsElementView.findViewById(R.id.sensor_name);
@@ -106,19 +114,23 @@ public class StatisticsActivity extends AppCompatActivity {
             textView = (TextView) statisticsElementView.findViewById(R.id.sensor_frequency);
             textView.setText(" (" + statistic.getSensorFrequency() + " Hz)");
 
+            textView = (TextView) statisticsElementView.findViewById(R.id.sensor_expected_data);
+            long total_expected = statistic.getSensorFrequency() * TimeUnit.MILLISECONDS.toSeconds(totalTimeFrame);
+            textView.setText("" + total_expected);
+
+            textView = (TextView) statisticsElementView.findViewById(R.id.sensor_collected_data);
+            float collected_percentage = (float)(statistic.getCollectedData()) * 100 / (float)total_expected;
+            textView.setText("" + statistic.getCollectedData() + " (" + String.format("%.2f", collected_percentage) + "%)");
+
             textView = (TextView) statisticsElementView.findViewById(R.id.sensor_valid_data);
-            textView.setText(statistic.getCollectedData() + "");
+            long validData = statistic.getCollectedData() - statistic.getInvalidData();
+            float valid_percentage = (float)(validData) * 100 / statistic.getCollectedData();
+            textView.setText(validData + " (" + String.format("%.2f", valid_percentage) + "%)");
 
             textView = (TextView) statisticsElementView.findViewById(R.id.sensor_invalid_data);
-            textView.setText(statistic.getInvalidData() + "");
+            float invalid_percentage = (float)statistic.getInvalidData() * 100 / statistic.getCollectedData();
+            textView.setText(statistic.getInvalidData() + " (" + String.format("%.2f", invalid_percentage) + "%)");
 
-            // Calculate the time frame with "start time - end time"
-            long totalTimeFrame = statistic.getEndTime() - statistic.getStartTime();
-            String timeFrame = String.format("%02d min, %02d sec",
-                    TimeUnit.MILLISECONDS.toMinutes(totalTimeFrame),
-                    TimeUnit.MILLISECONDS.toSeconds(totalTimeFrame) -
-                            TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(totalTimeFrame))
-            );
             textView = (TextView) statisticsElementView.findViewById(R.id.sensor_timeframe);
             textView.setText(timeFrame);
 

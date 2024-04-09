@@ -50,7 +50,7 @@
         app:layout_constraintTop_toBottomOf="@id/statistics_elements"/>
 
     <LinearLayout
-        android:id="@+id/data_valid"
+        android:id="@+id/expected_data"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginLeft="20dp"
@@ -58,6 +58,58 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/sensor_samples"
+        android:weightSum="100">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="33"
+            android:text="@string/statistics_expected_data" />
+
+        <TextView
+            android:id="@+id/sensor_expected_data"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="55"
+            android:textColor="@color/black"
+            tools:text="580" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/collected_data"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="20dp"
+        android:layout_marginRight="20dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/expected_data"
+        android:weightSum="100">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="33"
+            android:text="@string/statistics_collected_data" />
+
+        <TextView
+            android:id="@+id/sensor_collected_data"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="55"
+            android:textColor="@color/black"
+            tools:text="580" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/data_valid"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="20dp"
+        android:layout_marginRight="20dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/collected_data"
         android:weightSum="100">
 
         <TextView

@@ -72,6 +72,8 @@
     <string name="statistics_period">Period:</string>
     <string name="statistics_timeframe">Time frame:</string>
     <string name="statistics_valid_data">Valid:</string>
+    <string name="statistics_expected_data">Expected:</string>
+    <string name="statistics_collected_data">Collected:</string>
     <string name="statistics_invalid_data">Discarded:</string>
     <string name="statistics_timestamp_average">Average:</string>
     <string name="statistics_max_timestamp_difference">Max diff:</string>
