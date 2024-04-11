@@ -11,6 +11,7 @@ import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.TimePickerDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.opengl.Visibility;
@@ -133,7 +134,7 @@ public class LabelOptionsActivity extends AppCompatActivity {
     private boolean isConfigLoaded;
     private CsvFiles csvFiles;
     private int lastPosition = 1;
-
+    private Context appContext;
     private SensorFrequencyViewAdapter.SensorFrequencyChangeListener mSensorFrequencyChangeListener =
             new SensorFrequencyViewAdapter.SensorFrequencyChangeListener() {
                 @Override
@@ -151,6 +152,7 @@ public class LabelOptionsActivity extends AppCompatActivity {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         }
         log = new Log(TAG);
+        appContext = this.getApplicationContext();
         Preferences.init(this.getApplicationContext());
         setContentView(R.layout.activity_label_options);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
@@ -758,7 +760,8 @@ public class LabelOptionsActivity extends AppCompatActivity {
             @Override
             public void onResponse(Call<StatusResponse> call, Response<StatusResponse> response) {
                 try {
-                    log.d(response.code()+"");
+                    log.d("Config sent to the server: " + response.code());
+                    Toast.makeText(appContext, "Config sent to server", Toast.LENGTH_SHORT).show();
                     file.delete();
                     closeActivity();
                 } catch (Exception e) {
@@ -769,8 +772,8 @@ public class LabelOptionsActivity extends AppCompatActivity {
 
             @Override
             public void onFailure(Call<StatusResponse> call, Throwable t) {
-                t.printStackTrace();
                 log.d("FAIL " + t);
+                Toast.makeText(appContext, "Failed to send config to the server", Toast.LENGTH_SHORT).show();
                 call.cancel();
                 try {
                     file.delete();
