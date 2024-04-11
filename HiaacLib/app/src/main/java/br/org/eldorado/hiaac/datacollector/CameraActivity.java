@@ -268,6 +268,9 @@ public class CameraActivity extends AppCompatActivity {
                                         Toast.makeText(ctx, "Failed to access video metadata", Toast.LENGTH_SHORT).show();
                                     }
                                 }
+
+                                // After stop filming, return to previous activity
+                                finish();
                             }
                         }
                     });
