@@ -4,9 +4,7 @@ import android.os.CountDownTimer;
 import androidx.lifecycle.ViewModelProvider;
 
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Random;
 
 import br.org.eldorado.hiaac.datacollector.data.ExperimentStatistics;
 import br.org.eldorado.hiaac.datacollector.data.LabelConfigViewModel;
@@ -162,7 +160,7 @@ public class ExecutionController {
     private class MySensorListener implements SensorSDKListener {
 
         private DataTrack dataTrack;
-        private LinkedList<LabeledData> labeledData;
+        private ArrayList<LabeledData> labeledData;
         private long startTime, endTime, timestampAverage, lastTimestamp, maxTimestampDifference, minTimestampDifference;
         private long collectedData = 0;
         private long invalidData = 0;
@@ -171,7 +169,7 @@ public class ExecutionController {
 
         public MySensorListener(DataTrack data) {
             this.dataTrack = data;
-            labeledData = new LinkedList<LabeledData>();
+            labeledData = new ArrayList<LabeledData>(50000);
             this.startTime = System.currentTimeMillis();
             this.timestampAverage = 0;
             this.lastTimestamp = 0;
@@ -180,7 +178,7 @@ public class ExecutionController {
         }
 
         public List<LabeledData> getLabeledDataList() {
-            return labeledData == null ? new LinkedList<LabeledData>() : labeledData;
+            return labeledData == null ? new ArrayList<LabeledData>() : labeledData;
         }
 
         public long getStartTime() {
@@ -253,7 +251,7 @@ public class ExecutionController {
 
                     if (labeledData.size() > 50000) {
                         log.d("Collected data so far for " + dataTrack.getLabel() + " - " + sensor.getName() + "\n\tValid: " + collectedData + "\n\tInvalid: " + invalidData + "\n\tAverage: " + (timestampAverage/collectedData));
-                        dbView.insertLabeledData((LinkedList<LabeledData>)labeledData.clone());
+                        dbView.insertLabeledData((ArrayList<LabeledData>)labeledData.clone());
                         labeledData.clear();
                     }
                     if (!sensor.isValidValues()) {

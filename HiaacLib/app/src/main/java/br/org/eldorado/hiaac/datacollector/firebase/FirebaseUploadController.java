@@ -13,9 +13,12 @@ import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import br.org.eldorado.hiaac.R;
+import br.org.eldorado.hiaac.datacollector.controller.ExecutionController;
 import br.org.eldorado.hiaac.datacollector.data.LabelConfigRepository;
 import br.org.eldorado.hiaac.datacollector.data.LabelConfigViewModel;
 import br.org.eldorado.hiaac.datacollector.data.LabeledData;
@@ -152,6 +155,18 @@ public class FirebaseUploadController {
             public void run() {
                 long start = System.currentTimeMillis();
                 String innerUid = uid;
+
+                // Wait (10 secs) for the execution stops before collect from db
+                int waitSecs = 0;
+                while (ExecutionController.getInstance().isRunning() && waitSecs < 10) {
+                    try {
+                        Thread.sleep(1000);
+                        waitSecs++;
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+
                 List<LabeledData> labeledData = dbView.getLabeledData(labelId, LabelConfigRepository.TYPE_CSV, 0);
                 log.d("exportToCSV - Starting creating csv file labelId: " + labelId + " uid: " + uid + " size " + labeledData.size());
                 if (labeledData == null || labeledData.size() == 0) {
@@ -165,15 +180,17 @@ public class FirebaseUploadController {
                 }
                 fireListener(ON_PROGRESS, mContext.getString(R.string.creating_csv_file));
                 File csvFile = csvBuilder.create(labeledData, innerUid);
-                labeledData.clear();
-                int index = 0;
-                while ((labeledData = dbView.getLabeledData(labelId, LabelConfigRepository.TYPE_CSV, 0)).size() > 0) {
+
+                while (dbView.countLabeledDataCsv(labelId) > 0) {
+                    labeledData = dbView.getLabeledData(labelId, LabelConfigRepository.TYPE_CSV, 0);
                     csvBuilder.appendData(csvFile, labeledData, 1);
-                    labeledData.clear();
                 }
+
                 long end = System.currentTimeMillis();
                 log.d("Csv file created. Time consumed: " + ((end-start)/1000)/60 + "m" + ((end-start)/1000)%60+"s");
+
                 dbView.deleteLabeledData(labelId);
+
                 fireListener(SUCCESS, mContext.getString(R.string.success_csv_file));
             }
         }).start();
