@@ -13,7 +13,7 @@ import java.util.List;
 
 @Dao
 public interface LabelConfigDao {
-    @Query("SELECT * FROM LabelConfig ORDER BY experiment ASC")
+    @Query("SELECT * FROM LabelConfig ORDER BY experiment DESC")
     LiveData<List<LabelConfig>> getAllLabels();
 
     @Query("SELECT * FROM LabelConfig WHERE id=:id")
@@ -53,15 +53,18 @@ public interface LabelConfigDao {
     @Query("DELETE from LabeledData where `config-id`=:configId")
     void deleteLabeledData(long configId);
 
-    @Update
+    @Transaction
+    @Update(onConflict = OnConflictStrategy.REPLACE)
     void updateLabeledData(List<LabeledData> dt);
 
     @Transaction @Query("SELECT * from LabeledData where `config-id`=:configId ORDER BY `sensor-name`, `sensor-timestamp` LIMIT 300000 OFFSET :offset")
     List<LabeledData> getLabeledData(long configId, long offset);
 
-    //@Query("SELECT * from LabeledData where `label-id`=:labelId and `data-used`=0 ORDER BY `sensor-name`, `sensor-timestamp` LIMIT 300000 OFFSET 0")
-    @Transaction @Query("SELECT * from LabeledData where `config-id`=:configId and `data-used`=0 ORDER BY `sensor-name`, `sensor-timestamp` LIMIT 300000 OFFSET 0")
+    @Transaction @Query("SELECT * from LabeledData where `config-id`=:configId and `data-used`=0 ORDER BY `sensor-name`, `sensor-timestamp` LIMIT 300000")
     List<LabeledData> getLabeledDataCsv(long configId);
+
+    @Query("SELECT count(*) from LabeledData where `config-id`=:configId and `data-used`=0")
+    Integer countLabeledDataCsv(long configId);
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     void insertExperimentStatistics(List<ExperimentStatistics> experiments);

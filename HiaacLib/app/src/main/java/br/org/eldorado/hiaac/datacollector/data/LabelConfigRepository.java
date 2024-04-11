@@ -120,6 +120,9 @@ public class LabelConfigRepository {
         }
     }
 
+    public Integer countLabeledDataCsv(long labelId) {
+        return mLabelConfigDao.countLabeledDataCsv(labelId);
+    }
 
     public void updateLabeledData( List<LabeledData> dt) {
         mLabelConfigDao.updateLabeledData(dt);

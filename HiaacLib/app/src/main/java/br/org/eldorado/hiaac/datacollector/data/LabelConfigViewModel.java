@@ -84,6 +84,10 @@ public class LabelConfigViewModel extends AndroidViewModel {
         return mRepository.getLabeledData(labelId, type, offset);
     }
 
+    public Integer countLabeledDataCsv(long labelId) {
+        return mRepository.countLabeledDataCsv(labelId);
+    }
+
     public LiveData<List<ExperimentStatistics>> getExperimentStatistics(long expId, String startTime) {
         return mRepository.getExperimentStatisticsByExpId(expId, startTime);
     }

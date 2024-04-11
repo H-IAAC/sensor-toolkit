@@ -12,7 +12,6 @@ import br.org.eldorado.sensoragent.model.SensorBase;
 
 @Entity(indices = {
         @Index(value = {"config-id"}),
-        @Index(value = {"data-used"}),
         @Index(value = {"sensor-name"}),
         @Index(value = {"sensor-timestamp"}),
         @Index(value = {"uid"})
