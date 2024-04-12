@@ -13,8 +13,6 @@ import android.app.Dialog;
 import android.app.TimePickerDialog;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.Intent;
-import android.opengl.Visibility;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -38,7 +36,6 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.google.android.material.navigation.NavigationBarView;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -129,7 +126,7 @@ public class LabelOptionsActivity extends AppCompatActivity {
     private CsvFiles csvFiles;
     private int lastPosition = 1;
     private Context appContext;
-    private SensorFrequencyViewAdapter.SensorFrequencyChangeListener mSensorFrequencyChangeListener =
+    private final SensorFrequencyViewAdapter.SensorFrequencyChangeListener mSensorFrequencyChangeListener =
             new SensorFrequencyViewAdapter.SensorFrequencyChangeListener() {
                 @Override
                 public void onSensorFrequencyChanged(List<SensorFrequencyViewAdapter.SelectedSensorFrequency> selectedSensorFrequencies) {
@@ -268,7 +265,7 @@ public class LabelOptionsActivity extends AppCompatActivity {
                 break;
             case UPDATE_LABEL_CONFIG_ACTIVITY:
                 mIsUpdating = true;
-                Long labelId = extras.getLong(LABEL_CONFIG_ACTIVITY_ID);
+                long labelId = extras.getLong(LABEL_CONFIG_ACTIVITY_ID);
                 if (csvFiles.getFiles(labelId).size() > 0) {
                     mLabelTile.setEnabled(false);
                     mActivityTxt.setEnabled(false);
@@ -379,7 +376,7 @@ public class LabelOptionsActivity extends AppCompatActivity {
                 }
             }
             mStopTimeSpinner.setSelection(position);
-            position = 0;
+
             for (int i = 0; i < mDeviceLocation.getCount(); i++) {
                 if (mCurrentConfig.deviceLocation.equals(mDeviceLocation.getItemAtPosition(i))) {
                     mDeviceLocation.setSelection(i);
@@ -437,14 +434,10 @@ public class LabelOptionsActivity extends AppCompatActivity {
             Map<Integer, Integer> sensorTypeFrequencyMap, int sensorType, String sensorName) {
         Integer frequency = sensorTypeFrequencyMap.get(sensorType);
 
-        SensorFrequencyViewAdapter.SelectedSensorFrequency selectedSensorFrequency =
-                new SensorFrequencyViewAdapter.SelectedSensorFrequency(
+        return new SensorFrequencyViewAdapter.SelectedSensorFrequency(
                         frequency != null,
                         sensorName,
-                        frequency == null ? frequencyOptions.get(0) : frequency.intValue()
-                );
-
-        return selectedSensorFrequency;
+                        frequency == null ? frequencyOptions.get(0) : frequency.intValue());
     }
 
     private List<SensorFrequency> getSensorFrequenciesFromSelectedSensorFrequencies(long config_id) {
@@ -524,8 +517,7 @@ public class LabelOptionsActivity extends AppCompatActivity {
             finishSaveProcess(newConfig, mCurrentConfig.id);
         } else {
             try {
-                long rowId = mLabelConfigViewModel.insertNewConfig(newConfig);
-                newConfig.id = rowId;
+                newConfig.id = mLabelConfigViewModel.insertNewConfig(newConfig);
                 finishSaveProcess(newConfig, newConfig.id);
             } catch (ExecutionException | InterruptedException e) {
                 Toast.makeText(getApplicationContext(), "Error when saving config.", Toast.LENGTH_SHORT).show();
@@ -606,11 +598,7 @@ public class LabelOptionsActivity extends AppCompatActivity {
                         "file", config.getName(),
                         RequestBody.create(MediaType.parse("multipart/form-data"), config));
 
-                ClientAPI apiClient = new ClientAPI();
-                String address = Preferences.getPreferredServer().split(":")[0];
-                String port = Preferences.getPreferredServer().split(":")[1];
-                ApiInterface apiInterface = apiClient.getClient(address, port).create(ApiInterface.class);
-                Call<StatusResponse> call = apiInterface.uploadConfigFile(filePart, experimentPart, subjectPart, activityPart);
+                Call<StatusResponse> call = ClientAPI.get(ClientAPI.httpHighTimeout()).uploadConfigFile(filePart, experimentPart, subjectPart, activityPart);
                 call.enqueue(uploadCallback(config));
             }
         }).start();
@@ -622,11 +610,8 @@ public class LabelOptionsActivity extends AppCompatActivity {
             mLoadConfigBtn = findViewById(R.id.load_config_button);
         }
         mLoadConfigBtn.setEnabled(false);
-        ClientAPI api = new ClientAPI();
-        String address = Preferences.getPreferredServer().split(":")[0];
-        String port = Preferences.getPreferredServer().split(":")[1];
-        ApiInterface apiInterface = api.getClient(address, port).create(ApiInterface.class);
-        Call<JsonObject> call = apiInterface.getAllExperiments();
+
+        Call<JsonObject> call = ClientAPI.get(ClientAPI.httpHighTimeout()).getAllExperiments();
         call.enqueue(new Callback<JsonObject>() {
             @Override
             public void onResponse(Call<JsonObject> call, Response<JsonObject> response) {
@@ -649,7 +634,7 @@ public class LabelOptionsActivity extends AppCompatActivity {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
                                 String[] exp = experiments.get(which).split("_");
-                                Call<JsonObject> call = apiInterface.getExperimentConfig(exp[0], exp[2], exp[1]);
+                                Call<JsonObject> call = ClientAPI.get(ClientAPI.httpHighTimeout()).getExperimentConfig(exp[0], exp[2], exp[1]);
                                 loadServerConfig(call);
                             }
                         });
@@ -785,7 +770,7 @@ public class LabelOptionsActivity extends AppCompatActivity {
     }
 
     public static class DeleteDialogFragment extends DialogFragment {
-        private DeleteDialogListener mListener;
+        private final DeleteDialogListener mListener;
 
         public DeleteDialogFragment(DeleteDialogListener listener) {
             this.mListener = listener;
@@ -809,7 +794,7 @@ public class LabelOptionsActivity extends AppCompatActivity {
     }
 
     public static class SaveConfigDialogFragment extends DialogFragment {
-        private SaveConfigListener mListener;
+        private final SaveConfigListener mListener;
 
         public SaveConfigDialogFragment(SaveConfigListener listener) {
             this.mListener = listener;

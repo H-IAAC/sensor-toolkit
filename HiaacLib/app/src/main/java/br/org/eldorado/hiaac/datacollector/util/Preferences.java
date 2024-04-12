@@ -6,7 +6,6 @@ import android.net.DhcpInfo;
 import android.net.wifi.WifiManager;
 import android.text.format.Formatter;
 import android.util.Patterns;
-import android.webkit.URLUtil;
 import android.widget.Toast;
 
 import androidx.preference.PreferenceManager;
@@ -48,8 +47,7 @@ public class Preferences {
         }
 
         if (notContains(R.string.settings_device_locations)) {
-            Set<String> locations = new HashSet();
-            locations.addAll(Arrays.asList(ctx.getResources().getStringArray(R.array.device_location_items)));
+            Set<String> locations = new HashSet(Arrays.asList(ctx.getResources().getStringArray(R.array.device_location_items)));
             Preferences.prefs.edit().putStringSet(getResource(R.string.settings_device_locations),
                     locations).apply();
         }
@@ -58,8 +56,7 @@ public class Preferences {
     public static ArrayList<String> getDeviceLocationsList() {
         Set<String> locationsList = new HashSet<String>();
         locationsList = Preferences.prefs.getStringSet(getResource(R.string.settings_device_locations), locationsList);
-        ArrayList<String> locations = new ArrayList<String>();
-        locations.addAll(Arrays.asList( locationsList.toArray(new String[locationsList.size()])));
+        ArrayList<String> locations = new ArrayList<String>(Arrays.asList( locationsList.toArray(new String[locationsList.size()])));
         Collections.sort(locations, new Comparator<String>() {
             @Override
             public int compare(String s, String t1) {
@@ -91,8 +88,8 @@ public class Preferences {
     public static String getPreferredServer() {
 
         String optionSelected = Preferences.prefs.getString(getResource(R.string.settings_server_config), "default");
-        String localhost = "" + getArrayResource(R.array.server_urls, 2);
-        String custom = "" + getArrayResource(R.array.server_urls, 3);
+        String localhost = getArrayResource(R.array.server_urls, 2);
+        String custom = getArrayResource(R.array.server_urls, 3);
         String ret;
 
         if (optionSelected.equals(localhost)) {

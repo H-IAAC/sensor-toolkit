@@ -59,7 +59,6 @@ import java.util.Set;
 import br.org.eldorado.hiaac.datacollector.CameraActivity;
 import br.org.eldorado.hiaac.datacollector.LabelOptionsActivity;
 import br.org.eldorado.hiaac.R;
-import br.org.eldorado.hiaac.datacollector.api.ApiInterface;
 import br.org.eldorado.hiaac.datacollector.api.ClientAPI;
 import br.org.eldorado.hiaac.datacollector.api.StatusResponse;
 import br.org.eldorado.hiaac.datacollector.data.LabelConfig;
@@ -96,15 +95,15 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
     private List<LabelConfig> labelConfigs;
     private Set<Integer> labelsConflicts = new HashSet<>();
     private Map<Long, List<SensorFrequency>> sensorFrequencyMap;
-    private Context mContext;
+    private final Context mContext;
     private ExecutionService execService;
     private ServiceConnection svc;
-    private Log log;
+    private final Log log;
     private ProgressDialog sendDataDialog;
     private LabelConfigViewModel mLabelConfigViewModel;
-    private Map<String, ViewHolder> holdersMap = new HashMap<>();
+    private final Map<String, ViewHolder> holdersMap = new HashMap<>();
     private boolean deleteButtonClicked;
-    private CsvFiles csvFiles;
+    private final CsvFiles csvFiles;
 
     public LabelRecyclerViewAdapter(Context context) {
         mInflater = LayoutInflater.from(context);
@@ -438,13 +437,6 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
 
     private int numberOfFilesToUpload = 0;
 
-    private ApiInterface getApiInterface() {
-        ClientAPI apiClient = new ClientAPI();
-        String address = Preferences.getPreferredServer().split(":")[0];
-        String port = Preferences.getPreferredServer().split(":")[1];
-        return apiClient.getClient(address, port).create(ApiInterface.class);
-    }
-
     private void sendFilesToServer(List<File> files, ViewHolder holder) {
         log.d("sendFilesToServer - " + files);
         numberOfFilesToUpload = files.size();
@@ -527,7 +519,7 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
                 "file", file.getName(),
                 RequestBody.create(MediaType.parse("multipart/form-data"), file));
 
-        Call<StatusResponse> call = getApiInterface().uploadFile(filePart, experiment, subject, name);
+        Call<StatusResponse> call = ClientAPI.get(ClientAPI.httpHighTimeout()).uploadFile(filePart, experiment, subject, name);
         call.enqueue(uploadCallback(file, holder));
     }
 
@@ -536,11 +528,11 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
                 "file", file.getName(),
                 RequestBody.create(MediaType.parse("multipart/form-data"), file));
 
-        Call<StatusResponse> call = getApiInterface().uploadVideo(filePart, directory, start, end, videoDuration);
+        Call<StatusResponse> call = ClientAPI.get(ClientAPI.httpHighTimeout()).uploadVideo(filePart, directory, start, end, videoDuration);
         call.enqueue(uploadCallback(file, holder));
     }
 
-    private synchronized void updateFilesUpdated(ViewHolder holder, String filename, String errorMessage) {
+    private synchronized void uploadMessage(ViewHolder holder, String filename, String errorMessage) {
         numberOfFilesToUpload--;
         if (numberOfFilesToUpload <= 0) {
             AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
@@ -565,24 +557,22 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
             @Override
             public void onResponse(Call<StatusResponse> call, Response<StatusResponse> response) {
 
-                switch (response.code()) {
-                    case 200:
-                        updateFilesUpdated(holder, file.getName(), null);
-                        break;
-                    case 400:
-                    case 409:
-                    case 500:
-                            try {
-                                JSONObject jObjError = new JSONObject(response.errorBody().string());
-                                log.d("upload status body: " + jObjError.getString("status"));
-                                updateFilesUpdated(holder, file.getName(), jObjError.getString("status"));
-                            } catch (Exception e) {
-                                log.d(file.getName() + " upload failed: " + e.getMessage());
-                            }
-                        break;
-                    default:
-                        onFailure(call, new Exception("File: " + file.getName() + " -\n" + response.body().toString()));
+                if (response.code() == 200) {
+                    // Upload success
+                    uploadMessage(holder, file.getName(), null);
+                } else {
+                    // Upload error
+                    try {
+                        JSONObject jObjError = new JSONObject(response.errorBody().string());
+                        uploadMessage(holder, file.getName(), jObjError.getString("status"));
+                        log.d("upload status body: " + jObjError.getString("status"));
+                    } catch (Exception e) {
+                        uploadMessage(holder, file.getName(), "Upload failed.");
+                        log.d(file.getName() + " upload failed: " + e.getMessage());
+                    }
                 }
+
+                // If upload is .zip, delete it.
                 if (file.getName().endsWith(".zip")) {
                     file.delete();
                 }
@@ -591,9 +581,8 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
             @Override
             public void onFailure(Call<StatusResponse> call, Throwable t) {
                 numberOfFilesToUpload = 0;
-                updateFilesUpdated(holder, file.getName(), t.getMessage());
-                t.printStackTrace();
-                log.d("FAIL " + t);
+                uploadMessage(holder, file.getName(), t.getMessage());
+                log.d("FAIL " + t.getMessage());
                 call.cancel();
             }
         };
@@ -793,7 +782,7 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
         holder.editButton.setClickable(true);
     }
 
-    public class ViewHolder extends RecyclerView.ViewHolder {
+    public static class ViewHolder extends RecyclerView.ViewHolder {
         private boolean isOpened;
 
         private CardView expCard;

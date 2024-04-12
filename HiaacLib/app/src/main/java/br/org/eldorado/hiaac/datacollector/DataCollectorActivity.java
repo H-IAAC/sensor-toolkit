@@ -12,7 +12,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.Observer;
@@ -32,9 +31,7 @@ import java.util.stream.Collectors;
 
 import br.org.eldorado.hiaac.BuildConfig;
 import br.org.eldorado.hiaac.R;
-import br.org.eldorado.hiaac.datacollector.api.ApiInterface;
 import br.org.eldorado.hiaac.datacollector.api.ClientAPI;
-import br.org.eldorado.hiaac.datacollector.data.ExperimentStatistics;
 import br.org.eldorado.hiaac.datacollector.data.LabelConfig;
 import br.org.eldorado.hiaac.datacollector.data.LabelConfigViewModel;
 import br.org.eldorado.hiaac.datacollector.data.SensorFrequency;
@@ -61,9 +58,8 @@ public class DataCollectorActivity extends AppCompatActivity {
     private LabelRecyclerViewAdapter adapter;
     private BroadcastReceiver br;
     private Log log;
-    private Context appContext;
     private boolean updateTimeFail;
-    private ApiInterface apiInterface;
+    //private ApiInterface apiInterface;
     private Thread syncServerTimeThread, updateTimeLabelThread;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -73,7 +69,6 @@ public class DataCollectorActivity extends AppCompatActivity {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         }
 
-        appContext = this.getApplicationContext();
         Preferences.init(this.getApplicationContext());
         log = new Log("DataCollectorActivity");
 
@@ -153,7 +148,7 @@ public class DataCollectorActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         isActivityVisible = true;
-        syncServerTime(new ClientAPI());
+        syncServerTime();
         adapter.notifyDataSetChanged();
     }
 
@@ -177,26 +172,21 @@ public class DataCollectorActivity extends AppCompatActivity {
         }
     }
 
-
-    private void syncServerTime(ClientAPI api) {
+    private void syncServerTime() {
         log.i("Update Server Time - Resynchronizing server time");
-        String address = Preferences.getPreferredServer();
-        if (!api.getAddress().equals(address)) {
-            apiInterface = api.getClient(address.split(":")[0], address.split(":")[1]).create(ApiInterface.class);
-        }
-        Call<JsonObject> call = apiInterface.getServerTime();
+
+        Call<JsonObject> call = ClientAPI.get(ClientAPI.httpLowTimeout()).getServerTime();
         call.enqueue(new Callback<JsonObject>() {
             @Override
             public void onResponse(Call<JsonObject> call, Response<JsonObject> response) {
                 long timeInMillis = response.body().get("currentTimeMillis").getAsLong();
-                SensorSDK.getInstance().setRemoteTime(timeInMillis +
-                        (response.raw().receivedResponseAtMillis() - response.raw().sentRequestAtMillis())/2);
+                SensorSDK.getInstance().setRemoteTime(
+                        timeInMillis +(response.raw().receivedResponseAtMillis() - response.raw().sentRequestAtMillis())/2);
                 updateTimeFail = false;
             }
             @Override
             public void onFailure(Call<JsonObject> call, Throwable t) {
                 updateTimeFail = true;
-                //Toast.makeText(appContext, "Time sync failed", Toast.LENGTH_SHORT).show();
                 log.d("Get ServerTime failed at: " + Preferences.getPreferredServer() + " " + t.getCause());
                 call.cancel();
             }
@@ -205,10 +195,7 @@ public class DataCollectorActivity extends AppCompatActivity {
 
     private void updateServerTime() {
         updateTimeFail = true;
-        ClientAPI api = new ClientAPI();
-        String address = Preferences.getPreferredServer().split(":")[0];
-        String port = Preferences.getPreferredServer().split(":")[1];
-        apiInterface = api.getClient(address, port).create(ApiInterface.class);
+
         syncServerTimeThread = new Thread(new Runnable() {
             @Override
             public void run() {
@@ -219,7 +206,7 @@ public class DataCollectorActivity extends AppCompatActivity {
                     while (true) {
                         /** Resync with server every 2 minutes */
                         if (resync++ % 2 == 0) {
-                            syncServerTime(api);
+                            syncServerTime();
                             Thread.sleep(2000);
                         } else {
                             long timeInMillis = SensorSDK.getInstance().getRemoteTime();
