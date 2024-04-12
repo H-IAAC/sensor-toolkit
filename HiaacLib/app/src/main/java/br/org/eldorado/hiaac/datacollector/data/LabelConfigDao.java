@@ -47,6 +47,7 @@ public interface LabelConfigDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     void insertLabeledData(LabeledData data);
 
+    @Transaction
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     void insertLabeledData(List<LabeledData> data);
 
@@ -57,14 +58,20 @@ public interface LabelConfigDao {
     @Update(onConflict = OnConflictStrategy.REPLACE)
     void updateLabeledData(List<LabeledData> dt);
 
-    @Transaction @Query("SELECT * from LabeledData where `config-id`=:configId ORDER BY `sensor-name`, `sensor-timestamp` LIMIT 300000 OFFSET :offset")
+    @Query("SELECT * from LabeledData where `config-id`=:configId ORDER BY `sensor-name`, `sensor-timestamp` LIMIT 300000 OFFSET :offset")
     List<LabeledData> getLabeledData(long configId, long offset);
 
-    @Transaction @Query("SELECT * from LabeledData where `config-id`=:configId and `data-used`=0 ORDER BY `sensor-name`, `sensor-timestamp` LIMIT 300000")
+    @Query("SELECT * from LabeledData where `config-id`=:configId and `data-used`=0 ORDER BY `sensor-name`, `sensor-timestamp` LIMIT 300000")
     List<LabeledData> getLabeledDataCsv(long configId);
+
+    @Query("SELECT * from LabeledData where `config-id`=:configId LIMIT 1")
+    LabeledData getLabeledData(long configId);
 
     @Query("SELECT count(*) from LabeledData where `config-id`=:configId and `data-used`=0")
     Integer countLabeledDataCsv(long configId);
+
+    @Query("SELECT uid from LabeledData where `config-id`=:configId and `data-used`=0 LIMIT 1")
+    String getLabeledDataUidCsv(long configId);
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     void insertExperimentStatistics(List<ExperimentStatistics> experiments);

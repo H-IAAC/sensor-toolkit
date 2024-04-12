@@ -28,6 +28,8 @@ public abstract class AppDatabase extends RoomDatabase {
                             .fallbackToDestructiveMigration().build();
                     SimpleSQLiteQuery query = new SimpleSQLiteQuery("PRAGMA synchronous = NORMAL");
                     INSTANCE.dbConfig().setPragma(query);
+                    query = new SimpleSQLiteQuery("PRAGMA cache_size = 10000");
+                    INSTANCE.dbConfig().setPragma(query);
                 }
             }
         }

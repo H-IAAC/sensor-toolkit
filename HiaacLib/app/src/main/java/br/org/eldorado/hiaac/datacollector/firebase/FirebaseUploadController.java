@@ -15,7 +15,6 @@ import com.google.firebase.storage.UploadTask;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 import br.org.eldorado.hiaac.R;
 import br.org.eldorado.hiaac.datacollector.controller.ExecutionController;
@@ -28,17 +27,16 @@ import br.org.eldorado.hiaac.datacollector.util.Log;
 public class FirebaseUploadController {
 
     private static final String TAG = "FirebaseUploadController";
-    private Log log;
+    private final Log log;
     private static final int SUCCESS = 0;
     private static final int ERROR = 1;
     private static final int ON_PROGRESS = 2;
     private static final int TYPE_FIREBASE = 3;
     private static final int TYPE_CSV = 4;
     private final CsvBuilder csvBuilder;
-
-    private Context mContext;
+    private final Context mContext;
     private FirebaseListener listener;
-    private LabelConfigViewModel dbView;
+    private final LabelConfigViewModel dbView;
 
     public FirebaseUploadController(Context ctx) {
         log = new Log(TAG);
@@ -167,29 +165,40 @@ public class FirebaseUploadController {
                     }
                 }
 
-                List<LabeledData> labeledData = dbView.getLabeledData(labelId, LabelConfigRepository.TYPE_CSV, 0);
-                log.d("exportToCSV - Starting creating csv file labelId: " + labelId + " uid: " + uid + " size " + labeledData.size());
-                if (labeledData == null || labeledData.size() == 0) {
-                    log.d("exportToCSV - Any data to export! ");
+                Integer numberOfDbElements = dbView.countLabeledDataCsv(labelId);
+                if (numberOfDbElements == 0) {
+                    log.d("exportToCSV - There is no data to export!");
                     fireListener(ERROR, mContext.getString(R.string.error_no_data_create_csc));
                     return;
                 }
+                log.d("exportToCSV - Starting creating csv file labelId: " + labelId + " uid: " + uid + " size " + numberOfDbElements);
+
+                if (ExecutionController.getInstance().isRunning()) {
+                    log.d("exportToCSV - exporting data while execution controller still running");
+                }
+
                 if (uid == null || "0".equals(uid) || "null".equals(uid)) {
-                    innerUid = labeledData.get(0).getUid();
+                    innerUid = dbView.getLabeledDataUidCsv(labelId);
                     log.d("exportToCSV - uid was wrong! New uid = " + innerUid);
                 }
-                fireListener(ON_PROGRESS, mContext.getString(R.string.creating_csv_file));
-                File csvFile = csvBuilder.create(labeledData, innerUid);
 
-                while (dbView.countLabeledDataCsv(labelId) > 0) {
-                    labeledData = dbView.getLabeledData(labelId, LabelConfigRepository.TYPE_CSV, 0);
+
+
+                fireListener(ON_PROGRESS, mContext.getString(R.string.creating_csv_file));
+
+                File csvFile = csvBuilder.getCsvFile(dbView.getLabeledData(labelId),
+                                                     innerUid,
+                                         true);
+
+                List<LabeledData> labeledData;
+                while ((labeledData = dbView.getLabeledData(labelId, LabelConfigRepository.TYPE_CSV, 0)).size() > 0) {
                     csvBuilder.appendData(csvFile, labeledData, 1);
                 }
 
                 long end = System.currentTimeMillis();
                 log.d("Csv file created. Time consumed: " + ((end-start)/1000)/60 + "m" + ((end-start)/1000)%60+"s");
 
-                dbView.deleteLabeledData(labelId);
+                //dbView.deleteLabeledData(labelId);
 
                 fireListener(SUCCESS, mContext.getString(R.string.success_csv_file));
             }

@@ -15,8 +15,8 @@ public class LabelConfigRepository {
     public static final int TYPE_FIREBASE = 0;
     public static final int TYPE_CSV = 1;
 
-    private LabelConfigDao mLabelConfigDao;
-    private LiveData<List<LabelConfig>> mAllLabels;
+    private final LabelConfigDao mLabelConfigDao;
+    private final LiveData<List<LabelConfig>> mAllLabels;
 
     public LabelConfigRepository(Application application) {
         AppDatabase db = AppDatabase.getDatabase(application);
@@ -120,11 +120,19 @@ public class LabelConfigRepository {
         }
     }
 
+    public LabeledData getLabeledData(long labelId) {
+        return mLabelConfigDao.getLabeledData(labelId);
+    }
+
     public Integer countLabeledDataCsv(long labelId) {
         return mLabelConfigDao.countLabeledDataCsv(labelId);
     }
 
-    public void updateLabeledData( List<LabeledData> dt) {
+    public String getLabeledDataUidCsv(long labelId) {
+        return mLabelConfigDao.getLabeledDataUidCsv(labelId);
+    }
+
+    public void updateLabeledData(List<LabeledData> dt) {
         mLabelConfigDao.updateLabeledData(dt);
     }
 

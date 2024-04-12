@@ -8,9 +8,9 @@ import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 public class LabelConfigViewModel extends AndroidViewModel {
-    private LabelConfigRepository mRepository;
-    private LiveData<List<LabelConfig>> mAllLabels;
-    private LiveData<List<SensorFrequency>> mAllSensorFrequencies;
+    private final LabelConfigRepository mRepository;
+    private final LiveData<List<LabelConfig>> mAllLabels;
+    private final LiveData<List<SensorFrequency>> mAllSensorFrequencies;
 
     public LabelConfigViewModel(Application application) {
         super(application);
@@ -84,8 +84,16 @@ public class LabelConfigViewModel extends AndroidViewModel {
         return mRepository.getLabeledData(labelId, type, offset);
     }
 
+    public LabeledData getLabeledData(long labelId) {
+        return mRepository.getLabeledData(labelId);
+    }
+
     public Integer countLabeledDataCsv(long labelId) {
         return mRepository.countLabeledDataCsv(labelId);
+    }
+
+    public String getLabeledDataUidCsv(long labelId) {
+        return mRepository.getLabeledDataUidCsv(labelId);
     }
 
     public LiveData<List<ExperimentStatistics>> getExperimentStatistics(long expId, String startTime) {
