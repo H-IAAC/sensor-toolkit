@@ -3,7 +3,6 @@ package br.org.eldorado.hiaac.datacollector.view.adapter;
 import android.Manifest;
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.pm.PackageManager;
@@ -13,7 +12,6 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
-import android.widget.CompoundButton;
 import android.widget.NumberPicker;
 import android.widget.Spinner;
 import android.widget.Toast;
@@ -36,9 +34,9 @@ public class SensorFrequencyViewAdapter extends RecyclerView.Adapter<SensorFrequ
     private final LayoutInflater mInflater;
     private List<SelectedSensorFrequency> mSelectedSensors;
     private SensorFrequencyChangeListener mListener;
-    private Context mContext;
+    private final Context mContext;
     private ViewHolder gpsHolder;
-    private Log log;
+    private final Log log;
 
     public static List<Integer> frequencyOptions = new ArrayList<Integer>(
             Arrays.asList(  0,
@@ -311,7 +309,7 @@ public class SensorFrequencyViewAdapter extends RecyclerView.Adapter<SensorFrequ
         return mSelectedSensors.size();
     }
 
-    public class ViewHolder extends RecyclerView.ViewHolder {
+    public static class ViewHolder extends RecyclerView.ViewHolder {
         private CheckBox selectSensorCheckBox;
         private AnimatedLinearLayout frequencyContainer;
         private Spinner frequenciesSpinner;

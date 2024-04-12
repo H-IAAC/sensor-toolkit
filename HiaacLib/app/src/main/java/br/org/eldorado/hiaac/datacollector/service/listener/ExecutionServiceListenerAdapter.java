@@ -4,7 +4,7 @@ import br.org.eldorado.hiaac.datacollector.model.DataTrack;
 
 public class ExecutionServiceListenerAdapter implements ExecutionServiceListener {
 
-    private DataTrack dataTrack;
+    private final DataTrack dataTrack;
 
     public ExecutionServiceListenerAdapter(DataTrack dt) {
         this.dataTrack = dt;

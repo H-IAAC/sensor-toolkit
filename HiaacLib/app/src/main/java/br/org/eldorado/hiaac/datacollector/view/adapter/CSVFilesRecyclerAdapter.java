@@ -29,19 +29,17 @@ import br.org.eldorado.hiaac.datacollector.data.ExperimentStatistics;
 import br.org.eldorado.hiaac.datacollector.data.LabelConfigRepository;
 import br.org.eldorado.hiaac.datacollector.util.CsvFiles;
 import br.org.eldorado.hiaac.datacollector.util.Log;
-import br.org.eldorado.hiaac.datacollector.util.Preferences;
 import br.org.eldorado.hiaac.datacollector.util.Tools;
 
 public class CSVFilesRecyclerAdapter extends RecyclerView.Adapter<CSVFilesRecyclerAdapter.ViewHolder> {
 
     private static final String TAG = "CSVFilesRecyclerAdapter";
     private final LayoutInflater mInflater;
-    private List<File> csvFileList;
-    private Context mContext;
-    private Log log;
-    private long configId;
-
-    private LabelConfigRepository mRepository;
+    private final List<File> csvFileList;
+    private final Context mContext;
+    private final Log log;
+    private final long configId;
+    private final LabelConfigRepository mRepository;
 
     public CSVFilesRecyclerAdapter(Context context, List<File> f, LabelConfigRepository repository, long id) {
         mInflater = LayoutInflater.from(context);
@@ -171,7 +169,7 @@ public class CSVFilesRecyclerAdapter extends RecyclerView.Adapter<CSVFilesRecycl
         return csvFileList.size();
     }
 
-    public class ViewHolder extends RecyclerView.ViewHolder {
+    public static class ViewHolder extends RecyclerView.ViewHolder {
 
         private ImageView fileImg;
         private ImageView deleteImg;

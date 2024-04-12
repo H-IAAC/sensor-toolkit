@@ -26,7 +26,7 @@ public class ExecutionController {
 
     private static final String TAG = "ExecutionController";
     private static ExecutionController inst;
-    private Log log;
+    private final Log log;
     private boolean isRunning;
     private ExecutionServiceListener listener;
     private ExecutionService service;
@@ -77,34 +77,37 @@ public class ExecutionController {
                 service.getApplication()).create(LabelConfigViewModel.class);
     }
 
+    private ExperimentStatistics getExperimentStatistics(DataTrack dataTrack, SensorFrequency sensorFrequency) {
+        ExperimentStatistics st = new ExperimentStatistics();
+        st.setConfigId(dataTrack.getConfigId());
+        st.setSensorName(sensorFrequency.sensor.getName());
+        st.setSensorFrequency(sensorFrequency.sensor.getFrequency());
+        st.setStartTime(((MySensorListener) sensorFrequency.sensor.getListener()).getStartTime());
+        st.setEndTime(((MySensorListener) sensorFrequency.sensor.getListener()).getEndTime());
+        st.setCollectedData(((MySensorListener) sensorFrequency.sensor.getListener()).getCollectedData());
+        st.setInvalidData(((MySensorListener) sensorFrequency.sensor.getListener()).getInvalidData());
+        st.setTimestampAverage(((MySensorListener) sensorFrequency.sensor.getListener()).getTimestampAverage());
+        st.setMaxTimestampDifference(((MySensorListener) sensorFrequency.sensor.getListener()).getMaxTimestampDifference());
+        st.setMinTimestampDifference(((MySensorListener) sensorFrequency.sensor.getListener()).getMinTimestampDifference());
+        st.setTimestampStandardVariation(0);
+
+        log.d("Total data collected from " + sensorFrequency.sensor.getName() + ": " + ((MySensorListener) sensorFrequency.sensor.getListener()).getTotalData());
+        log.d("\tValid data from " + sensorFrequency.sensor.getName() + ": " + ((MySensorListener) sensorFrequency.sensor.getListener()).getCollectedData());
+        log.d("\tInvalid data from " + sensorFrequency.sensor.getName() + ": " + ((MySensorListener) sensorFrequency.sensor.getListener()).getInvalidData());
+
+        return st;
+    }
+
     public void stopExecution(DataTrack dataTrack) {
         if (isRunning) {
-            isRunning = false;
             timer.cancel();
-            long totalData = 0;
             List<ExperimentStatistics> statistics = new ArrayList<ExperimentStatistics>();
             for (SensorFrequency sensorFrequency : dataTrack.getSensorList()) {
                 sensorFrequency.sensor.stopSensor();
-                //labeledDataList.addAll(((MySensorListener)sensorFrequency.sensor.getListener()).getLabeledDataList());
+
                 if (sensorFrequency.sensor.getListener() != null) {
-                    ExperimentStatistics st = new ExperimentStatistics();
-                    st.setConfigId(dataTrack.getConfigId());
-                    st.setSensorName(sensorFrequency.sensor.getName());
-                    st.setSensorFrequency(sensorFrequency.sensor.getFrequency());
-                    st.setStartTime(((MySensorListener) sensorFrequency.sensor.getListener()).getStartTime());
-                    st.setEndTime(((MySensorListener) sensorFrequency.sensor.getListener()).getEndTime());
-                    st.setCollectedData(((MySensorListener) sensorFrequency.sensor.getListener()).getCollectedData());
-                    st.setInvalidData(((MySensorListener) sensorFrequency.sensor.getListener()).getInvalidData());
-                    st.setTimestampAverage(((MySensorListener) sensorFrequency.sensor.getListener()).getTimestampAverage());
-                    st.setMaxTimestampDifference(((MySensorListener) sensorFrequency.sensor.getListener()).getMaxTimestampDifference());
-                    st.setMinTimestampDifference(((MySensorListener) sensorFrequency.sensor.getListener()).getMinTimestampDifference());
-                    st.setTimestampStandardVariation(0);
-                    statistics.add(st);
-                    log.d("Total data collected from " + sensorFrequency.sensor.getName() + ": " + ((MySensorListener) sensorFrequency.sensor.getListener()).getTotalData());
-                    log.d("\tValid data from " + sensorFrequency.sensor.getName() + ": " + ((MySensorListener) sensorFrequency.sensor.getListener()).getCollectedData());
-                    log.d("\tInvalid data from " + sensorFrequency.sensor.getName() + ": " + ((MySensorListener) sensorFrequency.sensor.getListener()).getInvalidData());
+                    statistics.add(getExperimentStatistics(dataTrack, sensorFrequency));
                     dbView.insertLabeledData(((MySensorListener) sensorFrequency.sensor.getListener()).getLabeledDataList());
-                    totalData += ((MySensorListener) sensorFrequency.sensor.getListener()).getCollectedData();
                 }
             }
             dbView.insertExperimentStatistics(statistics);
@@ -113,9 +116,11 @@ public class ExecutionController {
                 service.stopSelf();
                 service = null;
             }
-            log.d("Total data collected for exp " + dataTrack.getLabel() + ": " + totalData);
+
             //dbView.insertLabeledData(labeledDataList);
             listener.onStopped();
+
+            isRunning = false;
         }
     }
 
@@ -159,9 +164,10 @@ public class ExecutionController {
 
     private class MySensorListener implements SensorSDKListener {
 
-        private DataTrack dataTrack;
-        private ArrayList<LabeledData> labeledData;
-        private long startTime, endTime, timestampAverage, lastTimestamp, maxTimestampDifference, minTimestampDifference;
+        private final DataTrack dataTrack;
+        private final ArrayList<LabeledData> labeledData;
+        private final long startTime;
+        private long endTime, timestampAverage, lastTimestamp, maxTimestampDifference, minTimestampDifference;
         private long collectedData = 0;
         private long invalidData = 0;
         // Valid + Invalid data

@@ -1,7 +1,5 @@
 package br.org.eldorado.hiaac.datacollector;
 
-import android.content.Context;
-import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
@@ -19,7 +17,6 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
 import java.text.DateFormat;
-import java.text.Format;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -120,7 +117,7 @@ public class StatisticsActivity extends AppCompatActivity {
 
             textView = (TextView) statisticsElementView.findViewById(R.id.sensor_collected_data);
             float collected_percentage = (float)(statistic.getCollectedData()) * 100 / (float)total_expected;
-            textView.setText("" + statistic.getCollectedData() + " (" + String.format("%.2f", collected_percentage) + "%)");
+            textView.setText(statistic.getCollectedData() + " (" + String.format("%.2f", collected_percentage) + "%)");
 
             textView = (TextView) statisticsElementView.findViewById(R.id.sensor_valid_data);
             long validData = statistic.getCollectedData() - statistic.getInvalidData();

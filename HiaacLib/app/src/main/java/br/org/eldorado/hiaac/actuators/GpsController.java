@@ -21,17 +21,15 @@ import com.google.android.gms.location.SettingsClient;
 import com.google.android.gms.tasks.OnFailureListener;
 
 public class GpsController {
-    private Context context;
-    private SettingsClient mSettingsClient;
-    private LocationSettingsRequest mLocationSettingsRequest;
-    private LocationManager locationManager;
-    private LocationRequest locationRequest;
+    private final Context context;
+    private final SettingsClient mSettingsClient;
+    private final LocationSettingsRequest mLocationSettingsRequest;
 
     protected GpsController(Context context) {
         this.context = context;
-        locationManager = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
+        LocationManager locationManager = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
         mSettingsClient = LocationServices.getSettingsClient(context);
-        locationRequest = LocationRequest.create();
+        LocationRequest locationRequest = LocationRequest.create();
         locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
         locationRequest.setInterval(10 * 1000);
         locationRequest.setFastestInterval(2 * 1000);

@@ -13,8 +13,6 @@ import androidx.preference.ListPreference;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
 import br.org.eldorado.hiaac.R;
-import br.org.eldorado.hiaac.datacollector.api.ApiInterface;
-import br.org.eldorado.hiaac.datacollector.api.ClientAPI;
 import br.org.eldorado.hiaac.datacollector.util.Preferences;
 
 public class SettingsActivity extends AppCompatActivity {

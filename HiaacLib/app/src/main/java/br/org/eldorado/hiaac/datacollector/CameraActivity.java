@@ -25,7 +25,6 @@ import androidx.core.util.Consumer;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.pm.PackageManager;
@@ -39,7 +38,6 @@ import com.google.common.util.concurrent.ListenableFuture;
 
 import java.io.File;
 import java.io.IOException;
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -56,12 +54,12 @@ import br.org.eldorado.sensorsdk.util.Log;
 public class CameraActivity extends AppCompatActivity {
     private VideoCapture<Recorder> videoCapture;
     private Recording currentRecording;
-    private Log log = new Log("H-IAAC Camera");
+    private final Log log = new Log("H-IAAC Camera");
     ActivityResultLauncher<String[]> rpl;
-    private String[] REQUIRED_PERMISSIONS = new String[]{Manifest.permission.CAMERA};
+    private final String[] REQUIRED_PERMISSIONS = new String[]{Manifest.permission.CAMERA};
     PreviewView viewFinder;
     Button captureButton;
-    ExecutorService executor = Executors.newSingleThreadExecutor();
+    final ExecutorService executor = Executors.newSingleThreadExecutor();
     Boolean isRecording = false;
     long labelId;
     private Long startEpochMilli;
@@ -177,7 +175,7 @@ public class CameraActivity extends AppCompatActivity {
                     @Override
                     public void run() {
                         try {
-                            ProcessCameraProvider cameraProvider = (ProcessCameraProvider) cameraProviderFuture.get();
+                            ProcessCameraProvider cameraProvider = cameraProviderFuture.get();
                             Preview preview = (new Preview.Builder()).build();
                             preview.setSurfaceProvider(viewFinder.getSurfaceProvider());
 
@@ -228,7 +226,7 @@ public class CameraActivity extends AppCompatActivity {
 
             FileOutputOptions fileOutputOptions = new FileOutputOptions.Builder(outputFile).build();
 
-            currentRecording = ((Recorder) videoCapture.getOutput())
+            currentRecording = videoCapture.getOutput()
                     .prepareRecording(CameraActivity.this, fileOutputOptions)
                     .start(executor, new Consumer<VideoRecordEvent>() {
                         @Override
@@ -242,7 +240,7 @@ public class CameraActivity extends AppCompatActivity {
                                 // Filming has stop
                                 currentRecording = null;
 
-                                List<File> filesList = new ArrayList<File>();
+                                List<File> filesList;
                                 File directory = getPath();
                                 if (directory.exists()) {
                                     filesList = new ArrayList<>(Arrays.asList(directory.listFiles()));

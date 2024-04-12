@@ -13,7 +13,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.zip.ZipEntry;
@@ -151,14 +150,14 @@ public class Tools {
         if (source == null) {
             throw new IllegalArgumentException("The file to be zipped must not be null!");
         }
-        File zipFile = null;
+
         String zipFileName = source.getName();
         zipFileName = zipFileName.substring(0, zipFileName.lastIndexOf(".")+1) + "zip";
         File zipFileDestination = new File(source.getParent(), zipFileName);
         if (zipFileDestination.exists()) {
             zipFileDestination.delete();
         }
-        zipFile = zip(source, zipFileDestination);
+        File zipFile = zip(source, zipFileDestination);
         return zipFile;
     }
 
