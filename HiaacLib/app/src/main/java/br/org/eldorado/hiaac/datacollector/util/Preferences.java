@@ -51,6 +51,18 @@ public class Preferences {
             Preferences.prefs.edit().putStringSet(getResource(R.string.settings_device_locations),
                     locations).apply();
         }
+
+        if (notContains(R.string.preferences_run_checking)) {
+            Preferences.prefs.edit().putBoolean(getResource(R.string.preferences_run_checking), true).apply();
+        }
+    }
+
+    public static Boolean shouldRunChecking() {
+        return Preferences.prefs.getBoolean(getResource(R.string.preferences_run_checking), true);
+    }
+
+    public static void setToRunChecking(Boolean shouldRun) {
+        Preferences.prefs.edit().putBoolean(getResource(R.string.preferences_run_checking), shouldRun).apply();
     }
 
     public static ArrayList<String> getDeviceLocationsList() {

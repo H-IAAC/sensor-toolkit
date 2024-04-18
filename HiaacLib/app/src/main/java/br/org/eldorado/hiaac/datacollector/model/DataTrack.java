@@ -15,6 +15,7 @@ public class DataTrack {
     private String mUserId;
     private String mActivity;
     private boolean mSendFilesToServer;
+    private boolean mServerTime;
     private String uid;
 
     public DataTrack() {
@@ -45,6 +46,16 @@ public class DataTrack {
     public void setSendFilesToServer(boolean mSendFilesToServer) {
         this.mSendFilesToServer = mSendFilesToServer;
     }
+
+    public boolean isServerTime() {
+        return mServerTime;
+    }
+
+    public void setServerTime(boolean serverTime) {
+        this.mServerTime = serverTime;
+    }
+
+
 
     public String getUid() {
         return uid;

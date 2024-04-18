@@ -54,8 +54,9 @@ public class StatisticsActivity extends AppCompatActivity {
 
         for ( ExperimentStatistics statistic : statistics) {
             getSupportFragmentManager().beginTransaction().add(R.id.statistics_elements,
-                                                                new StatisticsPlaceholderFragment(statistic),
-                                                            "statisticsFrag").commit();
+                                                               new StatisticsPlaceholderFragment(statistic),
+                                                               "statisticsFrag")
+                                                               .commit();
         }
     }
 
@@ -104,6 +105,9 @@ public class StatisticsActivity extends AppCompatActivity {
             );
 
             View statisticsElementView = inflater.inflate(R.layout.statistics_element, container,false);
+
+            TextView usingServerTime = (TextView) statisticsElementView.findViewById(R.id.usingServerTime);
+            usingServerTime.setText(statistic.isUsingServerTime() ? "Server Time" : "Local Time");
 
             TextView textView = (TextView) statisticsElementView.findViewById(R.id.sensor_name);
             textView.setText(statistic.getSensorName());

@@ -6,14 +6,29 @@
     android:layout_height="match_parent">
 
     <androidx.appcompat.widget.AppCompatTextView
-        android:id="@+id/server_time"
-        android:layout_width="match_parent"
+        android:id="@+id/scheduler"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:paddingHorizontal="50px"
+        android:layout_marginLeft="8dp"
+        android:textColor="@color/design_default_color_primary"
+        android:textSize="14sp"
+        tools:text="Next schedule: 10:55:00"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        />
+
+    <androidx.appcompat.widget.AppCompatTextView
+        android:id="@+id/server_time"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginRight="8dp"
         android:text="@string/server_time"
         android:textAlignment="textEnd"
         android:textSize="20sp"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        />
+
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/label_recycle_view"

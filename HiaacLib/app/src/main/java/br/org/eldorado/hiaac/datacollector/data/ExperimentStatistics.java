@@ -45,6 +45,9 @@ public class ExperimentStatistics implements Serializable {
     @ColumnInfo(name = "timestamp-standard-variation")
     private long timestampStandardVariation;
 
+    @ColumnInfo(name = "using-server-time")
+    private boolean usingServerTime;
+
     public int getId() {
         return id;
     }
@@ -140,4 +143,11 @@ public class ExperimentStatistics implements Serializable {
     public void setTimestampStandardVariation(long timestampStandardVariation) {
         this.timestampStandardVariation = timestampStandardVariation;
     }
+    public boolean isUsingServerTime() {
+        return usingServerTime;
+    }
+    public void setUsingServerTime(boolean usingServerTime) {
+        this.usingServerTime = usingServerTime;
+    }
+
 }

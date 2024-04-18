@@ -20,28 +20,23 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.google.gson.JsonObject;
 
-import java.sql.Date;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 import br.org.eldorado.hiaac.BuildConfig;
 import br.org.eldorado.hiaac.R;
-import br.org.eldorado.hiaac.datacollector.api.ClientAPI;
 import br.org.eldorado.hiaac.datacollector.data.LabelConfig;
 import br.org.eldorado.hiaac.datacollector.data.LabelConfigViewModel;
 import br.org.eldorado.hiaac.datacollector.data.SensorFrequency;
+import br.org.eldorado.hiaac.datacollector.util.AlarmConfig;
 import br.org.eldorado.hiaac.datacollector.util.Log;
+import br.org.eldorado.hiaac.datacollector.util.TimeSync;
+import br.org.eldorado.hiaac.datacollector.util.Permissions;
 import br.org.eldorado.hiaac.datacollector.util.Preferences;
 import br.org.eldorado.hiaac.datacollector.view.adapter.LabelRecyclerViewAdapter;
 import br.org.eldorado.sensorsdk.SensorSDK;
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
 
 public class DataCollectorActivity extends AppCompatActivity {
     public static final int NEW_LABEL_CONFIG_ACTIVITY = 1;
@@ -49,22 +44,19 @@ public class DataCollectorActivity extends AppCompatActivity {
     public static final String LABEL_CONFIG_ACTIVITY_TYPE = "label_config_type";
     public static final String LABEL_CONFIG_ACTIVITY_ID = "label_config_id";
     public static final String FOLDER_NAME = "datacollector";
-
-    private static boolean isActivityVisible;
+    //private static boolean isActivityVisible;
     private FloatingActionButton mAddButton;
     private LabelConfigViewModel mLabelConfigViewModel;
-    private TextView serverTimeTxt;
-    private DateFormat df;
     private LabelRecyclerViewAdapter adapter;
     private BroadcastReceiver br;
     private Log log;
-    private boolean updateTimeFail;
-    //private ApiInterface apiInterface;
-    private Thread syncServerTimeThread, updateTimeLabelThread;
+    private Permissions permissions;
+
+    public final static String SCHEDULER_ACTIONS = "br.org.eldorado.schedule_collect_data";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        isActivityVisible = true;
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         }
@@ -72,46 +64,61 @@ public class DataCollectorActivity extends AppCompatActivity {
         Preferences.init(this.getApplicationContext());
         log = new Log("DataCollectorActivity");
 
+        permissions = new Permissions(this, this.getApplicationContext());
+
         setContentView(R.layout.data_collector_activity_main);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
         TextView footer = findViewById(R.id.version);
         footer.setText(BuildConfig.HIAAC_VERSION);
 
+        if (!AlarmConfig.isInitialized())
+            AlarmConfig.init(this.getApplicationContext(), (TextView) findViewById(R.id.scheduler));
+
         RecyclerView recyclerView = findViewById(R.id.label_recycle_view);
         adapter = new LabelRecyclerViewAdapter(this);
+
         br = new BroadcastReceiver() {
             @Override
             public void onReceive(Context c, Intent i) {
                 LabelRecyclerViewAdapter.ViewHolder holder = adapter.getViewHolder(i.getStringExtra("holder"));
                 if (holder != null && !holder.isStarted()) {
                     long startsTime = i.getLongExtra("startTime", SensorSDK.getInstance().getRemoteTime()) - SensorSDK.getInstance().getRemoteTime();
+
+                    log.d("Scheduler: Broadcast received");
+
                     new Handler().postDelayed(new Runnable() {
                         @Override
                         public void run() {
-                            if (LabelRecyclerViewAdapter.wakeLock != null) {
-                                LabelRecyclerViewAdapter.wakeLock.release();
-                            }
-                            PowerManager powerManager = (PowerManager) getApplicationContext().getSystemService(getApplicationContext().POWER_SERVICE);
-                            PowerManager.WakeLock  wakeLock = powerManager.newWakeLock(PowerManager.FULL_WAKE_LOCK |
-                                    PowerManager.ACQUIRE_CAUSES_WAKEUP |
-                                    PowerManager.ON_AFTER_RELEASE, "HIAACApp::WakeLock");
+                            AlarmConfig.cancelAlarm();
+                            AlarmConfig.releaseWakeLock();
 
+                            PowerManager powerManager = (PowerManager) getApplicationContext().getSystemService(getApplicationContext().POWER_SERVICE);
+                            PowerManager.WakeLock  wakeLock = powerManager.newWakeLock(PowerManager.FULL_WAKE_LOCK | PowerManager.ON_AFTER_RELEASE,
+                                                                                       "HIAACApp::WakeLock");
                             wakeLock.acquire();
+
+                            log.d("Scheduler: Broadcast received - startExecution");
                             adapter.startExecution(holder);
                         }
                     }, startsTime);
 
+                } else {
+                    log.d("Scheduler: Broadcast received invalid");
                 }
             }
         };
-        String action = "br.org.eldorado.schedule_collect_data";
-        registerReceiver(br, new IntentFilter(action));
 
         recyclerView.setAdapter(adapter);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        mLabelConfigViewModel = ViewModelProvider.AndroidViewModelFactory
-                .getInstance(getApplication()).create(LabelConfigViewModel.class);
+
+        registerReceiver(br, new IntentFilter(DataCollectorActivity.SCHEDULER_ACTIONS));
+
+        mLabelConfigViewModel = ViewModelProvider
+                                     .AndroidViewModelFactory
+                                     .getInstance(getApplication())
+                                     .create(LabelConfigViewModel.class);
+
         mLabelConfigViewModel.getAllLabels().observe(this, new Observer<List<LabelConfig>>() {
             @Override
             public void onChanged(List<LabelConfig> labels) {
@@ -122,8 +129,9 @@ public class DataCollectorActivity extends AppCompatActivity {
         mLabelConfigViewModel.getAllSensorFrequencies().observe(this, new Observer<List<SensorFrequency>>() {
             @Override
             public void onChanged(List<SensorFrequency> sensorFrequencies) {
-                Map<Long, List<SensorFrequency>> sensorFrequencyMap = sensorFrequencies.stream()
-                        .collect(Collectors.groupingBy(SensorFrequency::getConfigId));
+                Map<Long, List<SensorFrequency>> sensorFrequencyMap = sensorFrequencies
+                                                                           .stream()
+                                                                           .collect(Collectors.groupingBy(SensorFrequency::getConfigId));
                 adapter.setSensorFrequencyMap(sensorFrequencyMap);
             }
         });
@@ -139,130 +147,27 @@ public class DataCollectorActivity extends AppCompatActivity {
             }
         });
 
-        serverTimeTxt = findViewById(R.id.server_time);
-        df = new SimpleDateFormat("HH:mm:ss");
-        updateServerTime();
+        TimeSync.startServerTimeUpdates(findViewById(R.id.server_time), this);
+
+        permissions.askPermissions();
     }
 
     @Override
     protected void onResume() {
-        super.onResume();
-        isActivityVisible = true;
-        syncServerTime();
         adapter.notifyDataSetChanged();
+        super.onResume();
     }
 
-    @Override
-    protected void onPause() {
-        super.onPause();
-        isActivityVisible = false;
-    }
 
     @Override
     protected void onDestroy() {
-        super.onDestroy();
         if (br != null) {
             unregisterReceiver(br);
         }
-        if (syncServerTimeThread != null) {
-            syncServerTimeThread.interrupt();
-        }
-        if (updateTimeLabelThread != null) {
-            updateTimeLabelThread.interrupt();
-        }
-    }
 
-    private void syncServerTime() {
-        log.i("Update Server Time - Resynchronizing server time");
+        TimeSync.stopServerTimeUpdates();
 
-        Call<JsonObject> call = ClientAPI.get(ClientAPI.httpLowTimeout()).getServerTime();
-        call.enqueue(new Callback<JsonObject>() {
-            @Override
-            public void onResponse(Call<JsonObject> call, Response<JsonObject> response) {
-                long timeInMillis = response.body().get("currentTimeMillis").getAsLong();
-                SensorSDK.getInstance().setRemoteTime(
-                        timeInMillis +(response.raw().receivedResponseAtMillis() - response.raw().sentRequestAtMillis())/2);
-                updateTimeFail = false;
-            }
-            @Override
-            public void onFailure(Call<JsonObject> call, Throwable t) {
-                updateTimeFail = true;
-                log.d("Get ServerTime failed at: " + Preferences.getPreferredServer() + " " + t.getCause());
-                call.cancel();
-            }
-        });
-    }
-
-    private void updateServerTime() {
-        updateTimeFail = true;
-
-        syncServerTimeThread = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                log.i("Update Server Time - Starting Thread");
-                try {
-                    int resync = 0;
-                    Date date = new Date(System.currentTimeMillis());
-                    while (true) {
-                        /** Resync with server every 2 minutes */
-                        if (resync++ % 2 == 0) {
-                            syncServerTime();
-                            Thread.sleep(2000);
-                        } else {
-                            long timeInMillis = SensorSDK.getInstance().getRemoteTime();
-                            //setRemoteTimeText(timeInMillis);
-                            /*date.setTime(timeInMillis);
-                            String time = df.format(date);
-                            if (isActivityVisible) {
-                                runOnUiThread(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        serverTimeTxt.setText(getString(R.string.server_time) + " " + time);
-                                    }
-                                });
-                            }*/
-                            long next = (60000 - timeInMillis % 60000);
-                            Thread.sleep(Math.max(next, next-50));
-                        }
-                    }
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-        });
-        updateTimeLabelThread = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                while (true) {
-                    try {
-                        long time = SensorSDK.getInstance().getRemoteTime();
-                        setRemoteTimeText(time);
-                        Thread.sleep(50);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
-        });
-        syncServerTimeThread.start();
-        updateTimeLabelThread.start();
-    }
-
-    private void setRemoteTimeText(long timeInMillis) {
-        if (isActivityVisible) {
-            Date date = new Date(timeInMillis);
-            String time = df.format(date);
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    if (updateTimeFail) {
-                        serverTimeTxt.setText(getString(R.string.local_time) + " " + time);
-                    } else {
-                        serverTimeTxt.setText(getString(R.string.server_time) + " " + time);
-                    }
-                }
-            });
-        }
+        super.onDestroy();
     }
 
     @Override

@@ -1,15 +1,13 @@
 package br.org.eldorado.hiaac.datacollector.view.adapter;
 
-import static android.content.Context.POWER_SERVICE;
+
 import static br.org.eldorado.hiaac.datacollector.DataCollectorActivity.LABEL_CONFIG_ACTIVITY_ID;
 import static br.org.eldorado.hiaac.datacollector.DataCollectorActivity.LABEL_CONFIG_ACTIVITY_TYPE;
 import static br.org.eldorado.hiaac.datacollector.DataCollectorActivity.UPDATE_LABEL_CONFIG_ACTIVITY;
 
 import android.app.Activity;
-import android.app.AlarmManager;
 import android.app.AlertDialog;
 import android.app.Application;
-import android.app.PendingIntent;
 import android.app.ProgressDialog;
 import android.content.ComponentName;
 import android.content.Context;
@@ -17,12 +15,8 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.res.ColorStateList;
-import android.media.AudioManager;
-import android.media.ToneGenerator;
 import android.os.CountDownTimer;
-import android.os.Handler;
 import android.os.IBinder;
-import android.os.PowerManager;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -49,7 +43,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -73,9 +67,11 @@ import br.org.eldorado.hiaac.datacollector.service.listener.ExecutionServiceList
 import br.org.eldorado.hiaac.datacollector.util.CsvFiles;
 import br.org.eldorado.hiaac.datacollector.util.Log;
 import br.org.eldorado.hiaac.datacollector.util.Preferences;
+import br.org.eldorado.hiaac.datacollector.util.TimeSync;
 import br.org.eldorado.hiaac.datacollector.util.Tools;
+import br.org.eldorado.hiaac.datacollector.util.Utils;
 import br.org.eldorado.hiaac.datacollector.util.VideoMetadata;
-import br.org.eldorado.sensorsdk.SensorSDK;
+import br.org.eldorado.hiaac.datacollector.util.AlarmConfig;
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
 import okhttp3.RequestBody;
@@ -84,26 +80,25 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecyclerViewAdapter.ViewHolder> {
-
     private final int SEND_DATA_TO_FIREBASE = 0;
     private final int CREATE_CSV_FILE = 1;
     private final int SEND_DATA_TO_HIAAC = 2;
-
-    public static PowerManager.WakeLock wakeLock;
     private static final String TAG = "LabelRecyclerViewAdapter";
     private final LayoutInflater mInflater;
     private List<LabelConfig> labelConfigs;
     private Set<Integer> labelsConflicts = new HashSet<>();
     private Map<Long, List<SensorFrequency>> sensorFrequencyMap;
-    private final Context mContext;
+    private Context mContext;
     private ExecutionService execService;
-    private ServiceConnection svc;
+    private ServiceConnection serviceConnection;
+    private ServiceConnection checkingServiceConnection;
     private final Log log;
     private ProgressDialog sendDataDialog;
     private LabelConfigViewModel mLabelConfigViewModel;
     private final Map<String, ViewHolder> holdersMap = new HashMap<>();
     private boolean deleteButtonClicked;
     private final CsvFiles csvFiles;
+    private AlertDialog dialog;
 
     public LabelRecyclerViewAdapter(Context context) {
         mInflater = LayoutInflater.from(context);
@@ -119,8 +114,8 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
             for (int j = 1; j < labels.size(); ++j) {
                 if (i == j) continue;
                 if (labels.get(i).experiment.equals(labels.get(j).experiment) &&
-                    labels.get(i).activity.equals(labels.get(j).activity) &&
-                    labels.get(i).userId.equals(labels.get(j).userId)) {
+                        labels.get(i).activity.equals(labels.get(j).activity) &&
+                        labels.get(i).userId.equals(labels.get(j).userId)) {
                     labelsConflicts.add(i);
                     labelsConflicts.add(j);
                 }
@@ -142,7 +137,7 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
         return new ViewHolder(view);
     }
 
-    private void expandOption (LabelRecyclerViewAdapter.ViewHolder holder, View v) {
+    private void expandOption(LabelRecyclerViewAdapter.ViewHolder holder, View v) {
         if (holder.isOpened) {
             holder.getButtonContainer().close();
             holder.setOpened(false);
@@ -159,7 +154,7 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
         holdersMap.put(labelTitle, holder);
 
         mLabelConfigViewModel = ViewModelProvider.AndroidViewModelFactory
-                .getInstance((Application)mContext.getApplicationContext()).create(LabelConfigViewModel.class);
+                .getInstance((Application) mContext.getApplicationContext()).create(LabelConfigViewModel.class);
 
         RecyclerView csvList = holder.getCsvRecyclerView();
         List<File> filesList = csvFiles.getFiles(labelConfig.id);
@@ -168,13 +163,19 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
         csvList.setLayoutManager(new LinearLayoutManager(mContext));
 
         holder.getLabelTitle().setText(labelTitle);
-        holder.getLabelTitle().setOnClickListener(v -> { expandOption(holder, v); });
+        holder.getLabelTitle().setOnClickListener(v -> {
+            expandOption(holder, v);
+        });
 
-        holder.getLabelActivity().setOnClickListener(v -> { expandOption(holder, v); });
+        holder.getLabelActivity().setOnClickListener(v -> {
+            expandOption(holder, v);
+        });
 
         holder.getLabelActivity().setText(labelConfig.activity);
         holder.getLabelDeviceLocation().setText(labelConfig.userId + " - " + labelConfig.deviceLocation);
-        holder.getLabelDeviceLocation().setOnClickListener(v -> { expandOption(holder, v); });
+        holder.getLabelDeviceLocation().setOnClickListener(v -> {
+            expandOption(holder, v);
+        });
 
         if (labelsConflicts.contains(position))
             holder.getLabelConflict().setVisibility(View.VISIBLE);
@@ -204,13 +205,13 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
                                 share_with_server))
                         .setCancelable(false)
                         .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                dialog.dismiss();
-                                shareButton.setEnabled(false);
-                                sendData(holder, SEND_DATA_TO_HIAAC,false, "0");
-                            }
-                        }
+                                    @Override
+                                    public void onClick(DialogInterface dialog, int which) {
+                                        dialog.dismiss();
+                                        shareButton.setEnabled(false);
+                                        sendData(holder, SEND_DATA_TO_HIAAC, false, "0");
+                                    }
+                                }
                         )
                         .setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {
                             @Override
@@ -294,37 +295,16 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
             }
         });
 
-        checkExecution(holder);
+        Date alarmSchedule = AlarmConfig.configureScheduler(labelConfig);
 
-        configureScheduler(labelConfig);
-    }
-
-    private void configureScheduler(LabelConfig labelConfig) {
-        String action = "br.org.eldorado.schedule_collect_data";
-        Intent i = new Intent(action);
-        i.putExtra("holder", labelConfig.experiment);
-        i.putExtra("startTime", labelConfig.scheduledTime);
-        AlarmManager mgr = (AlarmManager) mContext.getSystemService(Context.ALARM_SERVICE);
-        PendingIntent pi = PendingIntent.getBroadcast(mContext, 0, i, PendingIntent.FLAG_MUTABLE | PendingIntent.FLAG_UPDATE_CURRENT);
-        mgr.cancel(pi);
-
-        if (labelConfig.scheduledTime > 0) {
-            Calendar c = Calendar.getInstance();
-            c.setTimeInMillis(labelConfig.scheduledTime);
-
-            Calendar now = Calendar.getInstance();
-            now.setTimeInMillis(SensorSDK.getInstance().getRemoteTime());
-            if (c.after(now)) {
-                PowerManager powerManager = (PowerManager) mContext.getSystemService(POWER_SERVICE);
-                wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK,
-                        "DataCollector::ScheduleWakeLock");
-                wakeLock.acquire();
-                log.i("Scheduling start for " + labelConfig.experiment + " at " + c.getTime().toString());
-                long startsTime = labelConfig.scheduledTime - SensorSDK.getInstance().getRemoteTime() - 7000;
-                //mgr.setExact(AlarmManager.RTC_WAKEUP, System.currentTimeMillis() + startsTime, pi);
-                mgr.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, SensorSDK.getInstance().getRemoteTime() + startsTime, pi);
-            }
+        if (alarmSchedule == null) {
+            log.d("Scheduler: No alarm configured for [" + labelConfig.experiment + "] id: " + labelConfig.id);
+        } else {
+            log.d("Scheduler: Alarm configured for [" + labelConfig.experiment + "] id: " + labelConfig.id);
         }
+
+        if (Preferences.shouldRunChecking())
+            checkExecution(holder);
     }
 
     private void resizeLabelPanel(ViewHolder holder) {
@@ -348,7 +328,8 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
                     @Override
                     public void run() {
                         if (showDialog) {
-                            sendDataDialog.setMessage(message);
+                            if (sendDataDialog != null)
+                                sendDataDialog.setMessage(message);
                         }
                     }
                 });
@@ -608,144 +589,156 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
         return false;
     }
 
-    private AlertDialog dialog;
     public void startExecution(ViewHolder holder) {
-        if (!labelConfigContains(holder) || holder.isStarted() || (execService != null && execService.isRunning() != null)) return;
+        if (!labelConfigContains(holder) || holder.isStarted() || (execService != null && execService.isRunning() != null)) {
+            log.d("startExecution could not start! holder.isStarted() is [" + holder.isStarted() + "]");
+            log.d("startExecution could not start! labelConfigContains(holder) is [" + labelConfigContains(holder) + "]");
+            log.d("startExecution could not start! (execService != null) is [" + (execService != null) + "]");
+            log.d("startExecution could not start! execService.isRunning() is [" + execService.isRunning() + "]");
+            return;
+        }
+
         holder.setStarted(true);
-        svc = new ServiceConnection() {
+
+        serviceConnection = new ServiceConnection() {
             @Override
             public void onServiceConnected(ComponentName name, IBinder service) {
-                try {
-                    log.d("Connected execService");
-                    ExecutionService.MyBinder binder = (ExecutionService.MyBinder) service;
-                    execService = binder.getServer();
-                    DataTrack dt = new DataTrack();
-                    String label = labelConfigs.get(holder.getAdapterPosition()).experiment;
-                    int stopTime = labelConfigs.get(holder.getAdapterPosition()).stopTime;
-                    long configId = labelConfigs.get(holder.getAdapterPosition()).id;
+                log.d("startExecution - onServiceConnected");
+                ExecutionService.MyBinder binder = (ExecutionService.MyBinder) service;
+                execService = binder.getServer();
+                DataTrack dt = getDataTrack(holder);
 
-                    dt.setDeviceLocation(labelConfigs.get(holder.getAdapterPosition()).deviceLocation);
-                    dt.setUserId(labelConfigs.get(holder.getAdapterPosition()).userId);
-                    dt.setSendFilesToServer(labelConfigs.get(holder.getAdapterPosition()).sendToServer);
-                    dt.setActivity(labelConfigs.get(holder.getAdapterPosition()).activity);
-                    dt.setStopTime(stopTime);
-                    dt.setConfigId(configId);
-                    dt.setLabel(label);
-                    dt.addSensorList(sensorFrequencyMap.get(configId));
-                    execService.startExecution(new MyExecutionListener(dt, holder));
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
+                //if (dt == null)
+                //    return;
+
+                dt.addSensorList(sensorFrequencyMap.get(dt.getConfigId()));
+                execService.startExecution(new MyExecutionListener(dt, holder));
             }
 
             @Override
-            public void onServiceDisconnected(ComponentName name) {}
+            public void onServiceDisconnected(ComponentName name) {
+                log.d("startExecution - onServiceDisconnected");
+            }
         };
-        log.d("startExecution - disabling start button");
-        //execService.setRemoteTime(System.currentTimeMillis() + (1000*60*60));
 
-        if (execService.isRunning() == null) {
+        if (execService == null || execService.isRunning() == null) {
             AlertDialog.Builder timer = new AlertDialog.Builder(mContext);
             dialog = timer.create();
             dialog.setTitle(mContext.getString(R.string.experiment_timer_title));
             dialog.setMessage("\t 10");
             dialog.setCancelable(false);
 
-            ToneGenerator startBeep = new ToneGenerator(AudioManager.STREAM_RING, 9999);
-            startBeep.startTone(ToneGenerator.TONE_CDMA_ABBR_INTERCEPT, 150);
-            new Handler().postDelayed(new Runnable() {
-                                          @Override
-                                          public void run() {
-                                              startBeep.startTone(ToneGenerator.TONE_CDMA_ABBR_INTERCEPT, 150);
-                                          }
-                                      }, 300);
+            String serviceTitle = holder.labelTitle.getText().toString() + " " + holder.labelActivity.getText().toString();
+            CountDownTimer countDown = launchCounterToStartService(serviceTitle);
 
-
-            Integer counterStartDelay = Preferences.getPreferredStartDelay() * 1000;
-            CountDownTimer countDown = new CountDownTimer(counterStartDelay, 1000) {
-                @Override
-                public void onTick(long timeRemaining) {
-                    ((Activity) mContext).runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            dialog.setMessage("\t" + timeRemaining / 1000);
-                        }
-                    });
-                }
-
-                @Override
-                public void onFinish() {
-                    try {
-                        dialog.dismiss();
-                    } catch (IllegalArgumentException e) {
-                        log.e("App is not running");
-                    }
-                    Intent execServiceIntent = new Intent(mContext, ExecutionService.class);
-                    mContext.startForegroundService(execServiceIntent);
-                    mContext.bindService(execServiceIntent, svc, Context.BIND_AUTO_CREATE);
-                    ToneGenerator startBeep = new ToneGenerator(AudioManager.STREAM_RING, 9999);
-                    startBeep.startTone(ToneGenerator.TONE_CDMA_ABBR_INTERCEPT, 800);
-
-                }
-            };
             try {
                 dialog.show();
             } catch (Exception e) {
                 log.e("App is not running!");
+                Toast.makeText(mContext, "App is not running!", Toast.LENGTH_LONG).show();
+                return;
             }
+
             TextView messageView = (TextView) dialog.findViewById(android.R.id.message);
             messageView.setGravity(Gravity.CENTER);
             messageView.setTextSize(30);
             countDown.start();
         } else {
+            log.d("startExecution - startForegroundService");
             Intent execServiceIntent = new Intent(mContext, ExecutionService.class);
+            execServiceIntent.setAction(ExecutionService.ACTION_START_ANOTHER_FOREGROUND_SERVICE);
+            execServiceIntent.putExtra("Title", holder.labelTitle.toString());
             mContext.startForegroundService(execServiceIntent);
-            mContext.bindService(execServiceIntent, svc, Context.BIND_AUTO_CREATE);
+            mContext.bindService(execServiceIntent, serviceConnection, Context.BIND_AUTO_CREATE);
         }
     }
 
-    private void checkExecution(ViewHolder holder) {
-        svc = new ServiceConnection() {
+    private CountDownTimer launchCounterToStartService(String title) {
+        return new CountDownTimer((Preferences.getPreferredStartDelay() * 1000), 1000) {
             @Override
-            public void onServiceConnected(ComponentName name, IBinder service) {
-                try {
-                    log.d("checking");
-                    ExecutionService.MyBinder binder = (ExecutionService.MyBinder) service;
-                    execService = binder.getServer();
-                    DataTrack dt = new DataTrack();
-                    String label = labelConfigs.get(holder.getAdapterPosition()).experiment;
-                    int stopTime = labelConfigs.get(holder.getAdapterPosition()).stopTime;
-                    long labelId = labelConfigs.get(holder.getAdapterPosition()).id;
-
-                    dt.setDeviceLocation(labelConfigs.get(holder.getAdapterPosition()).deviceLocation);
-                    dt.setUserId(labelConfigs.get(holder.getAdapterPosition()).userId);
-                    dt.setSendFilesToServer(labelConfigs.get(holder.getAdapterPosition()).sendToServer);
-                    dt.setActivity(labelConfigs.get(holder.getAdapterPosition()).activity);
-                    dt.setConfigId(labelId);
-                    dt.setStopTime(stopTime);
-                    dt.setLabel(label);
-                    dt.addSensorList(sensorFrequencyMap.get(label));
-                    if (dt.equals(execService.isRunning())) {
-                        log.d("Experiment already running " + dt.getLabel());
-                        holder.getEditButton().setEnabled(false);
-                        setAsStop(holder.getStartButton(), holder);
-                        execService.changeExecutionServiceListener(new MyExecutionListener(dt, holder));
-                        //startExecution(holder);
-                    } else {
-                        sendData(holder, CREATE_CSV_FILE, false, "0");
+            public void onTick(long timeRemaining) {
+                ((Activity) mContext).runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        dialog.setMessage("\t" + timeRemaining / 1000);
                     }
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
+                });
             }
 
             @Override
-            public void onServiceDisconnected(ComponentName name) {}
+            public void onFinish() {
+                try {
+                    dialog.dismiss();
+                } catch (IllegalArgumentException e) {
+                    log.e("App is not running");
+                }
+
+                Utils.emitStartBeep();
+
+                Intent execServiceIntent = new Intent(mContext, ExecutionService.class);
+                execServiceIntent.setAction(ExecutionService.ACTION_START_FOREGROUND_SERVICE);
+                execServiceIntent.putExtra("Title", title);
+                log.d("startExecution - Counter finished! starting Foreground services");
+
+                if (mContext.startForegroundService(execServiceIntent) == null)
+                    log.d("startExecution - Failed to startForegroundService");
+
+                if (!mContext.bindService(execServiceIntent, serviceConnection, Context.BIND_AUTO_CREATE))
+                    log.d("startExecution - Failed to bindService, system couldn't find the service or client doesn't have permission to bind to it.");
+            }
+        };
+    }
+
+    private DataTrack getDataTrack(ViewHolder holder) {
+        DataTrack dt = new DataTrack();
+        try {
+            dt.setDeviceLocation(labelConfigs.get(holder.getAdapterPosition()).deviceLocation);
+            dt.setUserId(labelConfigs.get(holder.getAdapterPosition()).userId);
+            dt.setSendFilesToServer(labelConfigs.get(holder.getAdapterPosition()).sendToServer);
+            dt.setActivity(labelConfigs.get(holder.getAdapterPosition()).activity);
+            dt.setConfigId(labelConfigs.get(holder.getAdapterPosition()).id);
+            dt.setStopTime(labelConfigs.get(holder.getAdapterPosition()).stopTime);
+            dt.setLabel(labelConfigs.get(holder.getAdapterPosition()).experiment);
+            dt.setServerTime(TimeSync.isUsingServerTime());
+        } catch (Exception e) {
+            log.e("checkExecution - Failed to get data from ViewHolder: " + e.getMessage());
+        }
+        return dt;
+    }
+
+    private void checkExecution(ViewHolder holder) {
+        checkingServiceConnection = new ServiceConnection() {
+            @Override
+            public void onServiceConnected(ComponentName name, IBinder service) {
+                log.d("checkExecution - onServiceConnected");
+                ExecutionService.MyBinder binder = (ExecutionService.MyBinder) service;
+                execService = binder.getServer();
+                DataTrack dt = getDataTrack(holder);
+
+                dt.addSensorList(sensorFrequencyMap.get(dt.getLabel()));
+
+                if (dt.equals(execService.isRunning())) {
+                    log.d("checkExecution - Experiment already running " + dt.getLabel());
+                    holder.getEditButton().setEnabled(false);
+                    setAsStop(holder.getStartButton(), holder);
+                    execService.changeExecutionServiceListener(new MyExecutionListener(dt, holder));
+                } else {
+                    log.d("checkExecution - ExecutionService not running " + dt.getLabel());
+                    sendData(holder, CREATE_CSV_FILE, false, "0");
+                }
+
+                Preferences.setToRunChecking(false);
+            }
+
+            @Override
+            public void onServiceDisconnected(ComponentName name) { }
         };
 
         Intent execServiceIntent = new Intent(mContext, ExecutionService.class);
+        execServiceIntent.setAction(ExecutionService.ACTION_CHECK_FOREGROUND_SERVICE);
+        execServiceIntent.putExtra("Title", holder.labelTitle.getText().toString());
         mContext.startForegroundService(execServiceIntent);
-        mContext.bindService(execServiceIntent, svc, Context.BIND_AUTO_CREATE);
+        mContext.bindService(execServiceIntent, checkingServiceConnection, Context.BIND_AUTO_CREATE);
     }
 
     @Override
@@ -950,8 +943,6 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
                 ((Activity) mContext).runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                                        /*execService.stopSelf();
-                                        execService.stopForeground(true);*/
                         holder.getEditButton().setEnabled(true);
                         setAsStart(holder.getStartButton(), holder);
                         holder.getLabelTimer().setText(
@@ -975,8 +966,6 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
 
                             @Override
                             public void onFinish() {
-                                                /*createCSVDialog.setCancelable(true);
-                                                createCSVDialog.setMessage("OK");*/
                                 createCSVDialog.dismiss();
                                 sendData(holder, CREATE_CSV_FILE, true, getDataTrack().getUid());
                             }
@@ -1000,7 +989,7 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
             ((Activity)mContext).runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    log.d("MyExecutionListener - disbling buttons");
+                    log.d("MyExecutionListener - disabling buttons");
                     holder.getEditButton().setEnabled(false);
                     setAsStop(holder.getStartButton(), holder);
                 }

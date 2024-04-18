@@ -104,6 +104,8 @@
     <string name="settings_counter_key">Start Collect Config</string>
     <string name="settings_device_locations">Device Locations</string>
 
+    <string name="preferences_run_checking">Checking</string>
+
     <string name="camera_dialog_title">Alert!</string>
     <string name="camera_dialog_msg">Already contains a video.\nNew record will replace the existing one.</string>
     <string name="camera_dialog_btn">Ok</string>

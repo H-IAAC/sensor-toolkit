@@ -35,6 +35,21 @@
     </LinearLayout>
 
     <TextView
+        android:id="@+id/usingServerTime"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="12sp"
+        android:layout_marginTop="5dp"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
+        android:layout_marginBottom="10dp"
+        android:textColor="@color/black"
+        tools:text="Server Time"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/statistics_elements"/>
+
+    <TextView
         android:id="@+id/sensor_samples"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -47,7 +62,7 @@
         android:layout_marginBottom="10dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/statistics_elements"/>
+        app:layout_constraintTop_toBottomOf="@id/usingServerTime"/>
 
     <LinearLayout
         android:id="@+id/expected_data"

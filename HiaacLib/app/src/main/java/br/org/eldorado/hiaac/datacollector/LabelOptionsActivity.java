@@ -107,7 +107,6 @@ public class LabelOptionsActivity extends AppCompatActivity {
     private boolean mIsUpdating;
     private List<SensorFrequency> mSensorFrequencies;
     private List<SensorFrequencyViewAdapter.SelectedSensorFrequency> mSelectedSensors;
-
     private SensorFrequencyViewAdapter mSensorFrequencyViewAdapter;
     private EditText mLabelTile;
     private EditText mActivityTxt;
