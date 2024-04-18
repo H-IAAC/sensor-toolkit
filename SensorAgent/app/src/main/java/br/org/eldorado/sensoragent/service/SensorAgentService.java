@@ -42,6 +42,8 @@ public class SensorAgentService extends Service {
         NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this, channelId);
         Notification notification = notificationBuilder.setOngoing(true)
                 .setSmallIcon(R.mipmap.ic_launcher)
+                .setContentTitle("Sensor Agent Service")
+                .setContentText("Running")
                 .setPriority(NotificationManager.IMPORTANCE_LOW)
                 .setCategory(NotificationCompat.CATEGORY_SERVICE)
                 .build();

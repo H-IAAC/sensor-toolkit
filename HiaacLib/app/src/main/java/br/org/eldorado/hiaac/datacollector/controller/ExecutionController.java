@@ -175,7 +175,7 @@ public class ExecutionController {
 
         public MySensorListener(DataTrack data) {
             this.dataTrack = data;
-            labeledData = new ArrayList<LabeledData>(50000);
+            this.labeledData = new ArrayList<LabeledData>(50000);
             this.startTime = System.currentTimeMillis();
             this.timestampAverage = 0;
             this.lastTimestamp = 0;
@@ -184,7 +184,7 @@ public class ExecutionController {
         }
 
         public List<LabeledData> getLabeledDataList() {
-            return labeledData == null ? new ArrayList<LabeledData>() : labeledData;
+            return labeledData;
         }
 
         public long getStartTime() {
@@ -255,7 +255,7 @@ public class ExecutionController {
                     labeledData.add(data);
                     collectedData++;
 
-                    if (labeledData.size() > 50000) {
+                    if (labeledData.size() >= 50000) {
                         log.d("Collected data so far for " + dataTrack.getLabel() + " - " + sensor.getName() + "\n\tValid: " + collectedData + "\n\tInvalid: " + invalidData + "\n\tAverage: " + (timestampAverage/collectedData));
                         dbView.insertLabeledData((ArrayList<LabeledData>)labeledData.clone());
                         labeledData.clear();

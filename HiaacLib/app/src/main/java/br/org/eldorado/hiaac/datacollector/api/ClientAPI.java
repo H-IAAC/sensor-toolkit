@@ -11,7 +11,6 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 public class ClientAPI {
     private static final HttpLoggingInterceptor interceptor = new HttpLoggingInterceptor();
-
     public ClientAPI() {
         interceptor.setLevel(HttpLoggingInterceptor.Level.NONE);
     }

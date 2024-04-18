@@ -2,9 +2,6 @@ package br.org.eldorado.hiaac.datacollector;
 
 import static br.org.eldorado.hiaac.datacollector.DataCollectorActivity.FOLDER_NAME;
 
-import androidx.activity.result.ActivityResultCallback;
-import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.camera.core.CameraSelector;
@@ -41,11 +38,11 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import br.org.eldorado.hiaac.R;
+import br.org.eldorado.hiaac.datacollector.util.Permissions;
 import br.org.eldorado.hiaac.datacollector.util.Tools;
 import br.org.eldorado.hiaac.datacollector.util.VideoMetadata;
 import br.org.eldorado.sensorsdk.SensorSDK;
@@ -55,7 +52,6 @@ public class CameraActivity extends AppCompatActivity {
     private VideoCapture<Recorder> videoCapture;
     private Recording currentRecording;
     private final Log log = new Log("H-IAAC Camera");
-    ActivityResultLauncher<String[]> rpl;
     private final String[] REQUIRED_PERMISSIONS = new String[]{Manifest.permission.CAMERA};
     PreviewView viewFinder;
     Button captureButton;
@@ -66,6 +62,7 @@ public class CameraActivity extends AppCompatActivity {
     private Long endEpochMilli;
     private PowerManager.WakeLock mWakeLock;
     private Context appContext;
+    private Permissions permissions;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -87,6 +84,8 @@ public class CameraActivity extends AppCompatActivity {
         } else {
             labelId = (Long) savedInstanceState.getSerializable("LABEL_ID");
         }
+
+        permissions = new Permissions(this, this.getApplicationContext());
 
         PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
         mWakeLock = pm.newWakeLock(PowerManager.SCREEN_DIM_WAKE_LOCK | PowerManager.ON_AFTER_RELEASE, "HIAAC:VIDEO_RECORD");
@@ -111,24 +110,12 @@ public class CameraActivity extends AppCompatActivity {
         if (videoFileExists())
             showDialog();
 
-        rpl = registerForActivityResult(new ActivityResultContracts.RequestMultiplePermissions(),
-                new ActivityResultCallback<Map<String, Boolean>>() {
-                    @Override
-                    public void onActivityResult(Map<String, Boolean> isGranted) {
-                        if (allPermissionsGranted()) {
-                            startCamera();
-                        } else {
-                            Toast.makeText(getApplicationContext(), "Permissions not granted by the user.", Toast.LENGTH_SHORT).show();
-                            finish();
-                        }
-                    }
-                }
-        );
-        if (allPermissionsGranted()) {
+        if (permissions.isCameraPermissionsGranted()) {
             // Only starts camera if all permission has been granted
             startCamera();
         } else {
-            rpl.launch(REQUIRED_PERMISSIONS);
+            Toast.makeText(appContext, "Missing CAMERA permission.", Toast.LENGTH_LONG).show();
+            finish();
         }
     }
 
@@ -326,15 +313,6 @@ public class CameraActivity extends AppCompatActivity {
 
     private void setButtonAsStop() {
         captureButton.setBackground(this.getResources().getDrawable(R.drawable.baseline_stop_24));
-    }
-
-    private boolean allPermissionsGranted() {
-        for (String permission : REQUIRED_PERMISSIONS) {
-            if (ContextCompat.checkSelfPermission(this, permission) != PackageManager.PERMISSION_GRANTED) {
-                return false;
-            }
-        }
-        return true;
     }
 
     @Override

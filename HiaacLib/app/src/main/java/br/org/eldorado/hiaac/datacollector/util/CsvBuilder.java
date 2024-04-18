@@ -20,7 +20,7 @@ public class CsvBuilder {
 
     private static final String TAG = "CsvBuilder";
     private final Log log = new Log(TAG);
-
+    private final Locale l = Locale.getDefault();
     private final LabelConfigViewModel mDbView;
     private final Context mContext;
 
@@ -31,7 +31,6 @@ public class CsvBuilder {
 
     public void appendHeader(File csvFile) {
         CSVWriter writer = null;
-        Locale l = Locale.getDefault();
 
         if(csvFile.length() != 0) {
             log.d("CSV file is not empty! Ignoring header append.");
@@ -50,14 +49,15 @@ public class CsvBuilder {
             writer.writeNext(LabeledData.getCSVHeaders());
 
         } catch (Exception e) {
-            e.printStackTrace();
+            log.d("Appending CSV header failed: " + e.getMessage());
         } finally {
             if (writer != null) {
+                Locale.setDefault(l);
+
                 try {
-                    Locale.setDefault(l);
                     writer.close();
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    log.d("Appending CSV header, file failed: " + e.getMessage());
                 }
             }
         }
@@ -67,43 +67,38 @@ public class CsvBuilder {
 
         if (csvFile == null) return;
 
+        log.d("Appending " + data.size() + " data");
+        CSVWriter writer = null;
+
         try {
-            log.d("Appending " + data.size() + " data");
-            CSVWriter writer = null;
-            Locale l = Locale.getDefault();
-            try {
-                Locale.setDefault(new Locale("pt", "BR"));
-                writer = new CSVWriter(new FileWriter(csvFile, true),
-                        ';',
-                        CSVWriter.NO_QUOTE_CHARACTER,
-                        CSVWriter.DEFAULT_ESCAPE_CHARACTER,
-                        CSVWriter.DEFAULT_LINE_END);
+            Locale.setDefault(new Locale("pt", "BR"));
+            writer = new CSVWriter(new FileWriter(csvFile, true),
+                          ';',
+                                   CSVWriter.NO_QUOTE_CHARACTER,
+                                   CSVWriter.DEFAULT_ESCAPE_CHARACTER,
+                                   CSVWriter.DEFAULT_LINE_END);
 
-                if (type == 0) {
-                    writer.writeNext(data.get(0).getCSVHeaders());
-                }
-                for (LabeledData dt : data) {
-                    writer.writeNext(dt.getCSVFormattedString());
-                    dt.setIsDataUsed(1);
-                }
+            if (type == 0) {
+                writer.writeNext(data.get(0).getCSVHeaders());
+            }
+            for (LabeledData dt : data) {
+                writer.writeNext(dt.getCSVFormattedString());
+                dt.setIsDataUsed(1);
+            }
 
-                mDbView.updateLabeledData(data);
+            mDbView.updateLabeledData(data);
+        } catch (Exception e) {
+            log.d("Appending CSV data failed: " + e.getMessage());
+        } finally {
+            if (writer != null) {
+                Locale.setDefault(l);
 
-                Thread.sleep(100);
-            } catch (Exception e) {
-                e.printStackTrace();
-            } finally {
-                if (writer != null) {
-                    try {
-                        Locale.setDefault(l);
-                        writer.close();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
+                try {
+                    writer.close();
+                } catch (IOException e) {
+                    log.d("Appending CSV data, file failed: " + e.getMessage());
                 }
             }
-        } catch (Exception e) {
-            e.printStackTrace();
         }
     }
 
@@ -144,6 +139,5 @@ public class CsvBuilder {
                data.getDevicePosition() + "__" +
                timestamp + // UID
                ".csv";
-
     }
 }

@@ -157,7 +157,8 @@ public class LabelOptionsActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Calendar now = Calendar.getInstance();
-                now.setTimeInMillis(SensorSDK.getInstance().getRemoteTime());
+                // Increment 5 min (300000 min), to always suggest schedule time 5 min ahead
+                now.setTimeInMillis(SensorSDK.getInstance().getRemoteTime() + 300000);
 
                 timePickerDialog = new TimePickerDialog(LabelOptionsActivity.this, new TimePickerDialog.OnTimeSetListener() {
                     @Override
@@ -165,7 +166,7 @@ public class LabelOptionsActivity extends AppCompatActivity {
                         mScheduleTimeTxt.setText(String.format("%02d", hourOfDay) + ":" + String.format("%02d", minute));
                     }
 
-                } , now.get(Calendar.HOUR_OF_DAY), now.get(Calendar.MINUTE), true);
+                }, now.get(Calendar.HOUR_OF_DAY), now.get(Calendar.MINUTE), true);
 
                 timePickerDialog.show();
                 timePickerDialog.getButton(TimePickerDialog.BUTTON_NEGATIVE).setOnClickListener(new View.OnClickListener() {
