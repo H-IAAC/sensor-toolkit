@@ -60,6 +60,7 @@ import br.org.eldorado.hiaac.datacollector.api.StatusResponse;
 import br.org.eldorado.hiaac.datacollector.data.LabelConfig;
 import br.org.eldorado.hiaac.datacollector.data.LabelConfigViewModel;
 import br.org.eldorado.hiaac.datacollector.data.SensorFrequency;
+import br.org.eldorado.hiaac.datacollector.util.AlarmConfig;
 import br.org.eldorado.hiaac.datacollector.util.CsvFiles;
 import br.org.eldorado.hiaac.datacollector.util.Log;
 import br.org.eldorado.hiaac.datacollector.util.Preferences;
@@ -133,8 +134,6 @@ public class LabelOptionsActivity extends AppCompatActivity {
                 }
             };
 
-
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -175,6 +174,9 @@ public class LabelOptionsActivity extends AppCompatActivity {
                         mScheduleTimeTxt.setText("");
                     }
                 });
+
+                // Disable alarm when user manually clicks start button
+                AlarmConfig.cancelAlarm();
             }
         });
 
@@ -182,7 +184,6 @@ public class LabelOptionsActivity extends AppCompatActivity {
         mDeviceLocation = findViewById(R.id.device_location_spinner);
         mUserIdTxt = findViewById(R.id.user_id_txt);
         mWarnTxt = findViewById(R.id.edit_warn_txt);
-        //mLoadConfigBtn = findViewById(R.id.load_config_button);
         mSendFilesToServer = findViewById(R.id.send_files_to_server_checkbox);
         mSendFilesToServer.setVisibility(View.INVISIBLE);
         mLabelConfigViewModel = ViewModelProvider.AndroidViewModelFactory
@@ -247,7 +248,6 @@ public class LabelOptionsActivity extends AppCompatActivity {
             @Override
             public void onNothingSelected(AdapterView<?> adapterView) {}
         });
-
 
         RecyclerView recyclerView = (RecyclerView) findViewById(R.id.sensors_recycler_view);
         mSensorFrequencyViewAdapter =
@@ -567,7 +567,7 @@ public class LabelOptionsActivity extends AppCompatActivity {
 
                                 sendConfigurationToServer(configJson, newConfig);
                             } catch (Exception e) {
-                                e.printStackTrace();
+                                log.d("Error to send config to server: " + e.getMessage());
                             }
                         }
 
@@ -635,7 +635,11 @@ public class LabelOptionsActivity extends AppCompatActivity {
                             public void onClick(DialogInterface dialog, int which) {
                                 String[] exp = experiments.get(which).split("_");
                                 Call<JsonObject> call = ClientAPI.get(ClientAPI.httpHighTimeout()).getExperimentConfig(exp[0], exp[2], exp[1]);
-                                loadServerConfig(call);
+                                try {
+                                    loadServerConfig(call);
+                                } catch (Exception e) {
+                                    log.d("Failed to loadServerConfig: " + e.getMessage());
+                                }
                             }
                         });
                         builder.show();
@@ -660,78 +664,74 @@ public class LabelOptionsActivity extends AppCompatActivity {
         });
     }
 
-    private void loadServerConfig(Call<JsonObject> call) {
-        try {
-            call.enqueue(new Callback<JsonObject>() {
-                @Override
-                public void onResponse(Call<JsonObject> call, Response<JsonObject> response) {
+    private void loadServerConfig(Call<JsonObject> call) throws Exception {
+        call.enqueue(new Callback<JsonObject>() {
+            @Override
+            public void onResponse(Call<JsonObject> call, Response<JsonObject> response) {
 
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            if (mLoadConfigBtn == null) {
-                                mLoadConfigBtn = findViewById(R.id.load_config_button);
-                            }
-                            mLoadConfigBtn.setEnabled(true);
-                            JsonObject config = new Gson().fromJson(response.body(), JsonObject.class);
-                            if (config.get("main") == null || config.get("sensors") == null ) {
-                                Exception t = new Exception("No configuration found for this experiment!");
-                                onFailure(call, t);
-                                return;
-                            }
-                            isConfigLoaded = true;
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (mLoadConfigBtn == null) {
+                            mLoadConfigBtn = findViewById(R.id.load_config_button);
+                        }
+                        mLoadConfigBtn.setEnabled(true);
+                        JsonObject config = new Gson().fromJson(response.body(), JsonObject.class);
+                        if (config.get("main") == null || config.get("sensors") == null ) {
+                            Exception t = new Exception("No configuration found for this experiment!");
+                            onFailure(call, t);
+                            return;
+                        }
+                        isConfigLoaded = true;
 
-                            mCurrentConfig = new Gson().fromJson(config.get("main").getAsJsonObject().toString(), LabelConfig.class);
-                            updateFields();
-                            mLabelConfigViewModel.deleteSensorsFromLabel(mCurrentConfig);
-                            JsonArray sensors = new Gson().fromJson(config.get("sensors").getAsJsonArray().toString(), JsonArray.class);
-                            boolean checkGPSPermission = false;
-                            for (int i = 0; i < sensors.size(); i++) {
-                                JsonObject sensor = sensors.get(i).getAsJsonObject();
-                                if (sensor.get("isSelected").getAsBoolean() && mSensorFrequencyViewAdapter.checkSensorAvailability(sensor.get("sensor").getAsString())) {
-                                    for (SensorFrequencyViewAdapter.SelectedSensorFrequency mSensor : mSelectedSensors) {
-                                        if (mSensor.getSensor().equalsIgnoreCase(sensor.get("sensor").getAsString())) {
-                                            mSensor.setFrequency(sensor.get("frequency").getAsInt());
-                                            mSensor.setSelected(sensor.get("isSelected").getAsBoolean());
-                                            if (mSensor.getSensor().equalsIgnoreCase("gps")) {
-                                                checkGPSPermission = true;
-                                            }
-                                            break;
+                        mCurrentConfig = new Gson().fromJson(config.get("main").getAsJsonObject().toString(), LabelConfig.class);
+                        updateFields();
+                        mLabelConfigViewModel.deleteSensorsFromLabel(mCurrentConfig);
+                        JsonArray sensors = new Gson().fromJson(config.get("sensors").getAsJsonArray().toString(), JsonArray.class);
+                        boolean checkGPSPermission = false;
+                        for (int i = 0; i < sensors.size(); i++) {
+                            JsonObject sensor = sensors.get(i).getAsJsonObject();
+                            if (sensor.get("isSelected").getAsBoolean() && mSensorFrequencyViewAdapter.checkSensorAvailability(sensor.get("sensor").getAsString())) {
+                                for (SensorFrequencyViewAdapter.SelectedSensorFrequency mSensor : mSelectedSensors) {
+                                    if (mSensor.getSensor().equalsIgnoreCase(sensor.get("sensor").getAsString())) {
+                                        mSensor.setFrequency(sensor.get("frequency").getAsInt());
+                                        mSensor.setSelected(sensor.get("isSelected").getAsBoolean());
+                                        if (mSensor.getSensor().equalsIgnoreCase("gps")) {
+                                            checkGPSPermission = true;
                                         }
+                                        break;
                                     }
                                 }
                             }
-                            //log.d(sensors.toString());
-                            mSensorFrequencyViewAdapter.setSelectedSensors(mSelectedSensors);
-                            mLabelConfigViewModel.insertAllSensorFrequencies(getSensorFrequenciesFromSelectedSensorFrequencies(mCurrentConfig.id));
-                            if (checkGPSPermission) {
-                                mSensorFrequencyViewAdapter.checkGPSPermission();
-                            }
                         }
-                    });
-                }
-                @Override
-                public void onFailure(Call<JsonObject> call, Throwable t) {
-                    log.d("Get Configs from server failed: " + t.getCause());
-                    call.cancel();
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            AlertDialog.Builder builder = new AlertDialog.Builder(LabelOptionsActivity.this);
-                            builder.setTitle("Error");
-                            builder.setMessage(t.getMessage());
-                            builder.show();
-                            if (mLoadConfigBtn == null) {
-                                mLoadConfigBtn = findViewById(R.id.load_config_button);
-                            }
-                            mLoadConfigBtn.setEnabled(true);
+                        //log.d(sensors.toString());
+                        mSensorFrequencyViewAdapter.setSelectedSensors(mSelectedSensors);
+                        mLabelConfigViewModel.insertAllSensorFrequencies(getSensorFrequenciesFromSelectedSensorFrequencies(mCurrentConfig.id));
+                        if (checkGPSPermission) {
+                            mSensorFrequencyViewAdapter.checkGPSPermission();
                         }
-                    });
-                }
-            });
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+                    }
+                });
+            }
+            @Override
+            public void onFailure(Call<JsonObject> call, Throwable t) {
+                log.d("Get Configs from server failed: " + t.getCause());
+                call.cancel();
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        AlertDialog.Builder builder = new AlertDialog.Builder(LabelOptionsActivity.this);
+                        builder.setTitle("Error");
+                        builder.setMessage(t.getMessage());
+                        builder.show();
+                        if (mLoadConfigBtn == null) {
+                            mLoadConfigBtn = findViewById(R.id.load_config_button);
+                        }
+                        mLoadConfigBtn.setEnabled(true);
+                    }
+                });
+            }
+        });
     }
 
     private Callback<StatusResponse> uploadCallback(final File file) {
@@ -744,21 +744,21 @@ public class LabelOptionsActivity extends AppCompatActivity {
                     file.delete();
                     closeActivity();
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    log.d("Failed to delete config file: " + e.getMessage());
                     closeActivity();
                 }
             }
 
             @Override
             public void onFailure(Call<StatusResponse> call, Throwable t) {
-                log.d("FAIL " + t);
+                log.d("Failed to send config to the server: " + t.getMessage());
                 Toast.makeText(appContext, "Failed to send config to the server", Toast.LENGTH_SHORT).show();
                 call.cancel();
                 try {
                     file.delete();
                     closeActivity();
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    log.d("Failed to delete config file: " + e.getMessage());
                     closeActivity();
                 }
             }
@@ -766,7 +766,8 @@ public class LabelOptionsActivity extends AppCompatActivity {
     }
 
     private void closeActivity() {
-        super.onBackPressed();
+        //super.onBackPressed();
+        finish();
     }
 
     public static class DeleteDialogFragment extends DialogFragment {

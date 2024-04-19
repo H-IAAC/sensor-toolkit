@@ -67,7 +67,7 @@ public class ExecutionController {
         } catch (Exception e) {
             isRunning = false;
             listener.onError(e.getMessage());
-            e.printStackTrace();
+            log.d("startExecution Exception: " + e.getMessage());
         }
     }
 

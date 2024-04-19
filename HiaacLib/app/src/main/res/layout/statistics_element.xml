@@ -34,20 +34,33 @@
             tools:text=" (1000 Hz)" />
     </LinearLayout>
 
-    <TextView
-        android:id="@+id/usingServerTime"
+    <LinearLayout
+        android:id="@+id/time_data"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textSize="12sp"
         android:layout_marginTop="5dp"
         android:layout_marginLeft="10dp"
         android:layout_marginRight="10dp"
-        android:layout_marginBottom="10dp"
-        android:textColor="@color/black"
-        tools:text="Server Time"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/statistics_elements"/>
+        app:layout_constraintTop_toBottomOf="@id/statistics_elements"
+        android:weightSum="100">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="33"
+            android:textSize="14sp"
+            android:text="@string/statistics_time" />
+
+        <TextView
+            android:id="@+id/usingServerTime"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="55"
+            android:textSize="14sp"
+            tools:text="Server Time" />
+    </LinearLayout>
 
     <TextView
         android:id="@+id/sensor_samples"
@@ -56,13 +69,12 @@
         android:textSize="14sp"
         android:textStyle="bold"
         android:text="@string/statistics_samples"
-        android:layout_marginTop="5dp"
         android:layout_marginLeft="10dp"
         android:layout_marginRight="10dp"
         android:layout_marginBottom="10dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/usingServerTime"/>
+        app:layout_constraintTop_toBottomOf="@id/time_data" />
 
     <LinearLayout
         android:id="@+id/expected_data"

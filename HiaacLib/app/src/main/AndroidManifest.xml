@@ -14,6 +14,8 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_CONNECTED_DEVICE"/>
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC"/>
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION"/>
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
+    <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
 
     <uses-permission
         android:name="android.permission.WRITE_SETTINGS"
@@ -54,6 +56,8 @@
             android:exported="true"
             android:label="@string/app_name"
             android:screenOrientation="portrait" />
+
+        <receiver android:name=".datacollector.DataCollectorActivity" />
 
         <service
             android:name=".datacollector.service.ExecutionService"

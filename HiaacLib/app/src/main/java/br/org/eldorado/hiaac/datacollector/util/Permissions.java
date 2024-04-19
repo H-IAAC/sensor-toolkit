@@ -3,6 +3,7 @@ package br.org.eldorado.hiaac.datacollector.util;
 import android.Manifest;
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.os.Build;
 import android.widget.Toast;
 
 import androidx.activity.ComponentActivity;
@@ -15,13 +16,27 @@ import java.util.Map;
 import java.util.TooManyListenersException;
 
 public class Permissions {
+    private final Log log = new Log("Permissions");
     private final Context context;
     private final ActivityResultLauncher<String[]> rpl;
-    private final String[] REQUIRED_PERMISSIONS = new String[]{ Manifest.permission.POST_NOTIFICATIONS,
-                                                                Manifest.permission.CAMERA};
+    private final String[] REQUIRED_PERMISSIONS;
 
     public Permissions(ComponentActivity activity, Context context) {
         this.context = context;
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) { // Android 13
+            REQUIRED_PERMISSIONS = new String[]{ Manifest.permission.POST_NOTIFICATIONS,
+                                                 Manifest.permission.CAMERA,
+                                                 Manifest.permission.SCHEDULE_EXACT_ALARM,
+                                                 Manifest.permission.USE_EXACT_ALARM};
+        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) { // Android 12
+            REQUIRED_PERMISSIONS = new String[]{ Manifest.permission.POST_NOTIFICATIONS,
+                                                 Manifest.permission.CAMERA,
+                                                 Manifest.permission.SCHEDULE_EXACT_ALARM};
+        } else {
+            REQUIRED_PERMISSIONS = new String[]{ Manifest.permission.POST_NOTIFICATIONS,
+                                                 Manifest.permission.CAMERA};
+        }
 
         rpl = activity.registerForActivityResult(new ActivityResultContracts.RequestMultiplePermissions(),
                 new ActivityResultCallback<Map<String, Boolean>>() {
@@ -38,6 +53,7 @@ public class Permissions {
     public boolean areAllPermissionsGranted() {
         for (String permission : REQUIRED_PERMISSIONS) {
             if (ContextCompat.checkSelfPermission(context, permission) != PackageManager.PERMISSION_GRANTED) {
+                log.d("Permissions: Missing permission for: " + permission);
                 return false;
             }
         }

@@ -31,6 +31,7 @@ import br.org.eldorado.sensoragent.model.SensorBase;
 
 public class Tools {
     public static final int CHRONOMETER = 1;
+    private static final Log log = new Log("Tools");
 
     public enum pixelType {
         px,
@@ -173,7 +174,7 @@ public class Tools {
                     }
                 }
             } catch (Exception e) {
-                e.printStackTrace();
+                log.d("Failed when creating zip file: " + e.getMessage());
             }
         }
 

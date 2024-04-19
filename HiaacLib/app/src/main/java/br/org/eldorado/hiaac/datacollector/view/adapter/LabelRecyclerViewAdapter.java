@@ -147,11 +147,17 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
         }
     }
 
+    private String getHolderKey(String experiment, String activity, String user) {
+        return experiment + '_' + activity + '_' + user;
+    }
+
     public void onBindViewHolder(ViewHolder holder, int position) {
         log.d("CSVFilesRecyclerAdapter - ActiveThreads: " + Thread.activeCount());
         LabelConfig labelConfig = labelConfigs.get(holder.getAdapterPosition());
-        String labelTitle = labelConfig.experiment;
-        holdersMap.put(labelTitle, holder);
+
+        holdersMap.put(getHolderKey(labelConfig.experiment,
+                                    labelConfig.activity,
+                                    labelConfig.userId), holder);
 
         mLabelConfigViewModel = ViewModelProvider.AndroidViewModelFactory
                 .getInstance((Application) mContext.getApplicationContext()).create(LabelConfigViewModel.class);
@@ -162,7 +168,7 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
         csvList.setAdapter(new CSVFilesRecyclerAdapter(mContext, filesList, mLabelConfigViewModel.getLabelConfigRepository(), labelConfig.id));
         csvList.setLayoutManager(new LinearLayoutManager(mContext));
 
-        holder.getLabelTitle().setText(labelTitle);
+        holder.getLabelTitle().setText(labelConfig.experiment);
         holder.getLabelTitle().setOnClickListener(v -> {
             expandOption(holder, v);
         });
@@ -271,7 +277,7 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
                                                 csvFiles.deleteDirectory(labelConfig.id);
                                             }
                                         } catch (Exception e) {
-                                            e.printStackTrace();
+                                            log.d("Delete experiment exception: " + e.getMessage());
                                         }
                                     }
                                 });
@@ -295,7 +301,10 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
             }
         });
 
-        Date alarmSchedule = AlarmConfig.configureScheduler(labelConfig);
+        Date alarmSchedule = AlarmConfig.configureScheduler(labelConfig,
+                                                            getHolderKey(labelConfig.experiment,
+                                                                         labelConfig.activity,
+                                                                         labelConfig.userId));
 
         if (alarmSchedule == null) {
             log.d("Scheduler: No alarm configured for [" + labelConfig.experiment + "] id: " + labelConfig.id);
@@ -486,7 +495,7 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
                     uploadFile(zippedFile, experimentPart, subjectPart, namePart, holder);
                 } catch (IOException e) {
                     numberOfFilesToUpload--;
-                    e.printStackTrace();
+                    log.d("Send zip file exception: " + e.getMessage());
                 }
             } else {
                 // Files different from mp4 and csv arent sent to the server.
@@ -573,9 +582,9 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
         sendData(holder, SEND_DATA_TO_FIREBASE, true, "0");
     }
 
-    public ViewHolder getViewHolder(String label) {
-        if (holdersMap.containsKey(label)) {
-            return holdersMap.get(label);
+    public ViewHolder getViewHolder(String holderKey) {
+        if (holdersMap.containsKey(holderKey)) {
+            return holdersMap.get(holderKey);
         }
         return null;
     }
@@ -594,7 +603,7 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
             log.d("startExecution could not start! holder.isStarted() is [" + holder.isStarted() + "]");
             log.d("startExecution could not start! labelConfigContains(holder) is [" + labelConfigContains(holder) + "]");
             log.d("startExecution could not start! (execService != null) is [" + (execService != null) + "]");
-            log.d("startExecution could not start! execService.isRunning() is [" + execService.isRunning() + "]");
+            log.d("startExecution could not start! execService.isRunning() is [" + ((execService != null) ? execService.isRunning() : "execService is null") + "]");
             return;
         }
 
@@ -607,9 +616,6 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
                 ExecutionService.MyBinder binder = (ExecutionService.MyBinder) service;
                 execService = binder.getServer();
                 DataTrack dt = getDataTrack(holder);
-
-                //if (dt == null)
-                //    return;
 
                 dt.addSensorList(sensorFrequencyMap.get(dt.getConfigId()));
                 execService.startExecution(new MyExecutionListener(dt, holder));
@@ -701,7 +707,7 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
             dt.setLabel(labelConfigs.get(holder.getAdapterPosition()).experiment);
             dt.setServerTime(TimeSync.isUsingServerTime());
         } catch (Exception e) {
-            log.e("checkExecution - Failed to get data from ViewHolder: " + e.getMessage());
+            log.e("getDataTrack - Failed to get data from ViewHolder: " + e.getMessage());
         }
         return dt;
     }

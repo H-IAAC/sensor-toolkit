@@ -80,6 +80,7 @@
     <string name="statistics_min_timestamp_difference">Min diff:</string>
     <string name="statistics_collect_timestamp">Time frame details:</string>
     <string name="statistics_samples">Samples:</string>
+    <string name="statistics_time">Clock used:</string>
     <string name="conflict">CONFLICT</string>
 
 

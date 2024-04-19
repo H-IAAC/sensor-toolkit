@@ -14,6 +14,7 @@ import java.util.List;
 
 public class CsvFiles {
     private final Context mContext;
+    private static final Log log = new Log("CsvFiles");
 
     public CsvFiles(Context context) {
         mContext = context;
@@ -48,7 +49,7 @@ public class CsvFiles {
                 directory.delete();
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            log.i("CsvFiles deleteDirectory Exception: " + e.getMessage());
         }
     }
 

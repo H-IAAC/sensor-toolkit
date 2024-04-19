@@ -6,7 +6,6 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.PowerManager;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -35,6 +34,7 @@ import br.org.eldorado.hiaac.datacollector.util.Log;
 import br.org.eldorado.hiaac.datacollector.util.TimeSync;
 import br.org.eldorado.hiaac.datacollector.util.Permissions;
 import br.org.eldorado.hiaac.datacollector.util.Preferences;
+import br.org.eldorado.hiaac.datacollector.util.WakeLocks;
 import br.org.eldorado.hiaac.datacollector.view.adapter.LabelRecyclerViewAdapter;
 import br.org.eldorado.sensorsdk.SensorSDK;
 
@@ -72,8 +72,7 @@ public class DataCollectorActivity extends AppCompatActivity {
         TextView footer = findViewById(R.id.version);
         footer.setText(BuildConfig.HIAAC_VERSION);
 
-        if (!AlarmConfig.isInitialized())
-            AlarmConfig.init(this.getApplicationContext(), (TextView) findViewById(R.id.scheduler));
+        AlarmConfig.init(this.getApplicationContext(), findViewById(R.id.scheduler));
 
         RecyclerView recyclerView = findViewById(R.id.label_recycle_view);
         adapter = new LabelRecyclerViewAdapter(this);
@@ -90,13 +89,11 @@ public class DataCollectorActivity extends AppCompatActivity {
                     new Handler().postDelayed(new Runnable() {
                         @Override
                         public void run() {
+                            // Disable alarm when it automatically starts after receive broadcast message
                             AlarmConfig.cancelAlarm();
                             AlarmConfig.releaseWakeLock();
 
-                            PowerManager powerManager = (PowerManager) getApplicationContext().getSystemService(getApplicationContext().POWER_SERVICE);
-                            PowerManager.WakeLock  wakeLock = powerManager.newWakeLock(PowerManager.FULL_WAKE_LOCK | PowerManager.ON_AFTER_RELEASE,
-                                                                                       "HIAACApp::WakeLock");
-                            wakeLock.acquire();
+                            WakeLocks.collectAcquire(getApplicationContext());
 
                             log.d("Scheduler: Broadcast received - startExecution");
                             adapter.startExecution(holder);
@@ -155,6 +152,9 @@ public class DataCollectorActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         adapter.notifyDataSetChanged();
+
+        AlarmConfig.init(this.getApplicationContext(), findViewById(R.id.scheduler));
+
         super.onResume();
     }
 

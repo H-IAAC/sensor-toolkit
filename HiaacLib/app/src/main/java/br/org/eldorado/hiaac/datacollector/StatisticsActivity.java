@@ -2,13 +2,11 @@ package br.org.eldorado.hiaac.datacollector;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.TextView;
 
-import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
@@ -28,9 +26,8 @@ import br.org.eldorado.hiaac.datacollector.data.ExperimentStatistics;
 import br.org.eldorado.hiaac.datacollector.util.Log;
 
 public class StatisticsActivity extends AppCompatActivity {
-
     private static final String TAG = "StatisticsFragment";
-    private Log log;
+    private final Log log = new Log(TAG);
     private List<ExperimentStatistics> statistics;
 
 
@@ -40,7 +37,7 @@ public class StatisticsActivity extends AppCompatActivity {
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         }
-        log = new Log(TAG);
+
         setContentView(R.layout.statistics_content_fragment);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         String statisticsJson = getIntent().getExtras().getString("statistics");
@@ -52,7 +49,7 @@ public class StatisticsActivity extends AppCompatActivity {
         textView = (TextView) findViewById(R.id.sensor_period);
         textView.setText(convertHours(statistics.get(0).getStartTime()) + " ~ " + convertHours(statistics.get(0).getEndTime()));
 
-        for ( ExperimentStatistics statistic : statistics) {
+        for (ExperimentStatistics statistic : statistics) {
             getSupportFragmentManager().beginTransaction().add(R.id.statistics_elements,
                                                                new StatisticsPlaceholderFragment(statistic),
                                                                "statisticsFrag")
@@ -62,18 +59,20 @@ public class StatisticsActivity extends AppCompatActivity {
 
     @Override
     public boolean onSupportNavigateUp() {
-        closeActivity();
+        //super.onBackPressed();
+        super.finish();
         return true;
     }
 
-    @Override
+    /*@Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         return super.onOptionsItemSelected(item);
-    }
+    }*/
 
-    private void closeActivity() {
-        super.onBackPressed();
-    }
+    /*private void closeActivity() {
+        //super.onBackPressed();
+        finish();
+    }*/
 
     private String convertDate(long time) {
         DateFormat dateFormat = DateFormat.getDateInstance(DateFormat.FULL,

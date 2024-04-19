@@ -22,25 +22,27 @@ import br.org.eldorado.hiaac.datacollector.data.LabelConfig;
 import br.org.eldorado.sensorsdk.SensorSDK;
 
 public class AlarmConfig {
-    private static Log log = null;
+    private static final Log log = new Log("AlarmConfig");
     private static Context mContext = null;
     private static AlarmManager mgr = null;
     private static PowerManager powerManager = null;
     private static PowerManager.WakeLock wakeLock;
     private static boolean isConfigured = false;
-    private static long idConfigured = 0;
+    private static long idConfigured = -1;
     private static PendingIntent pendingAlarm = null;
-    private static TextView schedulerView;
     private static Boolean isInitialized = false;
+    private static TextView schedulerView;
 
-    public static void init(Context context, TextView schedulerView) {
-        AlarmConfig.log = new Log("AlarmConfig");
-        AlarmConfig.mContext = context;
-        AlarmConfig.mgr = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
-        AlarmConfig.powerManager = (PowerManager) mContext.getSystemService(POWER_SERVICE);
-        AlarmConfig.wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK,
-                                                        "DataCollector::ScheduleWakeLock");
-        AlarmConfig.schedulerView = (TextView) schedulerView;
+    public static void init(Context context, TextView view) {
+        if (!isInitialized) {
+            AlarmConfig.mContext = context;
+            AlarmConfig.mgr = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+            AlarmConfig.powerManager = (PowerManager) mContext.getSystemService(POWER_SERVICE);
+            AlarmConfig.wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK,
+                                                            "DataCollector::ScheduleWakeLock");
+        }
+        schedulerView = view;
+
         isInitialized = true;
     }
 
@@ -57,26 +59,28 @@ public class AlarmConfig {
     }
 
     public static void cancelAlarm() {
-        if (pendingAlarm != null)
+        if (pendingAlarm != null) {
             mgr.cancel(pendingAlarm);
-
+            setScheduler(null);
+        }
         isConfigured = false;
+        idConfigured = -1;
     }
 
-    public static Date configureScheduler(LabelConfig labelConfig) {
+    public static Date configureScheduler(LabelConfig labelConfig, String holderKey) {
 
         if (isConfigured && idConfigured != labelConfig.id) {
             return null;
         }
 
         Intent i = new Intent(DataCollectorActivity.SCHEDULER_ACTIONS);
-        i.putExtra("holder", labelConfig.experiment);
+        i.putExtra("holder", holderKey);
         i.putExtra("startTime", labelConfig.scheduledTime);
 
-        PendingIntent pi = PendingIntent.getBroadcast(mContext,
-                0,
-                i,
-                PendingIntent.FLAG_MUTABLE | PendingIntent.FLAG_UPDATE_CURRENT);
+        pendingAlarm = PendingIntent.getBroadcast(mContext,
+                                                  0,
+                                                  i,
+                                                  PendingIntent.FLAG_MUTABLE | PendingIntent.FLAG_UPDATE_CURRENT);
 
         if (labelConfig.scheduledTime > 0) {
             Calendar c = Calendar.getInstance();
@@ -91,8 +95,8 @@ public class AlarmConfig {
 
                 long startsTime = labelConfig.scheduledTime - SensorSDK.getInstance().getRemoteTime() - 7000;
                 mgr.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP,
-                        SensorSDK.getInstance().getRemoteTime() + startsTime,
-                        pi);
+                                              SensorSDK.getInstance().getRemoteTime() + startsTime,
+                                              pendingAlarm);
 
                 isConfigured = true;
                 idConfigured = labelConfig.id;

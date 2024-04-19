@@ -1,49 +1,35 @@
 package br.org.eldorado.hiaac.datacollector.service;
 
-import static br.org.eldorado.hiaac.datacollector.service.ForegroundNotification.NOTIFICATION_CHANNEL_ID;
-
-import android.app.Notification;
-import android.app.NotificationChannel;
-import android.app.NotificationManager;
-import android.app.PendingIntent;
 import android.app.Service;
-import android.content.Context;
 import android.content.Intent;
-import android.graphics.Color;
-import android.media.RingtoneManager;
-import android.net.Uri;
+
 import android.os.Binder;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
-import android.os.PowerManager;
 
 import androidx.annotation.Nullable;
-import androidx.core.app.NotificationCompat;
 
 import java.sql.Date;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 
-import br.org.eldorado.hiaac.datacollector.DataCollectorActivity;
-import br.org.eldorado.hiaac.R;
 import br.org.eldorado.hiaac.datacollector.controller.ExecutionController;
 import br.org.eldorado.hiaac.datacollector.model.DataTrack;
 import br.org.eldorado.hiaac.datacollector.service.listener.ExecutionServiceListener;
 import br.org.eldorado.hiaac.datacollector.util.Log;
 import br.org.eldorado.hiaac.datacollector.util.Preferences;
 import br.org.eldorado.hiaac.datacollector.util.Utils;
-import br.org.eldorado.sensorsdk.SensorSDK;
+import br.org.eldorado.hiaac.datacollector.util.WakeLocks;
+
 
 public class ExecutionService extends Service {
     public static final String ACTION_START_FOREGROUND_SERVICE = "ACTION_START_FOREGROUND_SERVICE";
     public static final String ACTION_CHECK_FOREGROUND_SERVICE = "ACTION_CHECK_FOREGROUND_SERVICE";
     public static final String ACTION_START_ANOTHER_FOREGROUND_SERVICE = "ACTION_START_ANOTHER_FOREGROUND_SERVICE";
     private static final String TAG = "ExecutionService";
-    private Log log;
+    private final Log log = new Log(TAG);
     private final IBinder mBinder = new MyBinder();
     private DataTrack dataTrack;
-    private PowerManager.WakeLock wakeLock;
 
     public class MyBinder extends Binder {
         public ExecutionService getServer() {
@@ -53,7 +39,6 @@ public class ExecutionService extends Service {
 
     @Override
     public void onCreate() {
-        log = new Log(TAG);
         ForegroundNotification.createNotificationChannel(this);
     }
 
@@ -112,10 +97,8 @@ public class ExecutionService extends Service {
 
         DateFormat df = new SimpleDateFormat("yyyyMMdd.HHmmss");
 
-        PowerManager powerManager = (PowerManager) getSystemService(POWER_SERVICE);
-        wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK,
-                "DataCollector::DataCollectorWakeLock");
-        wakeLock.acquire();
+        WakeLocks.executionAcquire(getApplicationContext());
+
         ExecutionController ctrl = ExecutionController.getInstance();
         log.d("ExecutionService: startExecution: " + (l.getDataTrack().equals(this.dataTrack)));
         if (!ctrl.isRunning() || l.getDataTrack().equals(this.dataTrack)) {
@@ -140,8 +123,6 @@ public class ExecutionService extends Service {
     }
 
     public void stopExecution() {
-        wakeLock.release();
-
         if (dataTrack != null) {
             log.d("ExecutionService: stopForeground " +  dataTrack.getLabel());
             Utils.emitStopBeep();
@@ -152,5 +133,8 @@ public class ExecutionService extends Service {
 
             Preferences.setToRunChecking(true);
         }
+
+        WakeLocks.collectRelease();
+        WakeLocks.executionRelease();
     }
 }

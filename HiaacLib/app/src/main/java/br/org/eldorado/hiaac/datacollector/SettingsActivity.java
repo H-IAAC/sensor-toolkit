@@ -1,6 +1,5 @@
 package br.org.eldorado.hiaac.datacollector;
 
-
 import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
@@ -64,8 +63,6 @@ public class SettingsActivity extends AppCompatActivity {
             serverAddressPreference.setValue((String)newValue);
             return true;
         }
-
-
 
         private void showServerAddressDialog(Context c) {
             final EditText serverAddress = new EditText(c);
