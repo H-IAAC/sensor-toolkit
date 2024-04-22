@@ -533,6 +533,7 @@ public class LabelOptionsActivity extends AppCompatActivity {
         isFinishing = true;
 
         mLabelConfigViewModel.insertAllSensorFrequencies(getSensorFrequenciesFromSelectedSensorFrequencies(id));
+        Toast.makeText(getApplicationContext(), "New experiment created!", Toast.LENGTH_SHORT).show();
 
         if (isConfigLoaded) {
             closeActivity();
@@ -806,9 +807,9 @@ public class LabelOptionsActivity extends AppCompatActivity {
         public Dialog onCreateDialog(@Nullable Bundle savedInstanceState) {
             AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
             builder.setMessage(R.string.save_config_on_server_confirmation)
-                    .setPositiveButton(R.string.yes, (dialog, which) -> mListener.onConfirmClick())
-                    .setNegativeButton(R.string.no, (dialog, which) -> mListener.onNegativeConfirm());
-
+                   .setPositiveButton(R.string.yes, (dialog, which) -> mListener.onConfirmClick())
+                   .setNegativeButton(R.string.no, (dialog, which) -> mListener.onNegativeConfirm());
+            setCancelable(false);
             return builder.create();
         }
     }
