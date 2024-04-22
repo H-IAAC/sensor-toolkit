@@ -22,15 +22,12 @@ import br.org.eldorado.sensoragent.controller.SensorController;
 import br.org.eldorado.sensoragent.util.Log;
 
 public class SensorAgentService extends Service {
-
-    private static final String TAG = "SensorAgentService";
-    private Log log;
+    private Log log = new Log("SensorAgentService");
     private SensorAgentBind sensorBind = new SensorAgentBind();
     private RemoteCallbackList<ISensorAgentListener> mClientListener;
 
     @Override
     public void onCreate() {
-        log = new Log(TAG);
         log.i("onCreate");
         super.onCreate();
         initService();

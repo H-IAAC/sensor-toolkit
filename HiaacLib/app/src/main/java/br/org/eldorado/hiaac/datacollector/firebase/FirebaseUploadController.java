@@ -25,9 +25,7 @@ import br.org.eldorado.hiaac.datacollector.util.CsvBuilder;
 import br.org.eldorado.hiaac.datacollector.util.Log;
 
 public class FirebaseUploadController {
-
-    private static final String TAG = "FirebaseUploadController";
-    private final Log log;
+    private final Log log  = new Log("FirebaseUploadController");
     private static final int SUCCESS = 0;
     private static final int ERROR = 1;
     private static final int ON_PROGRESS = 2;
@@ -39,7 +37,6 @@ public class FirebaseUploadController {
     private final LabelConfigViewModel dbView;
 
     public FirebaseUploadController(Context ctx) {
-        log = new Log(TAG);
         mContext = ctx;
         dbView = ViewModelProvider.AndroidViewModelFactory.getInstance(
                 (Application) ctx.getApplicationContext()).create(LabelConfigViewModel.class);

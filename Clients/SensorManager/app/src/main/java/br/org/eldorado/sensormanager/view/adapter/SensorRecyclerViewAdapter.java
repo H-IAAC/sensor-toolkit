@@ -27,16 +27,13 @@ import br.org.eldorado.sensormanager.R;
 import br.org.eldorado.sensormanager.util.Log;
 
 public class SensorRecyclerViewAdapter  extends RecyclerView.Adapter<SensorRecyclerViewAdapter.ViewHolder> {
-
-    private static final String TAG = "SensorRecyclerViewAdapter";
-    private Log log;
+    private Log log = new Log("SensorRecyclerViewAdapter");
     //private List<SensorBase> mData;
     private LayoutInflater mInflater;
     private Context mContext;
 
     // Data is passed into the constructor
     public SensorRecyclerViewAdapter(Context context) {
-        this.log = new Log(TAG);
         this.mContext = context;
         this.mInflater = LayoutInflater.from(context);
 

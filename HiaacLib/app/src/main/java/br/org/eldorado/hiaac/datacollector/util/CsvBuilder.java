@@ -16,9 +16,7 @@ import br.org.eldorado.hiaac.datacollector.data.LabelConfigViewModel;
 import br.org.eldorado.hiaac.datacollector.data.LabeledData;
 
 public class CsvBuilder {
-
-    private static final String TAG = "CsvBuilder";
-    private final Log log = new Log(TAG);
+    private final Log log = new Log("CsvBuilder");
     private final Locale l = Locale.getDefault();
     private final LabelConfigViewModel mDbView;
     private final Context mContext;

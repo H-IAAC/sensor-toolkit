@@ -23,10 +23,8 @@ public class ExecutionController {
     private static final int TYPE_STARTED = 1;
     private static final int TYPE_STOPPED = 2;
     private static final int TYPE_TICK = 3;
-
-    private static final String TAG = "ExecutionController";
     private static ExecutionController inst;
-    private final Log log;
+    private final Log log = new Log("ExecutionController");
     private boolean isRunning;
     private ExecutionServiceListener listener;
     private ExecutionService service;
@@ -126,7 +124,6 @@ public class ExecutionController {
     }
 
     private ExecutionController() {
-        this.log = new Log(TAG);
         this.isRunning = false;
     }
 

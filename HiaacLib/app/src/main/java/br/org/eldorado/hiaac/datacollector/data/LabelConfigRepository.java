@@ -98,6 +98,10 @@ public class LabelConfigRepository {
         return mLabelConfigDao.getStatisticsByExpId(configId, startTime);
     }
 
+    public List<ExperimentStatistics> getExperimentStatistics(long configId, String startTime) {
+        return mLabelConfigDao.getStatistics(configId, startTime);
+    }
+
     public void deleteExperimentStatistics(long configId) {
         List<ExperimentStatistics> st = new ArrayList<>();
         new ExperimentStatisticsAsyncTask(mLabelConfigDao, (statistics -> {

@@ -79,6 +79,9 @@ public interface LabelConfigDao {
     @Query("SELECT * from ExperimentStatistics where `config-id`=:configId and `start-time` LIKE :startTime")
     LiveData<List<ExperimentStatistics>> getStatisticsByExpId(long configId, String startTime);
 
+    @Query("SELECT * from ExperimentStatistics where `config-id`=:configId and `start-time` LIKE :startTime")
+    List<ExperimentStatistics> getStatistics(long configId, String startTime);
+
     @Query("DELETE from ExperimentStatistics where `config-id`=:configId")
     void deleteExperimentStatistics(long configId);
 

@@ -14,7 +14,7 @@ public class HIAACLibrary {
         // Initiate shared preferences
         Preferences.init(ctx);
         Intent intent = new Intent(ctx, DataCollectorActivity.class);
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP);
         FirebaseApp.initializeApp(ctx);
         ctx.startActivity(intent);
     }

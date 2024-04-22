@@ -54,7 +54,6 @@ import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
 import br.org.eldorado.hiaac.R;
-import br.org.eldorado.hiaac.datacollector.api.ApiInterface;
 import br.org.eldorado.hiaac.datacollector.api.ClientAPI;
 import br.org.eldorado.hiaac.datacollector.api.StatusResponse;
 import br.org.eldorado.hiaac.datacollector.data.LabelConfig;
@@ -120,8 +119,7 @@ public class LabelOptionsActivity extends AppCompatActivity {
     private TextView mWarnTxt;
     @SuppressLint("RestrictedApi")
     private ActionMenuItemView mLoadConfigBtn;
-    private static final String TAG = "LabelOptionsActivity";
-    private Log log;
+    private Log log = new Log("LabelOptionsActivity");
     private boolean isConfigLoaded;
     private CsvFiles csvFiles;
     private int lastPosition = 1;
@@ -140,7 +138,7 @@ public class LabelOptionsActivity extends AppCompatActivity {
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         }
-        log = new Log(TAG);
+
         appContext = this.getApplicationContext();
         Preferences.init(this.getApplicationContext());
         setContentView(R.layout.activity_label_options);

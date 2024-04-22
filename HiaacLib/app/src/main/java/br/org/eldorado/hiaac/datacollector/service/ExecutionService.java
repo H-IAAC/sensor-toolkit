@@ -26,8 +26,7 @@ public class ExecutionService extends Service {
     public static final String ACTION_START_FOREGROUND_SERVICE = "ACTION_START_FOREGROUND_SERVICE";
     public static final String ACTION_CHECK_FOREGROUND_SERVICE = "ACTION_CHECK_FOREGROUND_SERVICE";
     public static final String ACTION_START_ANOTHER_FOREGROUND_SERVICE = "ACTION_START_ANOTHER_FOREGROUND_SERVICE";
-    private static final String TAG = "ExecutionService";
-    private final Log log = new Log(TAG);
+    private final Log log = new Log("ExecutionService");
     private final IBinder mBinder = new MyBinder();
     private DataTrack dataTrack;
 

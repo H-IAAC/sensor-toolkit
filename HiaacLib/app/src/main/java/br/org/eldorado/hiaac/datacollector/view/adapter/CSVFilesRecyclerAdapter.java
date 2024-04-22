@@ -32,12 +32,10 @@ import br.org.eldorado.hiaac.datacollector.util.Log;
 import br.org.eldorado.hiaac.datacollector.util.Tools;
 
 public class CSVFilesRecyclerAdapter extends RecyclerView.Adapter<CSVFilesRecyclerAdapter.ViewHolder> {
-
-    private static final String TAG = "CSVFilesRecyclerAdapter";
     private final LayoutInflater mInflater;
     private final List<File> csvFileList;
     private final Context mContext;
-    private final Log log;
+    private final Log log = new Log("CSVFilesRecyclerAdapter");
     private final long configId;
     private final LabelConfigRepository mRepository;
 
@@ -45,7 +43,6 @@ public class CSVFilesRecyclerAdapter extends RecyclerView.Adapter<CSVFilesRecycl
         mInflater = LayoutInflater.from(context);
         mContext = context;
         csvFileList = f;
-        log = new Log(TAG);
         mRepository = repository;
         configId = id;
     }
@@ -120,26 +117,20 @@ public class CSVFilesRecyclerAdapter extends RecyclerView.Adapter<CSVFilesRecycl
         if ("csv".equals(Tools.getFileExtension(csvFile.getName()))) {
             // Handle statistics click
             holder.getStatisticsBtn().setOnClickListener(new View.OnClickListener() {
-                String clickedFileName = csvFileList.get(holder.getAdapterPosition()).getName();
-                final CsvFiles.CsvFileName csvFileName = CsvFiles.decomposeFileName(clickedFileName);
-                String startTimeEpoch = CsvFiles.CsvFileNameConvertTimestamp(csvFileName.startTime);
-
                 @Override
                 public void onClick(View v) {
-                    // startTime parameter is used to match a db field that contains its value, as startTime for different sensors may vary
-                    // here is consider only the first 10 chars, the addictional '%' is used as SQL wildcards.
-                    mRepository.getExperimentStatisticsByExpId(configId, startTimeEpoch.substring(0, 9) + '%').observe((LifecycleOwner)mContext,
-                            new Observer<List<ExperimentStatistics>>() {
-                                @Override
-                                public void onChanged(List<ExperimentStatistics> statistics) {
-                                    if (statistics != null && statistics.size() > 0) {
-                                        Intent intent = new Intent(mContext, StatisticsActivity.class);
-                                        intent.putExtra("statistics", new Gson().toJson(statistics));
-                                        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                                        mContext.startActivity(intent);
-                                    }
-                                }
-                            });
+                    String clickedFileName = csvFileList.get(holder.getAdapterPosition()).getName();
+                    final CsvFiles.CsvFileName csvFileName = CsvFiles.decomposeFileName(clickedFileName);
+                    String startTimeEpoch = CsvFiles.CsvFileNameConvertTimestamp(csvFileName.startTime);
+
+                    List<ExperimentStatistics> statistics = mRepository.getExperimentStatistics(configId, startTimeEpoch.substring(0, 9) + '%');
+
+                    if (statistics != null && statistics.size() > 0) {
+                        Intent intent = new Intent(mContext, StatisticsActivity.class);
+                        intent.putExtra("statistics", new Gson().toJson(statistics));
+                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                        mContext.startActivity(intent);
+                    }
                 }
             });
         } else {

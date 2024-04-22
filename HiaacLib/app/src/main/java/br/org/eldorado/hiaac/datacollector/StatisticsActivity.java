@@ -1,5 +1,6 @@
 package br.org.eldorado.hiaac.datacollector;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -26,10 +27,8 @@ import br.org.eldorado.hiaac.datacollector.data.ExperimentStatistics;
 import br.org.eldorado.hiaac.datacollector.util.Log;
 
 public class StatisticsActivity extends AppCompatActivity {
-    private static final String TAG = "StatisticsFragment";
-    private final Log log = new Log(TAG);
+    private final Log log = new Log("StatisticsFragment");
     private List<ExperimentStatistics> statistics;
-
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -63,16 +62,6 @@ public class StatisticsActivity extends AppCompatActivity {
         super.finish();
         return true;
     }
-
-    /*@Override
-    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        return super.onOptionsItemSelected(item);
-    }*/
-
-    /*private void closeActivity() {
-        //super.onBackPressed();
-        finish();
-    }*/
 
     private String convertDate(long time) {
         DateFormat dateFormat = DateFormat.getDateInstance(DateFormat.FULL,
