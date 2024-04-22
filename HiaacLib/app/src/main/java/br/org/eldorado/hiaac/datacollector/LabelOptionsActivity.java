@@ -531,7 +531,6 @@ public class LabelOptionsActivity extends AppCompatActivity {
         isFinishing = true;
 
         mLabelConfigViewModel.insertAllSensorFrequencies(getSensorFrequenciesFromSelectedSensorFrequencies(id));
-        Toast.makeText(getApplicationContext(), "New experiment created!", Toast.LENGTH_SHORT).show();
 
         if (isConfigLoaded) {
             closeActivity();
