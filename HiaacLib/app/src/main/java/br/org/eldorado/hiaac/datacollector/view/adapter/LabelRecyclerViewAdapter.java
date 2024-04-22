@@ -82,8 +82,6 @@ import retrofit2.Response;
 public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecyclerViewAdapter.ViewHolder> {
     private final int SEND_DATA_TO_FIREBASE = 0;
     private final int CREATE_CSV_FILE = 1;
-    private final int SEND_DATA_TO_HIAAC = 2;
-    private static final String TAG = "LabelRecyclerViewAdapter";
     private final LayoutInflater mInflater;
     private List<LabelConfig> labelConfigs;
     private Set<Integer> labelsConflicts = new HashSet<>();
@@ -92,7 +90,7 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
     private ExecutionService execService;
     private ServiceConnection serviceConnection;
     private ServiceConnection checkingServiceConnection;
-    private final Log log;
+    private final Log log = new Log("LabelRecyclerViewAdapter");
     private ProgressDialog sendDataDialog;
     private LabelConfigViewModel mLabelConfigViewModel;
     private final Map<String, ViewHolder> holdersMap = new HashMap<>();
@@ -104,7 +102,6 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
         mInflater = LayoutInflater.from(context);
         mContext = context;
         csvFiles = new CsvFiles(context);
-        log = new Log(TAG);
     }
 
     public void setLabelConfigs(List<LabelConfig> labels) {
@@ -215,7 +212,7 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
                                     public void onClick(DialogInterface dialog, int which) {
                                         dialog.dismiss();
                                         shareButton.setEnabled(false);
-                                        sendData(holder, SEND_DATA_TO_HIAAC, false, "0");
+                                        upload(holder);
                                     }
                                 }
                         )
@@ -324,6 +321,11 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
         }
     }
 
+    private void upload(ViewHolder holder) {
+        sendFilesToServer(csvFiles.getFiles(labelConfigs.get(holder.getAdapterPosition()).id),
+                                            holder);
+    }
+
     private void sendData(ViewHolder holder, int type, boolean showDialog, String dataUid) {
         if (showDialog) {
             sendDataDialog = ProgressDialog.show(mContext, "Export to CSV File", "Creating CSV", true);
@@ -376,8 +378,6 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
                 }
             });
             aDialog.show();
-        } else if (type == SEND_DATA_TO_HIAAC) {
-            sendFilesToServer(csvFiles.getFiles(labelConfigs.get(holder.getAdapterPosition()).id), holder);
         }
     }
 

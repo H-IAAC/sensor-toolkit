@@ -69,11 +69,11 @@ public class FirebaseUploadController {
                 storage.setMaxUploadRetryTimeMillis(2000);
                 StorageReference csvRef = storage.getReference().child(labelName+ File.separator + "csv");
 
-                File csvFile = csvBuilder.create(labeledData, "0");
+                File csvFile = csvBuilder.create(labeledData);
                 labeledData.clear();
                 long offset = labeledData.size();
                 while ((labeledData = dbView.getLabeledData(labelId, LabelConfigRepository.TYPE_FIREBASE, offset)).size() > 0) {
-                    csvBuilder.appendData(csvFile, labeledData, 1);
+                    csvBuilder.appendData(csvFile, labeledData, false /*Firebase*/);
                     offset += labeledData.size();
                     labeledData.clear();
                 }
@@ -182,23 +182,21 @@ public class FirebaseUploadController {
                     log.d("exportToCSV - uid was wrong! New uid = " + innerUid);
                 }
 
-
-
                 fireListener(ON_PROGRESS, mContext.getString(R.string.creating_csv_file));
 
                 File csvFile = csvBuilder.getCsvFile(dbView.getLabeledData(labelId),
                                                      innerUid,
-                                         true);
+                                                     true);
 
                 List<LabeledData> labeledData;
                 while ((labeledData = dbView.getLabeledData(labelId, LabelConfigRepository.TYPE_CSV, 0)).size() > 0) {
-                    csvBuilder.appendData(csvFile, labeledData, 1);
+                    csvBuilder.appendData(csvFile, labeledData, false);
                 }
 
                 long end = System.currentTimeMillis();
                 log.d("Csv file created. Time consumed: " + ((end-start)/1000)/60 + "m" + ((end-start)/1000)%60+"s");
 
-                //dbView.deleteLabeledData(labelId);
+                dbView.deleteLabeledData(labelId);
 
                 fireListener(SUCCESS, mContext.getString(R.string.success_csv_file));
             }

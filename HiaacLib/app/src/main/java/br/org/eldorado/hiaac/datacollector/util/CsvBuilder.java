@@ -9,7 +9,6 @@ import com.opencsv.CSVWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
@@ -29,7 +28,7 @@ public class CsvBuilder {
         mContext = context;
     }
 
-    public void appendHeader(File csvFile) {
+    public synchronized void appendHeader(File csvFile) {
         CSVWriter writer = null;
 
         if(csvFile.length() != 0) {
@@ -39,10 +38,10 @@ public class CsvBuilder {
 
         try {
             writer = new CSVWriter(new FileWriter(csvFile, false),
-                    ';',
-                    CSVWriter.NO_QUOTE_CHARACTER,
-                    CSVWriter.DEFAULT_ESCAPE_CHARACTER,
-                    CSVWriter.DEFAULT_LINE_END);
+                                   ';',
+                                   CSVWriter.NO_QUOTE_CHARACTER,
+                                   CSVWriter.DEFAULT_ESCAPE_CHARACTER,
+                                   CSVWriter.DEFAULT_LINE_END);
 
             Locale.setDefault(new Locale("pt", "BR"));
 
@@ -63,7 +62,7 @@ public class CsvBuilder {
         }
     }
 
-    public void appendData(File csvFile, List<LabeledData> data, int type) {
+    public synchronized void appendData(File csvFile, List<LabeledData> data, boolean createHeader) {
 
         if (csvFile == null) return;
 
@@ -73,19 +72,20 @@ public class CsvBuilder {
         try {
             Locale.setDefault(new Locale("pt", "BR"));
             writer = new CSVWriter(new FileWriter(csvFile, true),
-                          ';',
+                                   ';',
                                    CSVWriter.NO_QUOTE_CHARACTER,
                                    CSVWriter.DEFAULT_ESCAPE_CHARACTER,
                                    CSVWriter.DEFAULT_LINE_END);
 
-            if (type == 0) {
+            if (createHeader)
                 writer.writeNext(data.get(0).getCSVHeaders());
-            }
+
             for (LabeledData dt : data) {
                 writer.writeNext(dt.getCSVFormattedString());
                 dt.setIsDataUsed(1);
             }
 
+            // Update db to flag data written to the csv file.
             mDbView.updateLabeledData(data);
         } catch (Exception e) {
             log.d("Appending CSV data failed: " + e.getMessage());
@@ -102,7 +102,7 @@ public class CsvBuilder {
         }
     }
 
-    public File getCsvFile(LabeledData data, String timestamp, boolean includeHeader) {
+    public synchronized File getCsvFile(LabeledData data, String timestamp, boolean includeHeader) {
         File directory = new File(
                 mContext.getFilesDir().getAbsolutePath() +
                         File.separator +
@@ -123,12 +123,13 @@ public class CsvBuilder {
         return csvFile;
     }
 
-    public File create(List<LabeledData> data, String timestamp) {
+    /* Used by firebase, as it is always sending timestamp as '0' */
+    public synchronized File create(List<LabeledData> data) {
 
-        File csvFile = getCsvFile(data.get(0), timestamp, false);
+        File csvFile = getCsvFile(data.get(0), "0", false);
 
         log.d("Creating CSV file: " + csvFile.getAbsolutePath());
-        appendData(csvFile, data, 0);
+        appendData(csvFile, data, true);
         return csvFile;
     }
 
