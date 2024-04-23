@@ -92,6 +92,10 @@ public class LabelConfigViewModel extends AndroidViewModel {
         return mRepository.countLabeledDataCsv(labelId);
     }
 
+    public Boolean labeledDataExists(long labelId) {
+        return mRepository.labeledDataExists(labelId);
+    }
+
     public String getLabeledDataUidCsv(long labelId) {
         return mRepository.getLabeledDataUidCsv(labelId);
     }

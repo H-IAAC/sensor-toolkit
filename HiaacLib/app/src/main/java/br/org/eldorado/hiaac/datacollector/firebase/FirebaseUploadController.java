@@ -23,6 +23,7 @@ import br.org.eldorado.hiaac.datacollector.data.LabelConfigViewModel;
 import br.org.eldorado.hiaac.datacollector.data.LabeledData;
 import br.org.eldorado.hiaac.datacollector.util.CsvBuilder;
 import br.org.eldorado.hiaac.datacollector.util.Log;
+import br.org.eldorado.hiaac.datacollector.util.Preferences;
 
 public class FirebaseUploadController {
     private final Log log  = new Log("FirebaseUploadController");
@@ -145,6 +146,7 @@ public class FirebaseUploadController {
     }
 
     public void exportToCSV(final String uid, long labelId) {
+
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -162,13 +164,12 @@ public class FirebaseUploadController {
                     }
                 }
 
-                Integer numberOfDbElements = dbView.countLabeledDataCsv(labelId);
-                if (numberOfDbElements == 0) {
+                if (!dbView.labeledDataExists(labelId)) {
                     log.d("exportToCSV - There is no data to export!");
                     fireListener(ERROR, mContext.getString(R.string.error_no_data_create_csc));
                     return;
                 }
-                log.d("exportToCSV - Starting creating csv file labelId: " + labelId + " uid: " + uid + " size " + numberOfDbElements);
+                log.d("exportToCSV - Starting creating csv file labelId: " + labelId + " uid: " + uid);
 
                 if (ExecutionController.getInstance().isRunning()) {
                     log.d("exportToCSV - exporting data while execution controller still running");
@@ -191,7 +192,7 @@ public class FirebaseUploadController {
                 }
 
                 long end = System.currentTimeMillis();
-                log.d("Csv file created. Time consumed: " + ((end-start)/1000)/60 + "m" + ((end-start)/1000)%60+"s");
+                log.d("exportToCSV - Csv file created. Time consumed: " + ((end-start)/1000)/60 + "m" + ((end-start)/1000)%60+"s");
 
                 dbView.deleteLabeledData(labelId);
 
@@ -209,6 +210,9 @@ public class FirebaseUploadController {
                     break;
                 case ON_PROGRESS:
                     listener.onProgress(msg);
+                    break;
+                default:
+                    log.d("Ignoring fireListener with invalid type.");
                     break;
             }
         }

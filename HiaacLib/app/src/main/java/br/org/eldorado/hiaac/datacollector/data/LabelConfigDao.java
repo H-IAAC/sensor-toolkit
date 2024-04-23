@@ -70,6 +70,9 @@ public interface LabelConfigDao {
     @Query("SELECT count(*) from LabeledData where `config-id`=:configId and `data-used`=0")
     Integer countLabeledDataCsv(long configId);
 
+    @Query("SELECT EXISTS(SELECT 1 from LabeledData where `config-id`=:configId and `data-used`=0)")
+    Boolean labeledDataExists(long configId);
+
     @Query("SELECT uid from LabeledData where `config-id`=:configId and `data-used`=0 LIMIT 1")
     String getLabeledDataUidCsv(long configId);
 

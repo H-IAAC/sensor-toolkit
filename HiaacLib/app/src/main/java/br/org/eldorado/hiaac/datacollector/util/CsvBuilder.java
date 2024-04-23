@@ -26,7 +26,7 @@ public class CsvBuilder {
         mContext = context;
     }
 
-    public synchronized void appendHeader(File csvFile) {
+    public void appendHeader(File csvFile) {
         CSVWriter writer = null;
 
         if(csvFile.length() != 0) {

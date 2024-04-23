@@ -97,6 +97,7 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
     private boolean deleteButtonClicked;
     private final CsvFiles csvFiles;
     private AlertDialog dialog;
+    private Boolean isSendingData = false;
 
     public LabelRecyclerViewAdapter(Context context) {
         mInflater = LayoutInflater.from(context);
@@ -309,8 +310,7 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
             log.d("Scheduler: Alarm configured for [" + labelConfig.experiment + "] id: " + labelConfig.id);
         }
 
-        if (Preferences.shouldRunChecking())
-            checkExecution(holder);
+        checkExecution(holder);
     }
 
     private void resizeLabelPanel(ViewHolder holder) {
@@ -327,6 +327,11 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
     }
 
     private void sendData(ViewHolder holder, int type, boolean showDialog, String dataUid) {
+
+        if (isSendingData) return;
+
+        isSendingData = true;
+
         if (showDialog) {
             sendDataDialog = ProgressDialog.show(mContext, "Export to CSV File", "Creating CSV", true);
         }
@@ -379,6 +384,8 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
             });
             aDialog.show();
         }
+
+        isSendingData = false;
     }
 
     private void onSendDataCompleted(String message, ProgressDialog dialog, ViewHolder holder) {
@@ -713,6 +720,10 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
     }
 
     private void checkExecution(ViewHolder holder) {
+
+        if (!Preferences.shouldRunChecking())
+            return;
+
         checkingServiceConnection = new ServiceConnection() {
             @Override
             public void onServiceConnected(ComponentName name, IBinder service) {
@@ -732,8 +743,6 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
                     log.d("checkExecution - ExecutionService not running " + dt.getLabel());
                     sendData(holder, CREATE_CSV_FILE, false, "0");
                 }
-
-                Preferences.setToRunChecking(false);
             }
 
             @Override
@@ -745,6 +754,7 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
         execServiceIntent.putExtra("Title", holder.labelTitle.getText().toString());
         mContext.startForegroundService(execServiceIntent);
         mContext.bindService(execServiceIntent, checkingServiceConnection, Context.BIND_AUTO_CREATE);
+        Preferences.setToRunChecking(false);
     }
 
     @Override

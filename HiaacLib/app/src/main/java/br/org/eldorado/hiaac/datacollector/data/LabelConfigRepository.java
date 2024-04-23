@@ -132,6 +132,10 @@ public class LabelConfigRepository {
         return mLabelConfigDao.countLabeledDataCsv(labelId);
     }
 
+    public Boolean labeledDataExists(long labelId) {
+        return mLabelConfigDao.labeledDataExists(labelId);
+    }
+
     public String getLabeledDataUidCsv(long labelId) {
         return mLabelConfigDao.getLabeledDataUidCsv(labelId);
     }
