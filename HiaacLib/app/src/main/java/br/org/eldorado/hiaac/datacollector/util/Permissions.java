@@ -24,19 +24,8 @@ public class Permissions {
     public Permissions(ComponentActivity activity, Context context) {
         this.context = context;
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) { // Android 13
-            REQUIRED_PERMISSIONS = new String[]{ Manifest.permission.POST_NOTIFICATIONS,
-                                                 Manifest.permission.CAMERA,
-                                                 Manifest.permission.SCHEDULE_EXACT_ALARM,
-                                                 Manifest.permission.USE_EXACT_ALARM};
-        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) { // Android 12
-            REQUIRED_PERMISSIONS = new String[]{ Manifest.permission.POST_NOTIFICATIONS,
-                                                 Manifest.permission.CAMERA,
-                                                 Manifest.permission.SCHEDULE_EXACT_ALARM};
-        } else {
-            REQUIRED_PERMISSIONS = new String[]{ Manifest.permission.POST_NOTIFICATIONS,
-                                                 Manifest.permission.CAMERA};
-        }
+        REQUIRED_PERMISSIONS = new String[]{ Manifest.permission.POST_NOTIFICATIONS,
+                                             Manifest.permission.CAMERA};
 
         rpl = activity.registerForActivityResult(new ActivityResultContracts.RequestMultiplePermissions(),
                 new ActivityResultCallback<Map<String, Boolean>>() {

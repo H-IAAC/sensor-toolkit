@@ -81,6 +81,7 @@ public class CsvBuilder {
             for (LabeledData dt : data) {
                 writer.writeNext(dt.getCSVFormattedString());
                 dt.setIsDataUsed(1);
+                writer.flushQuietly();
             }
 
             // Update db to flag data written to the csv file.

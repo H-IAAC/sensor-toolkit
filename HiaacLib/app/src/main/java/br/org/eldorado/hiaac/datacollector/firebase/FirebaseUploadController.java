@@ -13,7 +13,6 @@ import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.List;
 
 import br.org.eldorado.hiaac.R;
@@ -23,7 +22,6 @@ import br.org.eldorado.hiaac.datacollector.data.LabelConfigViewModel;
 import br.org.eldorado.hiaac.datacollector.data.LabeledData;
 import br.org.eldorado.hiaac.datacollector.util.CsvBuilder;
 import br.org.eldorado.hiaac.datacollector.util.Log;
-import br.org.eldorado.hiaac.datacollector.util.Preferences;
 
 public class FirebaseUploadController {
     private final Log log  = new Log("FirebaseUploadController");

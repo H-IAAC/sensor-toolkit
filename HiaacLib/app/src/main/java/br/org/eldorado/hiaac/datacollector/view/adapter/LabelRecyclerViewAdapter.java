@@ -93,7 +93,7 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
     private final Log log = new Log("LabelRecyclerViewAdapter");
     private ProgressDialog sendDataDialog;
     private LabelConfigViewModel mLabelConfigViewModel;
-    private final Map<String, ViewHolder> holdersMap = new HashMap<>();
+    private static final Map<String, ViewHolder> holdersMap = new HashMap<>();
     private boolean deleteButtonClicked;
     private final CsvFiles csvFiles;
     private AlertDialog dialog;
@@ -589,7 +589,7 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
         sendData(holder, SEND_DATA_TO_FIREBASE, true, "0");
     }
 
-    public ViewHolder getViewHolder(String holderKey) {
+    public static ViewHolder getViewHolder(String holderKey) {
         if (holdersMap.containsKey(holderKey)) {
             return holdersMap.get(holderKey);
         }
@@ -740,7 +740,7 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
                     setAsStop(holder.getStartButton(), holder);
                     execService.changeExecutionServiceListener(new MyExecutionListener(dt, holder));
                 } else {
-                    log.d("checkExecution - ExecutionService not running " + dt.getLabel());
+                    log.d("checkExecution - sending data to " + dt.getLabel());
                     sendData(holder, CREATE_CSV_FILE, false, "0");
                 }
             }

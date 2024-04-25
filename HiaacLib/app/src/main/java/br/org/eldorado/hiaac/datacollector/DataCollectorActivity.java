@@ -1,16 +1,13 @@
 package br.org.eldorado.hiaac.datacollector;
 
-import android.content.BroadcastReceiver;
-import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.os.Bundle;
-import android.os.Handler;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.Observer;
@@ -34,9 +31,8 @@ import br.org.eldorado.hiaac.datacollector.util.Log;
 import br.org.eldorado.hiaac.datacollector.util.TimeSync;
 import br.org.eldorado.hiaac.datacollector.util.Permissions;
 import br.org.eldorado.hiaac.datacollector.util.Preferences;
-import br.org.eldorado.hiaac.datacollector.util.WakeLocks;
+import br.org.eldorado.hiaac.datacollector.util.Utils;
 import br.org.eldorado.hiaac.datacollector.view.adapter.LabelRecyclerViewAdapter;
-import br.org.eldorado.sensorsdk.SensorSDK;
 
 public class DataCollectorActivity extends AppCompatActivity {
     public static final int NEW_LABEL_CONFIG_ACTIVITY = 1;
@@ -47,12 +43,9 @@ public class DataCollectorActivity extends AppCompatActivity {
     //private static boolean isActivityVisible;
     private FloatingActionButton mAddButton;
     private LabelConfigViewModel mLabelConfigViewModel;
-    private LabelRecyclerViewAdapter adapter;
-    private BroadcastReceiver br;
-    private Log log;
+    private static LabelRecyclerViewAdapter adapter = null;
+    private static final Log log = new Log("DataCollectorActivity");
     private Permissions permissions;
-
-    public final static String SCHEDULER_ACTIONS = "br.org.eldorado.schedule_collect_data";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -62,7 +55,6 @@ public class DataCollectorActivity extends AppCompatActivity {
         }
 
         Preferences.init(this.getApplicationContext());
-        log = new Log("DataCollectorActivity");
 
         permissions = new Permissions(this, this.getApplicationContext());
 
@@ -77,44 +69,19 @@ public class DataCollectorActivity extends AppCompatActivity {
         RecyclerView recyclerView = findViewById(R.id.label_recycle_view);
         adapter = new LabelRecyclerViewAdapter(this);
 
-        br = new BroadcastReceiver() {
-            @Override
-            public void onReceive(Context c, Intent i) {
-                LabelRecyclerViewAdapter.ViewHolder holder = adapter.getViewHolder(i.getStringExtra("holder"));
-                if (holder != null && !holder.isStarted()) {
-                    long startsTime = i.getLongExtra("startTime", SensorSDK.getInstance().getRemoteTime()) - SensorSDK.getInstance().getRemoteTime();
-
-                    log.d("Scheduler: Broadcast received");
-
-                    new Handler().postDelayed(new Runnable() {
-                        @Override
-                        public void run() {
-                            // Disable alarm when it automatically starts after receive broadcast message
-                            AlarmConfig.cancelAlarm();
-                            AlarmConfig.releaseWakeLock();
-
-                            WakeLocks.collectAcquire(getApplicationContext());
-
-                            log.d("Scheduler: Broadcast received - startExecution");
-                            adapter.startExecution(holder);
-                        }
-                    }, startsTime);
-
-                } else {
-                    log.d("Scheduler: Broadcast received invalid");
-                }
-            }
-        };
-
         recyclerView.setAdapter(adapter);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
-        registerReceiver(br, new IntentFilter(DataCollectorActivity.SCHEDULER_ACTIONS));
+        //registerReceiver(br, new IntentFilter(AlarmConfig.SCHEDULER_ACTIONS));
 
-        mLabelConfigViewModel = ViewModelProvider
-                                     .AndroidViewModelFactory
-                                     .getInstance(getApplication())
-                                     .create(LabelConfigViewModel.class);
+        try {
+            mLabelConfigViewModel = ViewModelProvider
+                    .AndroidViewModelFactory
+                    .getInstance(getApplication())
+                    .create(LabelConfigViewModel.class);
+        } catch (Exception e){
+            Toast.makeText(this, "Need to clean app storage.", Toast.LENGTH_LONG).show();
+        }
 
         mLabelConfigViewModel.getAllLabels().observe(this, new Observer<List<LabelConfig>>() {
             @Override
@@ -161,10 +128,6 @@ public class DataCollectorActivity extends AppCompatActivity {
 
     @Override
     protected void onDestroy() {
-        if (br != null) {
-            unregisterReceiver(br);
-        }
-
         TimeSync.stopServerTimeUpdates();
 
         super.onDestroy();
@@ -192,5 +155,14 @@ public class DataCollectorActivity extends AppCompatActivity {
             return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    public static LabelRecyclerViewAdapter getAdapter() {
+        if (adapter == null) {
+            log.d("Adapter is null!!!");
+            Utils.emitErrorBeep();
+        }
+
+        return adapter;
     }
 }

@@ -7,9 +7,7 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.os.PowerManager;
-import android.view.View;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -17,9 +15,8 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
-import br.org.eldorado.hiaac.R;
-import br.org.eldorado.hiaac.datacollector.DataCollectorActivity;
 import br.org.eldorado.hiaac.datacollector.data.LabelConfig;
+import br.org.eldorado.hiaac.datacollector.receiver.SchedulerReceiver;
 import br.org.eldorado.sensorsdk.SensorSDK;
 
 public class AlarmConfig {
@@ -28,11 +25,11 @@ public class AlarmConfig {
     private static AlarmManager mgr = null;
     private static PowerManager powerManager = null;
     private static PowerManager.WakeLock wakeLock;
-    private static boolean isConfigured = false;
-    private static long idConfigured = -1;
     private static PendingIntent pendingAlarm = null;
     private static Boolean isInitialized = false;
     private static TextView schedulerView;
+    private static Configuration configuration = new Configuration();
+    public static final String SCHEDULER_ACTIONS = "br.org.eldorado.hiaac.datacollector.SCHEDULER";
 
     public static void init(Context context, TextView view) {
         if (!isInitialized) {
@@ -45,10 +42,6 @@ public class AlarmConfig {
         schedulerView = view;
 
         isInitialized = true;
-    }
-
-    public static boolean isInitialized() {
-        return isInitialized;
     }
 
     public static void releaseWakeLock() {
@@ -64,55 +57,79 @@ public class AlarmConfig {
             mgr.cancel(pendingAlarm);
             setScheduler(null);
         }
-        isConfigured = false;
-        idConfigured = -1;
+
+        configuration = new Configuration();
+    }
+
+    private static long getSchedulerTimeWithCorrectDate(long scheduledTime) {
+        Calendar scheduledDate = Calendar.getInstance();
+        scheduledDate.setTimeInMillis(scheduledTime);
+
+        Calendar now = Calendar.getInstance();
+        now.setTimeInMillis(SensorSDK.getInstance().getRemoteTime());
+
+        // If configured to saved after the current date, then set the scheduler to next day
+        if (now.after(scheduledDate))
+            scheduledTime = scheduledTime + TimeUnit.HOURS.toMillis(24);
+
+        return scheduledTime;
     }
 
     public static Date configureScheduler(LabelConfig labelConfig, String holderKey) {
 
-        if (isConfigured && idConfigured != labelConfig.id) {
+        if (labelConfig.scheduledTime == 0) {
+            log.i("Scheduler: " + labelConfig.experiment + " has no scheduler configured.");
             return null;
         }
 
-        Intent i = new Intent(DataCollectorActivity.SCHEDULER_ACTIONS);
+        long scheduledTime = getSchedulerTimeWithCorrectDate(labelConfig.scheduledTime);
+
+        if (scheduledTime < configuration.scheduledTime) {
+            log.i("Scheduler: " + labelConfig.experiment + " has priority over " + configuration.experiment);
+        } else if (configuration.isConfigured &&
+                   configuration.idConfigured != labelConfig.id) {
+            Calendar c = Calendar.getInstance();
+            c.setTimeInMillis(scheduledTime);
+            log.i("Scheduler: Ignoring scheduler from " + labelConfig.experiment + " to " + c.getTime());
+            return null;
+        }
+
+        // Set action and className to comply with the new Android security requirements...
+        Intent i = new Intent(mContext, SchedulerReceiver.class);
+        i.setAction(AlarmConfig.SCHEDULER_ACTIONS);
         i.putExtra("holder", holderKey);
-        i.putExtra("startTime", labelConfig.scheduledTime);
 
         pendingAlarm = PendingIntent.getBroadcast(mContext,
                                                   0,
                                                   i,
                                                   PendingIntent.FLAG_MUTABLE | PendingIntent.FLAG_UPDATE_CURRENT);
 
-        if (labelConfig.scheduledTime > 0) {
-            Calendar c = Calendar.getInstance();
-            c.setTimeInMillis(labelConfig.scheduledTime);
+        acquireWakeLock();
 
-            Calendar now = Calendar.getInstance();
-            now.setTimeInMillis(SensorSDK.getInstance().getRemoteTime());
+        // Alarm time must be based on remote clock.
+        long remote = SensorSDK.getInstance().getRemoteTime();
+        long device = System.currentTimeMillis();
+        long alarmStartTime;
 
-            // If configured to saved after the current date, then set the scheduler to next day
-            if (!c.after(now))
-                labelConfig.scheduledTime = labelConfig.scheduledTime + TimeUnit.HOURS.toMillis(24);
+        // Device clock can be ahead or behind from Remote's clock.
+        // So we need to consider the difference from both clocks
+        if (device >= remote)
+            alarmStartTime = scheduledTime + (device - remote);
+        else
+            alarmStartTime = scheduledTime - (remote - device);
 
-            acquireWakeLock();
+        Calendar c = Calendar.getInstance();
+        c.setTimeInMillis(alarmStartTime);
+        log.i("Scheduler: " + labelConfig.experiment + " to start at [" + c.getTime() + "] id: " + labelConfig.id);
 
-            log.i("Scheduler: " + labelConfig.experiment + " to start at [" + c.getTime() + "] id: " + labelConfig.id);
+        mgr.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP,
+                alarmStartTime,
+                pendingAlarm);
 
-            long startsTime = labelConfig.scheduledTime - SensorSDK.getInstance().getRemoteTime() - 7000;
+        configuration = new Configuration(true, labelConfig.id, alarmStartTime, labelConfig.experiment, labelConfig.activity, labelConfig.userId);
 
-            mgr.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP,
-                    SensorSDK.getInstance().getRemoteTime() + startsTime,
-                    pendingAlarm);
-
-            isConfigured = true;
-            idConfigured = labelConfig.id;
-
-            setScheduler(c.getTime());
-            return c.getTime();
-        }
-
-        setScheduler(null);
-        return null;
+        setScheduler(c.getTime());
+        return c.getTime();
     }
 
     private static void setScheduler(Date date) {
@@ -125,5 +142,33 @@ public class AlarmConfig {
             DateFormat dt = new SimpleDateFormat("HH:mm:ss");
             schedulerView.setText("Scheduler: " + dt.format(date));
         }
+    }
+
+    static class Configuration {
+        public boolean isConfigured;
+        public long idConfigured;
+        public long scheduledTime;
+        public String experiment;
+        public String activity;
+        public String userId;
+
+        public Configuration() {
+            this.isConfigured = false;
+            this.idConfigured = -1;
+            this.scheduledTime = 0;
+            this.activity = "";
+            this.userId = "";
+            this.experiment = "";
+        }
+
+        public Configuration(boolean isConfigured, long idConfigured, long scheduledTime, String experiment, String activity, String userId) {
+            this.isConfigured = isConfigured;
+            this.idConfigured = idConfigured;
+            this.scheduledTime = scheduledTime;
+            this.experiment = experiment;
+            this.activity = activity;
+            this.userId = userId;
+        }
+
     }
 }

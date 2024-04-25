@@ -16,6 +16,7 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION"/>
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
     <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
+    <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS"/>
 
     <uses-permission
         android:name="android.permission.WRITE_SETTINGS"
@@ -57,7 +58,14 @@
             android:label="@string/app_name"
             android:screenOrientation="portrait" />
 
-        <receiver android:name=".datacollector.DataCollectorActivity" />
+        <receiver
+            android:name=".datacollector.receiver.SchedulerReceiver"
+            android:exported="false">
+            <intent-filter android:priority="1000">
+                <action android:name="br.org.eldorado.hiaac.datacollector.SCHEDULER" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </receiver>
 
         <service
             android:name=".datacollector.service.ExecutionService"

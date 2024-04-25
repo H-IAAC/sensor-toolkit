@@ -99,7 +99,8 @@ public class LabelOptionsActivity extends AppCompatActivity {
             3 * MINUTE + 30,
             5 * MINUTE,
             10 * MINUTE,
-            30 * MINUTE
+            20 * MINUTE,
+            40 * MINUTE
     };
 
     private LabelConfigViewModel mLabelConfigViewModel;
