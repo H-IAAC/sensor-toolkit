@@ -48,7 +48,7 @@ public class TimeSync {
         });
     }
 
-    public static void startServerTimeUpdates(TextView serverTimeTxt, Context context) {
+    public static void startServerTimeUpdates(TextView serverTimeTxt, TextView timeDiffTxt, Context context) {
         log.d("TimeSync: startServerTimeUpdates");
         updateTimeInSync = true;
 
@@ -61,7 +61,9 @@ public class TimeSync {
 
         updateTimeLabelHandler.postDelayed(new Runnable() {
             public void run() {
-                setRemoteTimeText(SensorSDK.getInstance().getRemoteTime(), serverTimeTxt, context);
+                long remoteTime = SensorSDK.getInstance().getRemoteTime();
+                long localTime = System.currentTimeMillis();
+                setRemoteTimeText(remoteTime, localTime, serverTimeTxt, timeDiffTxt, context);
                 updateTimeLabelHandler.postDelayed(this, 50);
             }
         }, 50);
@@ -75,22 +77,24 @@ public class TimeSync {
         updateTimeLabelHandler.removeCallbacksAndMessages(null);
     }
 
-    private static void setRemoteTimeText(long timeInMillis, final TextView serverTimeTxt, Context context) {
+    private static void setRemoteTimeText(long remoteTimeInMillis,
+                                          long localTimeInMillis,
+                                          final TextView serverTimeTxt,
+                                          final TextView timeDiffTxt,
+                                          Context context) {
         if (serverTimeTxt != null) {
-            Date date = new Date(timeInMillis);
+            Date date = new Date(remoteTimeInMillis);
             String time = df.format(date);
-/*            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {*/
-                    if (updateTimeInSync) {
-                        serverTimeTxt.setText(context.getString(R.string.server_time) + " " + time);
-                        serverTimeTxt.setTextColor(Color.BLUE);
-                    } else {
-                        serverTimeTxt.setText(context.getString(R.string.local_time) + " " + time);
-                        serverTimeTxt.setTextColor(Color.GRAY);
-                    }
-                }
-            //});
-       // }
+
+            if (updateTimeInSync) {
+                serverTimeTxt.setText(context.getString(R.string.server_time) + " " + time);
+                serverTimeTxt.setTextColor(Color.BLUE);
+                timeDiffTxt.setText(context.getString(R.string.time_diff) + " " + Utils.getTimeDifference(remoteTimeInMillis, localTimeInMillis));
+            } else {
+                serverTimeTxt.setText(context.getString(R.string.local_time) + " " + time);
+                serverTimeTxt.setTextColor(Color.GRAY);
+                timeDiffTxt.setText("---");
+            }
+        }
     }
 }

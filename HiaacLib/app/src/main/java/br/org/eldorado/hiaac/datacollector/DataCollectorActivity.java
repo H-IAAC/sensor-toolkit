@@ -111,7 +111,9 @@ public class DataCollectorActivity extends AppCompatActivity {
             }
         });
 
-        TimeSync.startServerTimeUpdates(findViewById(R.id.server_time), this);
+        TimeSync.startServerTimeUpdates(findViewById(R.id.server_time),
+                                        findViewById(R.id.time_diff),
+                                        this);
 
         permissions.askPermissions();
     }
