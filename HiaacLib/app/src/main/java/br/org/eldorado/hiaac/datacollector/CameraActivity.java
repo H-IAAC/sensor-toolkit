@@ -24,6 +24,8 @@ import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.graphics.Color;
+import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
 import android.os.PowerManager;
 import android.view.View;
@@ -311,7 +313,12 @@ public class CameraActivity extends AppCompatActivity {
     }
 
     private void setButtonAsStop() {
-        captureButton.setBackground(this.getResources().getDrawable(R.drawable.baseline_stop_24));
+        GradientDrawable drawable = new GradientDrawable();
+        drawable.setShape(GradientDrawable.RECTANGLE);
+        drawable.setStroke(10, Color.WHITE);
+        drawable.setColor(Color.BLACK);
+        drawable.setAlpha(150);
+        captureButton.setBackground(drawable);
     }
 
     @Override
