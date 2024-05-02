@@ -1,6 +1,7 @@
 package br.org.eldorado.hiaac.datacollector.util;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.os.Handler;
 import android.widget.TextView;
 
@@ -83,8 +84,10 @@ public class TimeSync {
                 public void run() {*/
                     if (updateTimeInSync) {
                         serverTimeTxt.setText(context.getString(R.string.server_time) + " " + time);
+                        serverTimeTxt.setTextColor(Color.BLUE);
                     } else {
                         serverTimeTxt.setText(context.getString(R.string.local_time) + " " + time);
+                        serverTimeTxt.setTextColor(Color.GRAY);
                     }
                 }
             //});
