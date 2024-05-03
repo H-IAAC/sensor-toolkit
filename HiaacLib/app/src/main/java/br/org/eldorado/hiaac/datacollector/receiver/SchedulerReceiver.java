@@ -41,11 +41,9 @@ public class SchedulerReceiver extends BroadcastReceiver {
 
                 LabelRecyclerViewAdapter.ViewHolder holder = LabelRecyclerViewAdapter.getViewHolder(intent.getStringExtra("holder"));
                 if (holder != null && !holder.isStarted()) {
-                    long startsTime = intent.getLongExtra("startTime", SensorSDK.getInstance().getRemoteTime()) - SensorSDK.getInstance().getRemoteTime();
-
                     log.d("SchedulerReceiver: Broadcast received");
 
-                    new Handler().postDelayed(new Runnable() {
+                    new Handler().post(new Runnable() {
                         @Override
                         public void run() {
                             // Disable alarm when it automatically starts after receive broadcast message
@@ -62,7 +60,7 @@ public class SchedulerReceiver extends BroadcastReceiver {
                                 DataCollectorActivity.getAdapter().startExecution(holder);
                             }
                         }
-                    }, startsTime);
+                    });
 
                 } else {
                     log.d("SchedulerReceiver: Broadcast received invalid");
