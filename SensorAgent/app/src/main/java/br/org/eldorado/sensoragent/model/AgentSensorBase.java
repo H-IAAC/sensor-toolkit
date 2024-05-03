@@ -101,11 +101,12 @@ public class AgentSensorBase
                 /* TODO save data to database */
                 /*log.i(event.sensor.getStringType() + " power: " + event.sensor.getPower() + " values: " +
                         (event.values == null ? "null" : event.values[0]));*/
+                this.timestamp = System.currentTimeMillis();
                 this.power = event.sensor.getPower();
                 this.values = Arrays.copyOf(event.values, event.values.length);
                 //this.timestamp = System.currentTimeMillis() + (event.timestamp - SystemClock.elapsedRealtimeNanos()) / 1000000;
                 //this.timestamp = RemoteApplicationTime.getCurrentRemoteTimeMillis() + (event.timestamp - SystemClock.elapsedRealtimeNanos()) / 1000000;
-                this.timestamp = RemoteApplicationTime.getCurrentRemoteTimeMillis();
+                //this.timestamp = RemoteApplicationTime.getCurrentRemoteTimeMillis();
 
                 /*APICommand cmd =
                         new APICommand(
