@@ -77,6 +77,15 @@ public class AlarmConfig {
 
     public static Date configureScheduler(LabelConfig labelConfig, String holderKey) {
 
+        // Do not set the scheduler when device location is 'video'
+        if (labelConfig.deviceLocation.toLowerCase().equals("video") ||
+            labelConfig.deviceLocation.toLowerCase().equals("vídeo")) {
+            if (configuration.idConfigured == labelConfig.id)
+                cancelAlarm();
+
+            return null;
+        }
+
         if (labelConfig.scheduledTime == 0) {
             log.i("Scheduler: " + labelConfig.experiment + " has no scheduler configured.");
             return null;
@@ -139,7 +148,7 @@ public class AlarmConfig {
         if (date == null) {
             schedulerView.setText("");
         } else {
-            DateFormat dt = new SimpleDateFormat("HH:mm:ss");
+            DateFormat dt = new SimpleDateFormat("HH:mm:ss:SSS");
             schedulerView.setText("Scheduler: " + dt.format(date));
         }
     }
