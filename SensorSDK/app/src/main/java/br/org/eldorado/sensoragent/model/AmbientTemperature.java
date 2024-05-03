@@ -4,7 +4,7 @@ public class AmbientTemperature  extends SensorBase {
     public static final String TAG = "AmbientTemperature";
 
     public AmbientTemperature() {
-        super(TAG, SensorBase.TYPE_AMBIENT_TEMPERATUR);
+        super(TAG, SensorBase.TYPE_AMBIENT_TEMPERATURE);
     }
 
     public String getValuesString() {
