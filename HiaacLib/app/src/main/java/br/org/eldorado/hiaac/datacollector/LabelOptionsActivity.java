@@ -412,7 +412,7 @@ public class LabelOptionsActivity extends AppCompatActivity {
         selectedSensorFrequencies.add(createSelectedSensorFrequency(sensorTypeFrequencyMap,
                 SensorBase.TYPE_ACCELEROMETER, Accelerometer.TAG));
         selectedSensorFrequencies.add(createSelectedSensorFrequency(sensorTypeFrequencyMap,
-                SensorBase.TYPE_AMBIENT_TEMPERATUR, AmbientTemperature.TAG));
+                SensorBase.TYPE_AMBIENT_TEMPERATURE, AmbientTemperature.TAG));
         selectedSensorFrequencies.add(createSelectedSensorFrequency(sensorTypeFrequencyMap,
                 SensorBase.TYPE_GYROSCOPE, Gyroscope.TAG));
         selectedSensorFrequencies.add(createSelectedSensorFrequency(sensorTypeFrequencyMap,

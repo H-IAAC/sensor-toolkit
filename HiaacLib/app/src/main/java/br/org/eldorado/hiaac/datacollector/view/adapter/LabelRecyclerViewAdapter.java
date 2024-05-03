@@ -712,7 +712,6 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
             dt.setConfigId(labelConfigs.get(holder.getAdapterPosition()).id);
             dt.setStopTime(labelConfigs.get(holder.getAdapterPosition()).stopTime);
             dt.setLabel(labelConfigs.get(holder.getAdapterPosition()).experiment);
-            dt.setServerTime(TimeSync.isUsingServerTime());
         } catch (Exception e) {
             log.e("getDataTrack - Failed to get data from ViewHolder: " + e.getMessage());
         }
