@@ -1,6 +1,7 @@
 package br.org.eldorado.hiaac.datacollector.controller;
 
 import android.os.CountDownTimer;
+
 import androidx.lifecycle.ViewModelProvider;
 
 import java.util.ArrayList;
@@ -15,7 +16,6 @@ import br.org.eldorado.hiaac.datacollector.service.ExecutionService;
 import br.org.eldorado.hiaac.datacollector.service.listener.ExecutionServiceListener;
 import br.org.eldorado.hiaac.datacollector.util.Log;
 import br.org.eldorado.sensoragent.model.SensorBase;
-import br.org.eldorado.sensorsdk.SensorSDK;
 import br.org.eldorado.sensorsdk.listener.SensorSDKListener;
 
 public class ExecutionController {
@@ -88,7 +88,7 @@ public class ExecutionController {
         st.setMaxTimestampDifference(((MySensorListener) sensorFrequency.sensor.getListener()).getMaxTimestampDifference());
         st.setMinTimestampDifference(((MySensorListener) sensorFrequency.sensor.getListener()).getMinTimestampDifference());
         st.setTimestampStandardVariation(0);
-        st.setUsingServerTime(dataTrack.isServerTime());
+        st.setUsingServerTime(dataTrack.isUsingServerTime());
 
         log.d("Total data collected from " + sensorFrequency.sensor.getName() + ": " + ((MySensorListener) sensorFrequency.sensor.getListener()).getTotalData());
         log.d("\tValid data from " + sensorFrequency.sensor.getName() + ": " + ((MySensorListener) sensorFrequency.sensor.getListener()).getCollectedData());
@@ -229,43 +229,63 @@ public class ExecutionController {
             this.timestampAverage = (collectedData < 2 ? 0 : timestampAverage/(collectedData-1)) ;
         }
 
+        private long calcServerTime(long localTime) {
+            // If sever time is ahead of local time
+            if (this.dataTrack.getHowMuchServerTimeIsDifferentFromLocalTime() > 0)
+                // the local time must be incremented by this difference
+                return localTime + this.dataTrack.getHowMuchServerTimeIsDifferentFromLocalTime();
+            else
+                // otherwise, decrease the time difference
+                return localTime - Math.abs(this.dataTrack.getHowMuchServerTimeIsDifferentFromLocalTime());
+        }
+
         @Override
         public void onSensorChanged(SensorBase sensor) {
             try {
-                //if (sensor.isValidValues()) {
-                    //log.d(dataTrack.getLabel() + " Active Threads: " + Thread.activeCount() + "  - " + num++ + " - " + sensor.toString());
+                if (sensor.getTimestamp() == 0)
+                    return;
 
-                    long currentTimestamp = SensorSDK.getInstance().getRemoteTime();
-                    long localCurrentTimestamp = System.currentTimeMillis();
-                    if (lastTimestamp == currentTimestamp) return;
-                    if (collectedData > 0) {
-                        // Ignore 'timestampAverage' when checking the first collectedData
-                        if (lastTimestamp != 0)
-                            timestampAverage += (currentTimestamp - lastTimestamp);
+                if (lastTimestamp == sensor.getTimestamp()) return;
 
-                        maxTimestampDifference = Math.max((currentTimestamp - lastTimestamp), maxTimestampDifference);
-                        minTimestampDifference = Math.min((currentTimestamp - lastTimestamp), minTimestampDifference);
-                    }
-                    lastTimestamp = currentTimestamp;
-                    LabeledData data = new LabeledData(dataTrack.getLabel(), sensor, dataTrack.getDeviceLocation(), dataTrack.getUserId(), dataTrack.getActivity(), dataTrack.getConfigId(), currentTimestamp, dataTrack.getUid());
-                    //if (labeledData.contains(data)) return;
-                    totalData++;
-                    labeledData.add(data);
-                    collectedData++;
+                // Sensor timestamp is in nanoseconds at which the event happened, it is necessary
+                // to convert to epoch time.
+                long serverTime = sensor.getTimestamp();
 
-                    if (labeledData.size() >= 50000) {
-                        log.d("Collected data so far for " + dataTrack.getLabel() + " - " + sensor.getName() + "\n\tValid: " + collectedData + "\n\tInvalid: " + invalidData + "\n\tAverage: " + (timestampAverage/collectedData));
-                        dbView.insertLabeledData((ArrayList<LabeledData>)labeledData.clone());
-                        labeledData.clear();
-                    }
-                    if (!sensor.isValidValues()) {
-                        data.setValidData(false);
-                        invalidData++;
-                    }
-                //} else {
-                    //invalidData++;
-                    //log.d("Invalid Data Collected\n" + sensor.toString());
-                //}
+                // Now, if is using server time, we need to calculate set the diff time
+                if (this.dataTrack.isUsingServerTime())
+                    serverTime = calcServerTime(sensor.getTimestamp());
+
+                if (collectedData > 0) {
+                    // Ignore 'timestampAverage' when checking the first collectedData
+                    if (lastTimestamp != 0)
+                        timestampAverage += (serverTime - lastTimestamp);
+
+                    maxTimestampDifference = Math.max((serverTime - lastTimestamp), maxTimestampDifference);
+                    minTimestampDifference = Math.min((serverTime - lastTimestamp), minTimestampDifference);
+                }
+                lastTimestamp = sensor.getTimestamp();
+                LabeledData data = new LabeledData(dataTrack.getLabel(),
+                                                   sensor,
+                                                   dataTrack.getDeviceLocation(),
+                                                   dataTrack.getUserId(),
+                                                   dataTrack.getActivity(),
+                                                   dataTrack.getConfigId(),
+                                                   serverTime,
+                                                   sensor.getTimestamp(), // localTime
+                                                   dataTrack.getUid());
+                totalData++;
+                labeledData.add(data);
+                collectedData++;
+
+                if (labeledData.size() >= 50000) {
+                    log.d("Collected data so far for " + dataTrack.getLabel() + " - " + sensor.getName() + "\n\tValid: " + collectedData + "\n\tInvalid: " + invalidData + "\n\tAverage: " + (timestampAverage/collectedData));
+                    dbView.insertLabeledData((ArrayList<LabeledData>)labeledData.clone());
+                    labeledData.clear();
+                }
+                if (!sensor.isValidValues()) {
+                    data.setValidData(false);
+                    invalidData++;
+                }
             } catch (Exception e) {
                 if (labeledData.size() > 0) {
                     dbView.insertLabeledData(labeledData);
