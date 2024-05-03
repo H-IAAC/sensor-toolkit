@@ -24,6 +24,8 @@ public class TimeSync {
     private static final DateFormat df = new SimpleDateFormat("HH:mm:ss");
     private static final Handler syncServerTimeHandler = new Handler();
     private static final Handler updateTimeLabelHandler = new Handler();
+    private static long remoteTime;
+    private static long localTime;
 
     public static boolean isUsingServerTime() {
         return updateTimeInSync;
@@ -77,6 +79,30 @@ public class TimeSync {
         updateTimeLabelHandler.removeCallbacksAndMessages(null);
     }
 
+    public static long getTimestampDiffFromServerAndLocal() {
+        long remote = SensorSDK.getInstance().getRemoteTime();
+        long local = System.currentTimeMillis();
+        return local - remote;
+    }
+
+    public static long getTimestampBasedOnDiffFromServer(long diff) {
+            if (diff > 0)
+                // the local time must be incremented by this difference
+                return System.currentTimeMillis() + diff;
+            else
+                // otherwise, decrease the time difference
+                return System.currentTimeMillis() - Math.abs(diff);
+    }
+
+    public static long getTimestamp() {
+        if (isUsingServerTime()) {
+            long diff = getTimestampDiffFromServerAndLocal();
+            return getTimestampBasedOnDiffFromServer(diff);
+        }
+
+        return System.currentTimeMillis();
+    }
+
     private static void setRemoteTimeText(long remoteTimeInMillis,
                                           long localTimeInMillis,
                                           final TextView serverTimeTxt,
@@ -89,7 +115,7 @@ public class TimeSync {
             if (updateTimeInSync) {
                 serverTimeTxt.setText(context.getString(R.string.server_time) + " " + time);
                 serverTimeTxt.setTextColor(Color.BLUE);
-                timeDiffTxt.setText(context.getString(R.string.time_diff) + " " + Utils.getTimeDifference(remoteTimeInMillis, localTimeInMillis));
+                timeDiffTxt.setText(context.getString(R.string.time_diff) + " " + (remoteTimeInMillis - localTimeInMillis) + "ms");
             } else {
                 serverTimeTxt.setText(context.getString(R.string.local_time) + " " + time);
                 serverTimeTxt.setTextColor(Color.GRAY);

@@ -19,6 +19,7 @@ public class VideoMetadata {
                               float videoDuration,
                               long startTime,
                               long endTime,
+                              boolean epochTimeIsServerBased,
                               File outputPath) {
         DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS  zZ");
 
@@ -30,6 +31,7 @@ public class VideoMetadata {
         content += "videoDuration = " + videoDuration + "\n";
         content += "startTimestamp = " + startTime + "\n";
         content += "endTimestamp = " + endTime;
+        content += "TimestampType = " + ((epochTimeIsServerBased) ? "Server Time" : "Local Time");
 
         log.d("VideoMetadata filename: " + filename);
         log.d("VideoMetadata startTimeDate: " + startTimeDate + " - " + dateFormat.format(startTimeDate));

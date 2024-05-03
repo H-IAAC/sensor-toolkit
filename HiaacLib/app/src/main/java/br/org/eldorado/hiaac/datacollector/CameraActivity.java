@@ -44,6 +44,7 @@ import java.util.concurrent.Executors;
 
 import br.org.eldorado.hiaac.R;
 import br.org.eldorado.hiaac.datacollector.util.Permissions;
+import br.org.eldorado.hiaac.datacollector.util.TimeSync;
 import br.org.eldorado.hiaac.datacollector.util.Tools;
 import br.org.eldorado.hiaac.datacollector.util.VideoMetadata;
 import br.org.eldorado.sensorsdk.SensorSDK;
@@ -61,6 +62,8 @@ public class CameraActivity extends AppCompatActivity {
     long labelId;
     private Long startEpochMilli;
     private Long endEpochMilli;
+    private Boolean epochTimeIsServerBased;
+    private long serverTimeDiff;
     private PowerManager.WakeLock mWakeLock;
     private Context appContext;
     private Permissions permissions;
@@ -220,10 +223,19 @@ public class CameraActivity extends AppCompatActivity {
                         @Override
                         public void accept(VideoRecordEvent videoRecordEvent) {
                             if (videoRecordEvent instanceof VideoRecordEvent.Start) {
-                                startEpochMilli = SensorSDK.getInstance().getRemoteTime();
+                                startEpochMilli = TimeSync.getTimestamp();
+                                epochTimeIsServerBased = TimeSync.isUsingServerTime();
+
+                                if (TimeSync.isUsingServerTime()) {
+                                    serverTimeDiff = TimeSync.getTimestampDiffFromServerAndLocal();
+                                }
                             }
                             else if (videoRecordEvent instanceof VideoRecordEvent.Finalize) {
-                                endEpochMilli = SensorSDK.getInstance().getRemoteTime();
+                                if (epochTimeIsServerBased) {
+                                    endEpochMilli = TimeSync.getTimestampBasedOnDiffFromServer(serverTimeDiff);
+                                } else {
+                                    endEpochMilli = System.currentTimeMillis();
+                                }
 
                                 // Filming has stop
                                 currentRecording = null;
@@ -246,9 +258,10 @@ public class CameraActivity extends AppCompatActivity {
 
                                     try {
                                         VideoMetadata.create(outputFile.getName(),
-                                                 endEpochMilli - startEpochMilli,
+                                                             endEpochMilli - startEpochMilli,
                                                              startEpochMilli,
                                                              endEpochMilli,
+                                                             epochTimeIsServerBased,
                                                              getPath());
                                     } catch (Exception e) {
                                         Toast.makeText(ctx, "Failed to access video metadata", Toast.LENGTH_SHORT).show();
