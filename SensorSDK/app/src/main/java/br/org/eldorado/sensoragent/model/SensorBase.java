@@ -3,17 +3,15 @@ package br.org.eldorado.sensoragent.model;
 import android.hardware.Sensor;
 import android.os.Parcel;
 import android.os.Parcelable;
-import android.util.AndroidException;
 
 import br.org.eldorado.sensorsdk.controller.SensorController;
 import br.org.eldorado.sensorsdk.listener.SensorSDKListener;
 import br.org.eldorado.sensorsdk.util.Log;
 
-
 public class SensorBase implements Parcelable, Cloneable {
     public static final int TYPE_ACCELEROMETER = Sensor.TYPE_ACCELEROMETER;
     public static final int TYPE_LINEAR_ACCELEROMETER = Sensor.TYPE_LINEAR_ACCELERATION;
-    public static final int TYPE_AMBIENT_TEMPERATUR = Sensor.TYPE_AMBIENT_TEMPERATURE;
+    public static final int TYPE_AMBIENT_TEMPERATURE = Sensor.TYPE_AMBIENT_TEMPERATURE;
     public static final int TYPE_GYROSCOPE = Sensor.TYPE_GYROSCOPE;
     public static final int TYPE_LUMINOSITY = Sensor.TYPE_LIGHT;
     public static final int TYPE_PROXIMITY = Sensor.TYPE_PROXIMITY;
