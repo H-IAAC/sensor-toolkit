@@ -66,13 +66,13 @@ public class LabeledData {
 
     private boolean isValidData;
 
-    public LabeledData(String experiment, SensorBase sensor, String devicePosition, String userId, String activity, long configId, long timestamp, String uid) {
+    public LabeledData(String experiment, SensorBase sensor, String devicePosition, String userId,
+                       String activity, long configId, long timestamp, long localTimestamp, String uid) {
         this.sensor = sensor;
         this.experiment = experiment;
         this.sensorName = sensor.getName();
-        //this.timestamp = sensor.getTimestamp();
         this.timestamp = timestamp;
-        this.localTimestamp = System.currentTimeMillis();
+        this.localTimestamp = localTimestamp;
         this.frequency = sensor.getFrequency();
         this.sensorValues = sensor.getValuesString();
         this.power = sensor.getPower();

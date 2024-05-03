@@ -17,6 +17,7 @@ public class DataTrack {
     private boolean mSendFilesToServer;
     private boolean mServerTime;
     private String uid;
+    private long timeDiff;
 
     public DataTrack() {
         sensorList = new ArrayList<SensorFrequency>();
@@ -47,15 +48,13 @@ public class DataTrack {
         this.mSendFilesToServer = mSendFilesToServer;
     }
 
-    public boolean isServerTime() {
+    public boolean isUsingServerTime() {
         return mServerTime;
     }
 
-    public void setServerTime(boolean serverTime) {
+    public void setUsingServerTime(boolean serverTime) {
         this.mServerTime = serverTime;
     }
-
-
 
     public String getUid() {
         return uid;
@@ -91,6 +90,14 @@ public class DataTrack {
 
     public long getConfigId() {
         return configId;
+    }
+
+    public void setHowMuchServerTimeisDifferentFromLocalTime(long timeDiff) {
+        this.timeDiff = timeDiff;
+    }
+
+    public long getHowMuchServerTimeIsDifferentFromLocalTime() {
+        return timeDiff;
     }
 
     public String getLabel() {

@@ -18,9 +18,9 @@ import br.org.eldorado.hiaac.datacollector.model.DataTrack;
 import br.org.eldorado.hiaac.datacollector.service.listener.ExecutionServiceListener;
 import br.org.eldorado.hiaac.datacollector.util.Log;
 import br.org.eldorado.hiaac.datacollector.util.Preferences;
+import br.org.eldorado.hiaac.datacollector.util.TimeSync;
 import br.org.eldorado.hiaac.datacollector.util.Utils;
 import br.org.eldorado.hiaac.datacollector.util.WakeLocks;
-
 
 public class ExecutionService extends Service {
     public static final String ACTION_START_FOREGROUND_SERVICE = "ACTION_START_FOREGROUND_SERVICE";
@@ -105,6 +105,13 @@ public class ExecutionService extends Service {
 
             // Each execution must have an unique identifier
             this.dataTrack.setUid(df.format(new Date(System.currentTimeMillis())));
+
+            // Set time diff from server to local clocks
+            this.dataTrack.setHowMuchServerTimeisDifferentFromLocalTime(TimeSync.getTimestampDiffFromServerAndLocal());
+
+            // Set if is execution is considering the 'server time'
+            this.dataTrack.setUsingServerTime(TimeSync.isUsingServerTime());
+            log.d("ExecutionService: Considering time diff of " + dataTrack.getHowMuchServerTimeIsDifferentFromLocalTime() + "ms");
 
             ctrl.setService(this);
             ctrl.setListener(l);
