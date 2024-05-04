@@ -4,6 +4,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.os.Handler;
 import android.os.IBinder;
 import android.os.RemoteException;
 
@@ -136,9 +137,8 @@ public class SensorController {
         }
     }
 
-    static public void spinWait(long ms){
+    static public void spinWait(long ms, long end) {
         if (ms > 0) {
-            long end = System.currentTimeMillis() + ms;
             long current = System.currentTimeMillis();
             while (current < end) {
                 current = System.currentTimeMillis();
@@ -149,16 +149,22 @@ public class SensorController {
     public void startGettingInformationThread(SensorBase sensor) {
         if (!sensor.isStarted()) {
             sensor.setIsStarted(true);
+
+            long freqInMs = 1000/sensor.getFrequency();
+            log.i("Starting getting information thread for " + sensor.getName() +
+                                              " isStarted: " + sensor.isStarted() +
+                                              " Frequency: " + sensor.getFrequency() +
+                                              " Type " + sensor.getType());
+
             new Thread(new Runnable() {
                 @Override
                 public void run() {
-                    log.i("Starting getting information thread for " + sensor.getName() + " isSatrted: " + sensor.isStarted() + " Frequency: " + sensor.getFrequency() + " Type " + sensor.getType());
                     while (sensor.isStarted()) {
                         try {
+                            long end = System.currentTimeMillis() + freqInMs;
                             getInformation(sensor);
-                            spinWait(1000/sensor.getFrequency());
-                            //Thread.sleep(1000/sensor.getFrequency());
-                        } catch (/*InterruptedException*/ Exception e) {
+                            spinWait(freqInMs, end);
+                        } catch (Exception e) {
                             sensor.setIsStarted(false);
                             e.printStackTrace();
                         }
