@@ -8,7 +8,7 @@
 
     <string name="server_time">Server Time: </string>
     <string name="local_time">Local Time: </string>
-    <string name="time_diff">Time Diff: </string>
+    <string name="time_diff">Server diff from local: </string>
     <string name="csv_files">Files:</string>
     <string name="creating_csv_file">Creating CSV File . . .</string>
     <string name="before_create_csv_file">Finishing getting data to create CSV file. Please wait . . .</string>
