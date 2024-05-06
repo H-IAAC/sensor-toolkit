@@ -69,13 +69,7 @@ public class Preferences {
         Set<String> locationsList = new HashSet<String>();
         locationsList = Preferences.prefs.getStringSet(getResource(R.string.settings_device_locations), locationsList);
         ArrayList<String> locations = new ArrayList<String>(Arrays.asList( locationsList.toArray(new String[locationsList.size()])));
-        Collections.sort(locations, new Comparator<String>() {
-            @Override
-            public int compare(String s, String t1) {
-                return s.toLowerCase().compareTo(t1.toLowerCase());
-            }
-        });
-        locations.set(0, getResource(R.string.device_location_add));
+        locations.add(0, getResource(R.string.device_location_add));
         return locations;
     }
 

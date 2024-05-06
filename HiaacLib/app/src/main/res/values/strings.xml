@@ -115,16 +115,15 @@
     <string name="stop_filming_msg">Confirm Stop?</string>
 
     <string-array name="device_location_items">
+        <item>Mão</item>
         <item>Braço Direito</item>
         <item>Braço Esquerdo</item>
-        <item>Mão Direita</item>
-        <item>Mão Esquerda</item>
         <item>Bolso Direito</item>
         <item>Bolso Esquerdo</item>
         <item>Perna Direita</item>
         <item>Perna Esquerda</item>
         <item>Mochila</item>
-        <item>Vídeo</item>
         <item>Anotador</item>
+        <item>Vídeo</item>
     </string-array>
 </resources>
