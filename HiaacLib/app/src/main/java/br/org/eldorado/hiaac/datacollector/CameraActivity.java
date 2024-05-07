@@ -225,6 +225,7 @@ public class CameraActivity extends AppCompatActivity {
                             if (videoRecordEvent instanceof VideoRecordEvent.Start) {
                                 startEpochMilli = TimeSync.getTimestamp();
                                 epochTimeIsServerBased = TimeSync.isUsingServerTime();
+                                serverTimeDiff = 0L;
 
                                 if (TimeSync.isUsingServerTime()) {
                                     serverTimeDiff = TimeSync.getTimestampDiffFromServerAndLocal();
@@ -262,6 +263,7 @@ public class CameraActivity extends AppCompatActivity {
                                                              startEpochMilli,
                                                              endEpochMilli,
                                                              epochTimeIsServerBased,
+                                                             serverTimeDiff,
                                                              getPath());
                                     } catch (Exception e) {
                                         Toast.makeText(ctx, "Failed to access video metadata", Toast.LENGTH_SHORT).show();
