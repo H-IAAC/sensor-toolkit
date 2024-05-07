@@ -6,6 +6,10 @@ import android.content.Intent;
 import android.os.Handler;
 
 import br.org.eldorado.hiaac.datacollector.DataCollectorActivity;
+import br.org.eldorado.hiaac.datacollector.data.LabelConfig;
+import br.org.eldorado.hiaac.datacollector.data.LabelConfigViewModel;
+import br.org.eldorado.hiaac.datacollector.data.LabeledData;
+import br.org.eldorado.hiaac.datacollector.data.Repository;
 import br.org.eldorado.hiaac.datacollector.util.Log;
 import br.org.eldorado.hiaac.datacollector.util.Utils;
 import br.org.eldorado.hiaac.datacollector.util.WakeLocks;
@@ -27,6 +31,8 @@ public class SchedulerReceiver extends BroadcastReceiver {
             case AlarmConfig.SCHEDULER_ACTIONS:
 
                 LabelRecyclerViewAdapter.ViewHolder holder = LabelRecyclerViewAdapter.getViewHolder(intent.getStringExtra("holder"));
+                long configId = intent.getLongExtra("configId", 0L);
+
                 if (holder != null && !holder.isStarted()) {
                     log.d("SchedulerReceiver: Broadcast received");
 
@@ -36,6 +42,12 @@ public class SchedulerReceiver extends BroadcastReceiver {
                             // Disable alarm when it automatically starts after receive broadcast message
                             AlarmConfig.cancelAlarm();
                             AlarmConfig.releaseWakeLock();
+
+                            if (configId != 0L) {
+                                LabelConfig labelConfig = Repository.getLabelConfigRepositoryInstance().getLabelConfig(configId);
+                                labelConfig.scheduledTime = 0L;
+                                Repository.getLabelConfigRepositoryInstance().updateConfig(labelConfig);
+                            }
 
                             WakeLocks.collectAcquire(context.getApplicationContext());
 
