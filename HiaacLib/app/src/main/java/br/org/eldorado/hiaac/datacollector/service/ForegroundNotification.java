@@ -48,4 +48,14 @@ public class ForegroundNotification {
 
         nm.createNotificationChannel(mChannel);
     }
+
+    /**
+     * This is the method that can be called to update the Notification
+     */
+    public static void updateNotificationText(Context context, String text) {
+        Notification notification = getNotification(context, text);
+
+        NotificationManager mNotificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+        mNotificationManager.notify(NOTIFICATION_SERVICE_ID, notification);
+    }
 }

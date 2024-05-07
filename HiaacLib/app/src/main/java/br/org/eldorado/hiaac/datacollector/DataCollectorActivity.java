@@ -23,6 +23,7 @@ import java.util.stream.Collectors;
 
 import br.org.eldorado.hiaac.BuildConfig;
 import br.org.eldorado.hiaac.R;
+import br.org.eldorado.hiaac.datacollector.controller.ExecutionController;
 import br.org.eldorado.hiaac.datacollector.data.LabelConfig;
 import br.org.eldorado.hiaac.datacollector.data.LabelConfigViewModel;
 import br.org.eldorado.hiaac.datacollector.data.SensorFrequency;
@@ -111,15 +112,15 @@ public class DataCollectorActivity extends AppCompatActivity {
             }
         });
 
-        TimeSync.startServerTimeUpdates(findViewById(R.id.server_time),
-                                        findViewById(R.id.time_diff),
-                                        this);
-
         permissions.askPermissions();
     }
 
     @Override
     protected void onResume() {
+        TimeSync.startServerTimeUpdates(findViewById(R.id.server_time),
+                findViewById(R.id.time_diff),
+                this);
+
         adapter.notifyDataSetChanged();
 
         AlarmConfig.init(this.getApplicationContext(), findViewById(R.id.scheduler));

@@ -15,6 +15,7 @@ import br.org.eldorado.hiaac.datacollector.model.DataTrack;
 import br.org.eldorado.hiaac.datacollector.service.ExecutionService;
 import br.org.eldorado.hiaac.datacollector.service.listener.ExecutionServiceListener;
 import br.org.eldorado.hiaac.datacollector.util.Log;
+import br.org.eldorado.hiaac.datacollector.util.TimeSync;
 import br.org.eldorado.sensoragent.model.SensorBase;
 import br.org.eldorado.sensorsdk.listener.SensorSDKListener;
 
@@ -25,7 +26,7 @@ public class ExecutionController {
     private static final int TYPE_TICK = 3;
     private static ExecutionController inst;
     private final Log log = new Log("ExecutionController");
-    private boolean isRunning;
+    private static boolean isRunning;
     private ExecutionServiceListener listener;
     private ExecutionService service;
     private CountDownTimer timer;
@@ -42,7 +43,7 @@ public class ExecutionController {
         return dbView;
     }
 
-    public boolean isRunning() {
+    public static boolean isRunning() {
         return isRunning;
     }
 
@@ -60,6 +61,10 @@ public class ExecutionController {
                 }
                 setExecutionTimer(dataTrack);
                 isRunning = true;
+
+                // Disable time sync when data collection is running.
+                TimeSync.stopServerTimeUpdates();
+
                 listener.onStarted();
             }
         } catch (Exception e) {
@@ -89,6 +94,7 @@ public class ExecutionController {
         st.setMinTimestampDifference(((MySensorListener) sensorFrequency.sensor.getListener()).getMinTimestampDifference());
         st.setTimestampStandardVariation(0);
         st.setUsingServerTime(dataTrack.isUsingServerTime());
+        st.setServerTimeDiffFromLocal(dataTrack.getHowMuchServerTimeIsDifferentFromLocalTime());
 
         log.d("Total data collected from " + sensorFrequency.sensor.getName() + ": " + ((MySensorListener) sensorFrequency.sensor.getListener()).getTotalData());
         log.d("\tValid data from " + sensorFrequency.sensor.getName() + ": " + ((MySensorListener) sensorFrequency.sensor.getListener()).getCollectedData());
@@ -242,28 +248,25 @@ public class ExecutionController {
         @Override
         public void onSensorChanged(SensorBase sensor) {
             try {
-                if (sensor.getTimestamp() == 0)
-                    return;
-
                 if (lastTimestamp == sensor.getTimestamp()) return;
 
-                // Sensor timestamp is in nanoseconds at which the event happened, it is necessary
-                // to convert to epoch time.
-                long serverTime = sensor.getTimestamp();
+                long localTime = sensor.getTimestamp();
+                long serverTime = localTime;
 
                 // Now, if is using server time, we need to calculate set the diff time
                 if (this.dataTrack.isUsingServerTime())
-                    serverTime = calcServerTime(sensor.getTimestamp());
+                    serverTime = calcServerTime(localTime);
 
                 if (collectedData > 0) {
                     // Ignore 'timestampAverage' when checking the first collectedData
                     if (lastTimestamp != 0)
-                        timestampAverage += (serverTime - lastTimestamp);
+                        timestampAverage += (localTime - lastTimestamp);
 
-                    maxTimestampDifference = Math.max((serverTime - lastTimestamp), maxTimestampDifference);
-                    minTimestampDifference = Math.min((serverTime - lastTimestamp), minTimestampDifference);
+                    maxTimestampDifference = Math.max((localTime - lastTimestamp), maxTimestampDifference);
+                    minTimestampDifference = Math.min((localTime - lastTimestamp), minTimestampDifference);
                 }
-                lastTimestamp = sensor.getTimestamp();
+                lastTimestamp = localTime;
+
                 LabeledData data = new LabeledData(dataTrack.getLabel(),
                                                    sensor,
                                                    dataTrack.getDeviceLocation(),
@@ -271,7 +274,7 @@ public class ExecutionController {
                                                    dataTrack.getActivity(),
                                                    dataTrack.getConfigId(),
                                                    serverTime,
-                                                   sensor.getTimestamp(), // localTime
+                                                   localTime,
                                                    dataTrack.getUid());
                 totalData++;
                 labeledData.add(data);

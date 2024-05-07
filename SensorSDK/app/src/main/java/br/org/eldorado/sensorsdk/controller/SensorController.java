@@ -4,9 +4,11 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.media.ToneGenerator;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.RemoteException;
+import android.os.SystemClock;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -137,16 +139,19 @@ public class SensorController {
         }
     }
 
-    static public void spinWait(long ms, long end) {
-        if (ms > 0) {
-            long current = System.currentTimeMillis();
-            while (current < end) {
-                current = System.currentTimeMillis();
-            }
+    static public void spinWait(long end) {
+        long current = System.nanoTime();
+
+        while (current < end) {
+            // if current time is less 1ms from the 'end', then ignore sleep()
+            if (!(current > (end - 1000000)))
+                SystemClock.sleep(1);
+            current = System.nanoTime();
         }
     }
 
     public void startGettingInformationThread(SensorBase sensor) {
+
         if (!sensor.isStarted()) {
             sensor.setIsStarted(true);
 
@@ -155,15 +160,26 @@ public class SensorController {
                                               " isStarted: " + sensor.isStarted() +
                                               " Frequency: " + sensor.getFrequency() +
                                               " Type " + sensor.getType());
+            /*Handler handler = new Handler();
+            handler.post(new Runnable() {
+                @Override
+                public void run() {
+                    //long end = System.currentTimeMillis() + freqInMs;
+                    getInformation(sensor);
+                    handler.postDelayed(this, freqInMs);
+                }
+            });*/
 
             new Thread(new Runnable() {
                 @Override
                 public void run() {
+                    android.os.Process.setThreadPriority(-20);
+
                     while (sensor.isStarted()) {
                         try {
-                            long end = System.currentTimeMillis() + freqInMs;
+                            long end = System.nanoTime() + (freqInMs * 1000000); // convert freqInMs to nanosec
                             getInformation(sensor);
-                            spinWait(freqInMs, end);
+                            spinWait(end);
                         } catch (Exception e) {
                             sensor.setIsStarted(false);
                             e.printStackTrace();

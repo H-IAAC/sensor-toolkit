@@ -13,6 +13,7 @@ import java.text.SimpleDateFormat;
 
 import br.org.eldorado.hiaac.R;
 import br.org.eldorado.hiaac.datacollector.api.ClientAPI;
+import br.org.eldorado.hiaac.datacollector.controller.ExecutionController;
 import br.org.eldorado.sensorsdk.SensorSDK;
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -24,8 +25,6 @@ public class TimeSync {
     private static final DateFormat df = new SimpleDateFormat("HH:mm:ss");
     private static final Handler syncServerTimeHandler = new Handler();
     private static final Handler updateTimeLabelHandler = new Handler();
-    private static long remoteTime;
-    private static long localTime;
 
     public static boolean isUsingServerTime() {
         return updateTimeInSync;
@@ -51,6 +50,12 @@ public class TimeSync {
     }
 
     public static void startServerTimeUpdates(TextView serverTimeTxt, TextView timeDiffTxt, Context context) {
+
+        if (ExecutionController.isRunning()) {
+            setRemoteTimeText(0L, 0L, serverTimeTxt, timeDiffTxt, false, context);
+            return;
+        }
+
         log.d("TimeSync: startServerTimeUpdates");
         updateTimeInSync = true;
 
@@ -65,7 +70,7 @@ public class TimeSync {
             public void run() {
                 long remoteTime = SensorSDK.getInstance().getRemoteTime();
                 long localTime = System.currentTimeMillis();
-                setRemoteTimeText(remoteTime, localTime, serverTimeTxt, timeDiffTxt, context);
+                setRemoteTimeText(remoteTime, localTime, serverTimeTxt, timeDiffTxt, true, context);
                 updateTimeLabelHandler.postDelayed(this, 50);
             }
         }, 50);
@@ -82,7 +87,7 @@ public class TimeSync {
     public static long getTimestampDiffFromServerAndLocal() {
         long remote = SensorSDK.getInstance().getRemoteTime();
         long local = System.currentTimeMillis();
-        return local - remote;
+        return remote - local;
     }
 
     public static long getTimestampBasedOnDiffFromServer(long diff) {
@@ -107,10 +112,18 @@ public class TimeSync {
                                           long localTimeInMillis,
                                           final TextView serverTimeTxt,
                                           final TextView timeDiffTxt,
+                                          final boolean timeIsRunning,
                                           Context context) {
         if (serverTimeTxt != null) {
             Date date = new Date(remoteTimeInMillis);
             String time = df.format(date);
+
+            if (!timeIsRunning) {
+                serverTimeTxt.setText("Time Sync");
+                serverTimeTxt.setTextColor(Color.GRAY);
+                timeDiffTxt.setText("Not Running");
+                return;
+            }
 
             if (updateTimeInSync) {
                 serverTimeTxt.setText(context.getString(R.string.server_time) + " " + time);

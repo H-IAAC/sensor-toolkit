@@ -71,6 +71,7 @@
     <string name="schedule_time_hint">Automatic start time</string>
     <string name="statistics_title">Statistics</string>
     <string name="statistics_period">Period:</string>
+    <string name="statistics_device_info">Device:</string>
     <string name="statistics_timeframe">Time frame:</string>
     <string name="statistics_valid_data">Valid:</string>
     <string name="statistics_expected_data">Expected:</string>
@@ -115,7 +116,8 @@
     <string name="stop_filming_msg">Confirm Stop?</string>
 
     <string-array name="device_location_items">
-        <item>Mão</item>
+        <item>Mão Direita</item>
+        <item>Mão Esquerda</item>
         <item>Braço Direito</item>
         <item>Braço Esquerdo</item>
         <item>Bolso Direito</item>

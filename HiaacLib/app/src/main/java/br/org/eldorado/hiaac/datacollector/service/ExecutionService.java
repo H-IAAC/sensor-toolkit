@@ -107,7 +107,7 @@ public class ExecutionService extends Service {
             this.dataTrack.setUid(df.format(new Date(System.currentTimeMillis())));
 
             // Set time diff from server to local clocks
-            this.dataTrack.setHowMuchServerTimeisDifferentFromLocalTime(TimeSync.getTimestampDiffFromServerAndLocal());
+            this.dataTrack.setHowMuchServerTimeIsDifferentFromLocalTime(TimeSync.getTimestampDiffFromServerAndLocal());
 
             // Set if is execution is considering the 'server time'
             this.dataTrack.setUsingServerTime(TimeSync.isUsingServerTime());
