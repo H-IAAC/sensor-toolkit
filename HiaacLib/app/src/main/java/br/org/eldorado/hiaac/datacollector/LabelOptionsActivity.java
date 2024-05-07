@@ -29,6 +29,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatDelegate;
 import androidx.appcompat.view.menu.ActionMenuItemView;
 import androidx.fragment.app.DialogFragment;
 import androidx.lifecycle.Observer;
@@ -142,6 +143,7 @@ public class LabelOptionsActivity extends AppCompatActivity {
 
         appContext = this.getApplicationContext();
         Preferences.init(this.getApplicationContext());
+        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
         setContentView(R.layout.activity_label_options);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         mLabelTile = findViewById(R.id.edit_label_name);

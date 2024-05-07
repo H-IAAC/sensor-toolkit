@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.view.Menu;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatDelegate;
 import androidx.navigation.ui.AppBarConfiguration;
 
 import br.org.eldorado.hiaac.HIAACLibrary;
@@ -20,6 +21,7 @@ public class HIAAPMainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
 
         binding = HiaacActivityMainBinding.inflate(getLayoutInflater());
+        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
         setContentView(binding.getRoot());
 
         binding.btnDataCollector.setOnClickListener(new View.OnClickListener() {

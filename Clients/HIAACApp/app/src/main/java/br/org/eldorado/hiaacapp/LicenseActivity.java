@@ -1,6 +1,7 @@
 package br.org.eldorado.hiaacapp;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatDelegate;
 import androidx.core.text.HtmlCompat;
 
 import android.os.Bundle;
@@ -20,6 +21,7 @@ public class LicenseActivity extends AppCompatActivity {
             getSupportActionBar().setTitle("Open source licenses");
         }
 
+        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
         binding = ActivityLicenseBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 

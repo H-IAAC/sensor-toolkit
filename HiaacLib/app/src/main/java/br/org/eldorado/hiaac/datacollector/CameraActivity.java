@@ -4,6 +4,7 @@ import static br.org.eldorado.hiaac.datacollector.DataCollectorActivity.FOLDER_N
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatDelegate;
 import androidx.camera.core.CameraSelector;
 import androidx.camera.core.ImageCapture;
 import androidx.camera.core.Preview;
@@ -78,6 +79,7 @@ public class CameraActivity extends AppCompatActivity {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
             getSupportActionBar().setTitle(R.string.action_camera);
         }
+        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
         setContentView(R.layout.activity_camera);
 
         if (savedInstanceState == null) {

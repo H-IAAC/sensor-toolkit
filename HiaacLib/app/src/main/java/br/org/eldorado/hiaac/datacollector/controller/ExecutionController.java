@@ -1,5 +1,6 @@
 package br.org.eldorado.hiaac.datacollector.controller;
 
+import android.content.Context;
 import android.os.CountDownTimer;
 
 import androidx.lifecycle.ViewModelProvider;
@@ -60,15 +61,12 @@ public class ExecutionController {
                     sensorFrequency.sensor.startSensor();
                 }
                 setExecutionTimer(dataTrack);
-                isRunning = true;
-
-                // Disable time sync when data collection is running.
-                TimeSync.stopServerTimeUpdates();
+                setAsRunning();
 
                 listener.onStarted();
             }
         } catch (Exception e) {
-            isRunning = false;
+            setAsNotRunning();
             listener.onError(e.getMessage());
             log.d("startExecution Exception: " + e.getMessage());
         }
@@ -125,12 +123,22 @@ public class ExecutionController {
             //dbView.insertLabeledData(labeledDataList);
             listener.onStopped();
 
-            isRunning = false;
+            setAsNotRunning();
         }
     }
 
+    private void setAsRunning() {
+        isRunning = true;
+        TimeSync.stopServerTimeUpdates();
+    }
+
+    private void setAsNotRunning() {
+        isRunning = false;
+        TimeSync.startServerTimeUpdates();
+    }
+
     private ExecutionController() {
-        this.isRunning = false;
+        setAsNotRunning();
     }
 
     private void setExecutionTimer(DataTrack dataTrack) {

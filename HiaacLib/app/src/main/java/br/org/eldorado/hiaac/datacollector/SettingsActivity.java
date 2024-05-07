@@ -8,6 +8,7 @@ import android.widget.EditText;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatDelegate;
 import androidx.preference.ListPreference;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
@@ -25,6 +26,7 @@ public class SettingsActivity extends AppCompatActivity {
         }
 
         Preferences.init(this.getApplicationContext());
+        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
         setContentView(R.layout.activity_settings);
 
         // Insert the settings fragment in the FrameLayout we added earlier

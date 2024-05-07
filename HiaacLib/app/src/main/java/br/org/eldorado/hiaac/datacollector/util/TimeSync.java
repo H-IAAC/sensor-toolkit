@@ -25,6 +25,9 @@ public class TimeSync {
     private static final DateFormat df = new SimpleDateFormat("HH:mm:ss");
     private static final Handler syncServerTimeHandler = new Handler();
     private static final Handler updateTimeLabelHandler = new Handler();
+    private static TextView serverTimeTxt;
+    private static TextView timeDiffTxt;
+    private static Context context;
 
     public static boolean isUsingServerTime() {
         return updateTimeInSync;
@@ -49,15 +52,21 @@ public class TimeSync {
         });
     }
 
+    public static void startServerTimeUpdates() {
+        startServerTimeUpdates(TimeSync.serverTimeTxt, TimeSync.timeDiffTxt, TimeSync.context);
+    }
+
     public static void startServerTimeUpdates(TextView serverTimeTxt, TextView timeDiffTxt, Context context) {
+        TimeSync.serverTimeTxt = serverTimeTxt;
+        TimeSync.timeDiffTxt = timeDiffTxt;
+        TimeSync.context = context;
 
         if (ExecutionController.isRunning()) {
-            setRemoteTimeText(0L, 0L, serverTimeTxt, timeDiffTxt, false, context);
+            setRemoteTimeText(0L, 0L, false, context);
             return;
         }
 
         log.d("TimeSync: startServerTimeUpdates");
-        updateTimeInSync = true;
 
         syncServerTimeHandler.postDelayed(new Runnable() {
             public void run() {
@@ -66,18 +75,20 @@ public class TimeSync {
             }
         }, 2000);
 
-        updateTimeLabelHandler.postDelayed(new Runnable() {
+        updateTimeLabelHandler.post(new Runnable() {
             public void run() {
                 long remoteTime = SensorSDK.getInstance().getRemoteTime();
                 long localTime = System.currentTimeMillis();
-                setRemoteTimeText(remoteTime, localTime, serverTimeTxt, timeDiffTxt, true, context);
+                setRemoteTimeText(remoteTime, localTime, true, context);
                 updateTimeLabelHandler.postDelayed(this, 50);
             }
-        }, 50);
+        });
     }
 
     public static void stopServerTimeUpdates() {
         log.d("TimeSync: stopServerTimeUpdates");
+
+        setRemoteTimeText(0L, 0L, false, context);
 
         updateTimeInSync = false;
         syncServerTimeHandler.removeCallbacksAndMessages(null);
@@ -110,8 +121,6 @@ public class TimeSync {
 
     private static void setRemoteTimeText(long remoteTimeInMillis,
                                           long localTimeInMillis,
-                                          final TextView serverTimeTxt,
-                                          final TextView timeDiffTxt,
                                           final boolean timeIsRunning,
                                           Context context) {
         if (serverTimeTxt != null) {
