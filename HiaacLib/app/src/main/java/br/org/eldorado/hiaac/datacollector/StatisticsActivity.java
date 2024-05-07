@@ -24,6 +24,7 @@ import java.util.concurrent.TimeUnit;
 import br.org.eldorado.hiaac.R;
 import br.org.eldorado.hiaac.datacollector.data.ExperimentStatistics;
 import br.org.eldorado.hiaac.datacollector.util.Log;
+import br.org.eldorado.hiaac.datacollector.util.Utils;
 
 public class StatisticsActivity extends AppCompatActivity {
     private final Log log = new Log("StatisticsFragment");
@@ -46,6 +47,9 @@ public class StatisticsActivity extends AppCompatActivity {
 
         textView = (TextView) findViewById(R.id.sensor_period);
         textView.setText(convertHours(statistics.get(0).getStartTime()) + " ~ " + convertHours(statistics.get(0).getEndTime()));
+
+        textView = (TextView) findViewById(R.id.device_info);
+        textView.setText(Utils.getDeviceModel());
 
         for (ExperimentStatistics statistic : statistics) {
             getSupportFragmentManager().beginTransaction().add(R.id.statistics_elements,
@@ -94,7 +98,7 @@ public class StatisticsActivity extends AppCompatActivity {
             View statisticsElementView = inflater.inflate(R.layout.statistics_element, container,false);
 
             TextView usingServerTime = (TextView) statisticsElementView.findViewById(R.id.usingServerTime);
-            usingServerTime.setText(statistic.isUsingServerTime() ? "Server Time" : "Local Time");
+            usingServerTime.setText(statistic.isUsingServerTime() ? "Server Time (" + statistic.getServerTimeDiffFromLocal() + "ms)" : "Local Time");
 
             TextView textView = (TextView) statisticsElementView.findViewById(R.id.sensor_name);
             textView.setText(statistic.getSensorName());

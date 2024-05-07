@@ -8,6 +8,7 @@ import androidx.room.PrimaryKey;
 import com.opencsv.bean.CsvNumber;
 
 import br.org.eldorado.hiaac.BuildConfig;
+import br.org.eldorado.hiaac.datacollector.util.Utils;
 import br.org.eldorado.sensoragent.model.SensorBase;
 
 @Entity(indices = {
@@ -202,12 +203,13 @@ public class LabeledData {
                             values.length > 1 ? values[1] : "-",
                             values.length > 2 ? values[2] : "-",
                             isValidData ? "VALID" : "INVALID",
-                            ""};
+                            "",  // empty value for version column
+                            ""}; // empty value for device model column
     }
 
     public static String[] getCSVHeaders() {
         return new String[]{"Experiment Name", "Sensor Name", "Power Consumption (mAh)", "Sensor Frequency (Hz)",
-                            "Timestamp Server", "Timestamp Local", "Value 1", "Value 2", "Value 3", "Data Status", "HIAACApp v" + BuildConfig.HIAAC_VERSION};
+                            "Timestamp Server", "Timestamp Local", "Value 1", "Value 2", "Value 3", "Data Status", "HIAACApp v" + BuildConfig.HIAAC_VERSION, Utils.getDeviceModel().replace(' ', '_')};
     }
 
     public SensorBase getSensor() {

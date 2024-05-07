@@ -92,7 +92,7 @@ public class DataTrack {
         return configId;
     }
 
-    public void setHowMuchServerTimeisDifferentFromLocalTime(long timeDiff) {
+    public void setHowMuchServerTimeIsDifferentFromLocalTime(long timeDiff) {
         this.timeDiff = timeDiff;
     }
 

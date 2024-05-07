@@ -48,6 +48,9 @@ public class ExperimentStatistics implements Serializable {
     @ColumnInfo(name = "using-server-time")
     private boolean usingServerTime;
 
+    @ColumnInfo(name = "server-time-diff-from-local")
+    private long serverTimeDiffFromLocal;
+
     public int getId() {
         return id;
     }
@@ -148,6 +151,13 @@ public class ExperimentStatistics implements Serializable {
     }
     public void setUsingServerTime(boolean usingServerTime) {
         this.usingServerTime = usingServerTime;
+    }
+    public long getServerTimeDiffFromLocal() {
+        return serverTimeDiffFromLocal;
+    }
+
+    public void setServerTimeDiffFromLocal(long serverTimeDiffFromLocal) {
+        this.serverTimeDiffFromLocal = serverTimeDiffFromLocal;
     }
 
 }

@@ -2,7 +2,11 @@ package br.org.eldorado.hiaac.datacollector.util;
 
 import android.media.AudioManager;
 import android.media.ToneGenerator;
+import android.os.Build;
 import android.os.Handler;
+
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 public class Utils {
     public static void emitStartBeep() {
@@ -36,5 +40,14 @@ public class Utils {
                 startBeep.startTone(ToneGenerator.TONE_CDMA_SOFT_ERROR_LITE, 2000);
             }
         });
+    }
+
+    public static String getDate() {
+        SimpleDateFormat df = new SimpleDateFormat("HH:mm:ss");
+        return df.format(new Date());
+    }
+
+    public static String getDeviceModel() {
+        return Build.MANUFACTURER + " " + Build.MODEL;
     }
 }
