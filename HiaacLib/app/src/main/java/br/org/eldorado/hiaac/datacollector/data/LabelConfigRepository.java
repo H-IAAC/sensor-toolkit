@@ -14,7 +14,6 @@ public class LabelConfigRepository {
 
     public static final int TYPE_FIREBASE = 0;
     public static final int TYPE_CSV = 1;
-
     private final LabelConfigDao mLabelConfigDao;
     private final LiveData<List<LabelConfig>> mAllLabels;
 
@@ -30,6 +29,10 @@ public class LabelConfigRepository {
 
     LiveData<LabelConfig> getLabelConfigById(long id) {
         return mLabelConfigDao.getLabelConfigById(id);
+    }
+
+    public LabelConfig getLabelConfig(long id) {
+        return mLabelConfigDao.getLabelConfig(id);
     }
 
     LiveData<List<SensorFrequency>> getAllSensorsFromLabel(long id) {

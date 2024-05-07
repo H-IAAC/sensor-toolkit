@@ -57,12 +57,14 @@ import br.org.eldorado.hiaac.datacollector.api.ClientAPI;
 import br.org.eldorado.hiaac.datacollector.api.StatusResponse;
 import br.org.eldorado.hiaac.datacollector.data.LabelConfig;
 import br.org.eldorado.hiaac.datacollector.data.LabelConfigViewModel;
+import br.org.eldorado.hiaac.datacollector.data.Repository;
 import br.org.eldorado.hiaac.datacollector.data.SensorFrequency;
 import br.org.eldorado.hiaac.datacollector.firebase.FirebaseListener;
 import br.org.eldorado.hiaac.datacollector.firebase.FirebaseUploadController;
 import br.org.eldorado.hiaac.datacollector.layout.AnimatedLinearLayout;
 import br.org.eldorado.hiaac.datacollector.model.DataTrack;
 import br.org.eldorado.hiaac.datacollector.service.ExecutionService;
+import br.org.eldorado.hiaac.datacollector.service.ForegroundNotification;
 import br.org.eldorado.hiaac.datacollector.service.listener.ExecutionServiceListenerAdapter;
 import br.org.eldorado.hiaac.datacollector.util.CsvFiles;
 import br.org.eldorado.hiaac.datacollector.util.Log;
@@ -163,7 +165,10 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
         RecyclerView csvList = holder.getCsvRecyclerView();
         List<File> filesList = csvFiles.getFiles(labelConfig.id);
 
-        csvList.setAdapter(new CSVFilesRecyclerAdapter(mContext, filesList, mLabelConfigViewModel.getLabelConfigRepository(), labelConfig.id));
+        csvList.setAdapter(new CSVFilesRecyclerAdapter(mContext,
+                                                       filesList,
+                                                       Repository.getLabelConfigRepositoryInstance(),
+                                                       labelConfig.id));
         csvList.setLayoutManager(new LinearLayoutManager(mContext));
 
         holder.getLabelTitle().setText(labelConfig.experiment);
@@ -742,6 +747,8 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
                     log.d("checkExecution - sending data to " + dt.getLabel());
                     sendData(holder, CREATE_CSV_FILE, false, "0");
                 }
+
+                ForegroundNotification.updateNotificationText(mContext, "Checking completed (" + Utils.getDate() + ")");
             }
 
             @Override

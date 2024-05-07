@@ -8,19 +8,15 @@ import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 public class LabelConfigViewModel extends AndroidViewModel {
-    private final LabelConfigRepository mRepository;
+    private final Repository repository;
     private final LiveData<List<LabelConfig>> mAllLabels;
     private final LiveData<List<SensorFrequency>> mAllSensorFrequencies;
 
     public LabelConfigViewModel(Application application) {
         super(application);
-        mRepository = new LabelConfigRepository(application);
-        mAllLabels = mRepository.getAllLabels();
-        mAllSensorFrequencies = mRepository.getAllSensorFrequencies();
-    }
-
-    public LabelConfigRepository getLabelConfigRepository() {
-        return mRepository;
+        repository = new Repository(application);
+        mAllLabels = repository.getLabelConfigRepositoryInstance().getAllLabels();
+        mAllSensorFrequencies = repository.getLabelConfigRepositoryInstance().getAllSensorFrequencies();
     }
 
     public LiveData<List<LabelConfig>> getAllLabels() {
@@ -32,19 +28,19 @@ public class LabelConfigViewModel extends AndroidViewModel {
     }
 
     public LiveData<LabelConfig> getLabelConfigById(long id) {
-        return mRepository.getLabelConfigById(id);
+        return Repository.getLabelConfigRepositoryInstance().getLabelConfigById(id);
     }
 
     public long insertNewConfig(LabelConfig config) throws ExecutionException, InterruptedException {
-        return mRepository.insertNewConfig(config);
+        return Repository.getLabelConfigRepositoryInstance().insertNewConfig(config);
     }
 
     public void updateConfig(LabelConfig config) {
-        mRepository.updateConfig(config);
+        Repository.getLabelConfigRepositoryInstance().updateConfig(config);
     }
 
     public void deleteConfig(LabelConfig config) {
-        mRepository.deleteConfig(config);
+        Repository.getLabelConfigRepositoryInstance().deleteConfig(config);
         // When a config is deleted:
         // 1) remove related statistics must be removed
         deleteExperimentsStatistics(config.id);
@@ -53,66 +49,66 @@ public class LabelConfigViewModel extends AndroidViewModel {
     }
 
     public LiveData<List<SensorFrequency>> getAllSensorsFromLabel(long id) {
-        return mRepository.getAllSensorsFromLabel(id);
+        return Repository.getLabelConfigRepositoryInstance().getAllSensorsFromLabel(id);
     }
 
     public void deleteSensorsFromLabel(LabelConfig label) {
-        mRepository.deleteSensorFromLabel(label);
+        Repository.getLabelConfigRepositoryInstance().deleteSensorFromLabel(label);
     }
 
     public void insertAllSensorFrequencies(List<SensorFrequency> sensorFrequencies) {
-        mRepository.insertAllSensorFrequencies(sensorFrequencies);
+        Repository.getLabelConfigRepositoryInstance().insertAllSensorFrequencies(sensorFrequencies);
     }
 
     public void deleteAllSensorFrequencies(List<SensorFrequency> sensorFrequencies) {
-        mRepository.deleteAllSensorFrequencies(sensorFrequencies);
+        Repository.getLabelConfigRepositoryInstance().deleteAllSensorFrequencies(sensorFrequencies);
     }
 
     public void insertLabeledData(List<LabeledData> labeledData) {
-        mRepository.insertLabeledData(labeledData);
+        Repository.getLabelConfigRepositoryInstance().insertLabeledData(labeledData);
     }
 
     public void insertExperimentStatistics(List<ExperimentStatistics> statistics) {
-        mRepository.insertExperimentStatistics(statistics);
+        Repository.getLabelConfigRepositoryInstance().insertExperimentStatistics(statistics);
     }
 
     public void deleteExperimentsStatistics(long configId) {
-        mRepository.deleteExperimentStatistics(configId);
+        Repository.getLabelConfigRepositoryInstance().deleteExperimentStatistics(configId);
     }
 
     public List<LabeledData> getLabeledData(long labelId, int type, long offset) {
-        return mRepository.getLabeledData(labelId, type, offset);
+        return Repository.getLabelConfigRepositoryInstance().getLabeledData(labelId, type, offset);
     }
 
     public LabeledData getLabeledData(long labelId) {
-        return mRepository.getLabeledData(labelId);
+        return Repository.getLabelConfigRepositoryInstance().getLabeledData(labelId);
     }
 
     public Integer countLabeledDataCsv(long labelId) {
-        return mRepository.countLabeledDataCsv(labelId);
+        return Repository.getLabelConfigRepositoryInstance().countLabeledDataCsv(labelId);
     }
 
     public Boolean labeledDataExists(long labelId) {
-        return mRepository.labeledDataExists(labelId);
+        return Repository.getLabelConfigRepositoryInstance().labeledDataExists(labelId);
     }
 
     public String getLabeledDataUidCsv(long labelId) {
-        return mRepository.getLabeledDataUidCsv(labelId);
+        return Repository.getLabelConfigRepositoryInstance().getLabeledDataUidCsv(labelId);
     }
 
     public LiveData<List<ExperimentStatistics>> getExperimentStatistics(long expId, String startTime) {
-        return mRepository.getExperimentStatisticsByExpId(expId, startTime);
+        return Repository.getLabelConfigRepositoryInstance().getExperimentStatisticsByExpId(expId, startTime);
     }
 
     public void updateLabeledData(List<LabeledData> dt) {
-        mRepository.updateLabeledData(dt);
+        Repository.getLabelConfigRepositoryInstance().updateLabeledData(dt);
     }
 
     public void deleteLabeledData(LabeledData label) {
-        mRepository.deleteLabeledData(label);
+        Repository.getLabelConfigRepositoryInstance().deleteLabeledData(label);
     }
 
     public void deleteLabeledData(long configId) {
-        mRepository.deleteLabeledData(configId);
+        Repository.getLabelConfigRepositoryInstance().deleteLabeledData(configId);
     }
 }

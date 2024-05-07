@@ -107,6 +107,7 @@ public class AlarmConfig {
         Intent i = new Intent(mContext, SchedulerReceiver.class);
         i.setAction(AlarmConfig.SCHEDULER_ACTIONS);
         i.putExtra("holder", holderKey);
+        i.putExtra("configId", labelConfig.id);
 
         pendingAlarm = PendingIntent.getBroadcast(mContext,
                                                   0,
@@ -115,17 +116,7 @@ public class AlarmConfig {
 
         acquireWakeLock();
 
-        // Alarm time must be based on remote clock.
-        long remote = SensorSDK.getInstance().getRemoteTime();
-        long device = System.currentTimeMillis();
-        long alarmStartTime;
-
-        // Device clock can be ahead or behind from Remote's clock.
-        // So we need to consider the difference from both clocks
-        if (device >= remote)
-            alarmStartTime = scheduledTime + (device - remote);
-        else
-            alarmStartTime = scheduledTime - (remote - device);
+        long alarmStartTime = TimeSync.getTimestamp();
 
         Calendar c = Calendar.getInstance();
         c.setTimeInMillis(alarmStartTime);

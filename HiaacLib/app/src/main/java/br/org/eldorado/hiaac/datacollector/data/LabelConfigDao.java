@@ -19,6 +19,9 @@ public interface LabelConfigDao {
     @Query("SELECT * FROM LabelConfig WHERE id=:id")
     LiveData<LabelConfig> getLabelConfigById(long id);
 
+    @Query("SELECT * FROM LabelConfig WHERE id=:id")
+    LabelConfig getLabelConfig(long id);
+
     @Insert
     long insert(LabelConfig labelConfig);
 
