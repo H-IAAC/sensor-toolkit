@@ -116,7 +116,9 @@ public class AlarmConfig {
 
         acquireWakeLock();
 
-        long alarmStartTime = TimeSync.getTimestamp();
+        long alarmStartTime = TimeSync.convertTime(scheduledTime);
+        log.d("saulo 0 scheduledTime : " + scheduledTime);
+        log.d("saulo 0 alarmStartTime: " + alarmStartTime);
 
         Calendar c = Calendar.getInstance();
         c.setTimeInMillis(alarmStartTime);
