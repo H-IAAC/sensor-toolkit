@@ -31,9 +31,9 @@ public class VideoMetadata {
         content += "filename = " + filename + "\n";
         content += "videoDuration = " + videoDuration + "\n";
         content += "startTimestamp = " + startTime + "\n";
-        content += "endTimestamp = " + endTime;
-        content += "TimestampType = " + ((epochTimeIsServerBased) ? "Server Time" : "Local Time");
-        content += "TimeDifferenceBetweenServerAndLocal = " + serverTimeDiff;
+        content += "endTimestamp = " + endTime + "\n";
+        content += "TimestampType = " + ((epochTimeIsServerBased) ? "Server Time" : "Local Time") + "\n";
+        content += "TimeDifferenceBetweenServerAndLocal = " + serverTimeDiff + "\n";
 
         log.d("VideoMetadata filename: " + filename);
         log.d("VideoMetadata startTimeDate: " + startTimeDate + " - " + dateFormat.format(startTimeDate));

@@ -68,12 +68,12 @@ public class TimeSync {
 
         log.d("TimeSync: startServerTimeUpdates");
 
-        syncServerTimeHandler.postDelayed(new Runnable() {
+        syncServerTimeHandler.post(new Runnable() {
             public void run() {
                 syncServerTime();
                 syncServerTimeHandler.postDelayed(this, 2000);
             }
-        }, 2000);
+        });
 
         updateTimeLabelHandler.post(new Runnable() {
             public void run() {
@@ -108,6 +108,24 @@ public class TimeSync {
             else
                 // otherwise, decrease the time difference
                 return System.currentTimeMillis() - Math.abs(diff);
+    }
+
+    /**
+     * Used to convert a timestamp to the current format type (server or local based).
+     */
+    public static long convertTime(long time) {
+        if (isUsingServerTime()) {
+            long diff = getTimestampDiffFromServerAndLocal();
+
+            if (diff > 0) {
+                // the local time must be incremented by this difference
+                return time + diff;
+            } else {
+                // otherwise, decrease the time difference
+                return time - Math.abs(diff);
+            }
+        }
+        return time;
     }
 
     public static long getTimestamp() {
