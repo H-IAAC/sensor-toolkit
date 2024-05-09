@@ -116,10 +116,10 @@ public class AlarmConfig {
 
         acquireWakeLock();
 
-        long alarmStartTime = TimeSync.convertTime(scheduledTime);
-        log.d("saulo 0 scheduledTime : " + scheduledTime);
-        log.d("saulo 0 alarmStartTime: " + alarmStartTime);
+        // Need to set mili seconds from scheduledTime to 0, as UI is returning an imprecise value.
+        scheduledTime = scheduledTime / 1000 * 1000;
 
+        long alarmStartTime = TimeSync.convertTime(scheduledTime);
         Calendar c = Calendar.getInstance();
         c.setTimeInMillis(alarmStartTime);
         log.i("Scheduler: " + labelConfig.experiment + " to start at [" + c.getTime() + "] id: " + labelConfig.id);
