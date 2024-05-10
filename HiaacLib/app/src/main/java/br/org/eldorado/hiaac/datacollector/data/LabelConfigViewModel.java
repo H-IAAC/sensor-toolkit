@@ -7,6 +7,8 @@ import androidx.lifecycle.LiveData;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
+import br.org.eldorado.hiaac.datacollector.util.AlarmConfig;
+
 public class LabelConfigViewModel extends AndroidViewModel {
     private final Repository repository;
     private final LiveData<List<LabelConfig>> mAllLabels;
@@ -46,6 +48,9 @@ public class LabelConfigViewModel extends AndroidViewModel {
         deleteExperimentsStatistics(config.id);
         // 2) remove related labeled data
         deleteLabeledData(config.id);
+        // 3) check if alarm is configured/enabled for this config
+        if (AlarmConfig.getActiveConfigure().idConfigured == config.id)
+            AlarmConfig.cancelAlarm();
     }
 
     public LiveData<List<SensorFrequency>> getAllSensorsFromLabel(long id) {

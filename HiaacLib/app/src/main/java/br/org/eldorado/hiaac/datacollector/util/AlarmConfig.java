@@ -136,6 +136,10 @@ public class AlarmConfig {
         return c.getTime();
     }
 
+    public static Configuration getActiveConfigure() {
+        return configuration;
+    }
+
     private static void setScheduler(Date date) {
         if (schedulerView == null)
             return;
@@ -148,7 +152,7 @@ public class AlarmConfig {
         }
     }
 
-    static class Configuration {
+    public static class Configuration {
         public boolean isConfigured;
         public long idConfigured;
         public long scheduledTime;
