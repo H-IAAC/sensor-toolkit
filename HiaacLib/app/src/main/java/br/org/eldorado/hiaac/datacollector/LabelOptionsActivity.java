@@ -480,6 +480,7 @@ public class LabelOptionsActivity extends AppCompatActivity {
             c.set(Calendar.HOUR_OF_DAY, Integer.parseInt(timeSplit[0]));
             c.set(Calendar.MINUTE, Integer.parseInt(timeSplit[1]));
             c.set(Calendar.SECOND, 0);
+            c.set(Calendar.MILLISECOND, 0);
             scheduledTime = c.getTimeInMillis();
         }
 

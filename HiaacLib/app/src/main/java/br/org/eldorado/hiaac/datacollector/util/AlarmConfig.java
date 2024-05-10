@@ -54,8 +54,10 @@ public class AlarmConfig {
 
     public static void cancelAlarm() {
         if (pendingAlarm != null) {
+            pendingAlarm.cancel();
             mgr.cancel(pendingAlarm);
             setScheduler(null);
+            log.i("Scheduler: " + configuration.experiment + " " + configuration.activity + "" + configuration.userId + " cancelled.");
         }
 
         configuration = new Configuration();
@@ -115,9 +117,6 @@ public class AlarmConfig {
                                                   PendingIntent.FLAG_MUTABLE | PendingIntent.FLAG_UPDATE_CURRENT);
 
         acquireWakeLock();
-
-        // Need to set mili seconds from scheduledTime to 0, as UI is returning an imprecise value.
-        scheduledTime = scheduledTime / 1000 * 1000;
 
         long alarmStartTime = TimeSync.convertTime(scheduledTime);
         Calendar c = Calendar.getInstance();
