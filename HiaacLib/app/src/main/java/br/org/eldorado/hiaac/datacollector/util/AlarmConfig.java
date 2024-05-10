@@ -89,6 +89,9 @@ public class AlarmConfig {
         }
 
         if (labelConfig.scheduledTime == 0) {
+            if (labelConfig.id == configuration.idConfigured)
+                cancelAlarm();
+
             log.i("Scheduler: " + labelConfig.experiment + " has no scheduler configured.");
             return null;
         }
