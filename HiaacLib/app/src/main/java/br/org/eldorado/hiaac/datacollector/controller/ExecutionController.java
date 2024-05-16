@@ -1,6 +1,5 @@
 package br.org.eldorado.hiaac.datacollector.controller;
 
-import android.content.Context;
 import android.os.CountDownTimer;
 
 import androidx.lifecycle.ViewModelProvider;
@@ -235,7 +234,6 @@ public class ExecutionController {
         public void onSensorStarted(SensorBase sensor) {
             log.d(sensor.getName() + " sensor STARTED");
         }
-
         @Override
         public void onSensorStopped(SensorBase sensor) {
             log.d(sensor.getName() + " sensor STOPPED");
@@ -281,7 +279,8 @@ public class ExecutionController {
                                                    dataTrack.getUserId(),
                                                    dataTrack.getActivity(),
                                                    dataTrack.getConfigId(),
-                                                   serverTime,
+                                                   //serverTime,
+                                                   sensor.getTimestamp(),
                                                    localTime,
                                                    dataTrack.getUid());
                 totalData++;
