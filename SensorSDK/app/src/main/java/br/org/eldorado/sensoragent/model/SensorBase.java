@@ -4,6 +4,7 @@ import android.hardware.Sensor;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import br.org.eldorado.sensorsdk.SensorSDK;
 import br.org.eldorado.sensorsdk.controller.SensorController;
 import br.org.eldorado.sensorsdk.listener.SensorSDKListener;
 import br.org.eldorado.sensorsdk.util.Log;
@@ -45,7 +46,6 @@ public class SensorBase implements Parcelable, Cloneable {
         this.values = new float[1];
         this.isStarted = false;
         this.controller = SensorController.getInstance();
-
         for (float value : values) {
             value = Float.MIN_VALUE;
         }
@@ -119,7 +119,8 @@ public class SensorBase implements Parcelable, Cloneable {
         } else if (values.length != s.getValuesArray().length) {
             values = new float[s.getValuesArray().length];
         }
-        this.timestamp = s.getTimestamp();
+        //this.timestamp = s.getTimestamp();
+        this.timestamp = SensorSDK.getInstance().getRemoteTime();
         this.power = s.getPower();
         for (int i = 0; i < values.length; i++) {
             this.values[i] = s.getValuesArray()[i];

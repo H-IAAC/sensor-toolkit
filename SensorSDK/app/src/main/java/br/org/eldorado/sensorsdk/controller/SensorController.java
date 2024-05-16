@@ -4,11 +4,10 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
-import android.media.ToneGenerator;
-import android.os.Handler;
 import android.os.IBinder;
+import android.os.PowerManager;
+import android.os.Process;
 import android.os.RemoteException;
-import android.os.SystemClock;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -139,22 +138,26 @@ public class SensorController {
         }
     }
 
-    static public void spinWait(long end) {
-        long current = System.nanoTime();
-
-        while (current < end) {
-            // if current time is less 1ms from the 'end', then ignore sleep()
-            if (!(current > (end - 1000000)))
-                SystemClock.sleep(1);
-            current = System.nanoTime();
+    public void spinWait(long end) {
+//        long current = System.nanoTime();
+        while (end > System.nanoTime()) {
+            ;
         }
+//        while (current < end) {
+//            // if current time is less 1ms from the 'end', then ignore sleep()
+//            if (!(current > (end - 1000000)))
+//                try {
+//                    Thread.sleep(0, 100000);
+//                } catch (Exception e) {
+//                    e.printStackTrace();
+//                }
+//            current = System.nanoTime();
+//        }
     }
-
     public void startGettingInformationThread(SensorBase sensor) {
 
         if (!sensor.isStarted()) {
             sensor.setIsStarted(true);
-
             long freqInMs = 1000/sensor.getFrequency();
             log.i("Starting getting information thread for " + sensor.getName() +
                                               " isStarted: " + sensor.isStarted() +
@@ -173,8 +176,11 @@ public class SensorController {
             new Thread(new Runnable() {
                 @Override
                 public void run() {
-                    android.os.Process.setThreadPriority(-20);
-
+                    Process.setThreadPriority(-20);
+                    PowerManager powerManager = (PowerManager) mContext.getSystemService(mContext.POWER_SERVICE);
+                    PowerManager.WakeLock executionWakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK,
+                            "SensorController::StartGettingInformationThread");
+                    executionWakeLock.acquire();
                     while (sensor.isStarted()) {
                         try {
                             long end = System.nanoTime() + (freqInMs * 1000000); // convert freqInMs to nanosec
@@ -185,6 +191,7 @@ public class SensorController {
                             e.printStackTrace();
                         }
                     }
+                    executionWakeLock.release();
                 }
             }).start();
         }
