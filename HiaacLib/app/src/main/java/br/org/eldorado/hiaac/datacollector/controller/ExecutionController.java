@@ -279,8 +279,7 @@ public class ExecutionController {
                                                    dataTrack.getUserId(),
                                                    dataTrack.getActivity(),
                                                    dataTrack.getConfigId(),
-                                                   //serverTime,
-                                                   sensor.getTimestamp(),
+                                                   serverTime,
                                                    localTime,
                                                    dataTrack.getUid());
                 totalData++;
