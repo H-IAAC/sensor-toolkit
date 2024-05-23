@@ -33,7 +33,7 @@ public class Preferences {
 //            String server = getArrayResource(R.array.server_urls, 0);
 //            Preferences.prefs.edit().putString(getResource(R.string.settings_server_config),
 //                    server).apply();
-            String server = getArrayResource(R.array.server_urls, 3);
+            String server = getArrayResource(R.array.server_urls, 2);
             Preferences.prefs.edit().putString(getResource(R.string.settings_server_config),
                     server).apply();
             Preferences.prefs.edit().putString(getResource(R.string.settings_custom_server_config),
@@ -94,8 +94,8 @@ public class Preferences {
     public static String getPreferredServer() {
 
         String optionSelected = Preferences.prefs.getString(getResource(R.string.settings_server_config), "default");
-        String localhost = getArrayResource(R.array.server_urls, 2);
-        String custom = getArrayResource(R.array.server_urls, 3);
+        String localhost = getArrayResource(R.array.server_urls, 1);
+        String custom = getArrayResource(R.array.server_urls, 2);
         String ret;
 
         if (optionSelected.equals(localhost)) {
