@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string-array name="servers">
-        <item>Production</item>
+        <!--<item>Production</item>-->
         <item>Test</item>
         <item>Localhost</item>
         <item>Custom</item>
@@ -9,7 +9,7 @@
 
     <string-array name="server_urls">
         <!-- UNICAMP -->
-        <item>vm.hiaac.ic.unicamp.br:8081</item>
+        <!--<item>vm.hiaac.ic.unicamp.br:8081</item>-->
         <!-- MOTOROLA -->
         <!--<item>vm.hiaac.ic.unicamp.br:8085</item>-->
         <item>vm.hiaac.ic.unicamp.br:7999</item>
