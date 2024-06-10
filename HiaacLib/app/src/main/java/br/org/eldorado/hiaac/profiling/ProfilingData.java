@@ -3,11 +3,12 @@ package br.org.eldorado.hiaac.profiling;
 import android.app.ActivityManager;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.os.BatteryManager;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.TimeZone;
+import java.util.ArrayList;
+import java.util.List;
 
 class ProfilingData {
 
@@ -18,7 +19,6 @@ class ProfilingData {
     private long startTime;
     private Context mContext;
     private String type;
-
     private String ramMB;
     private String ramPercentage;
     private String maxHeapSize;
@@ -27,15 +27,16 @@ class ProfilingData {
     private String usedMemory;
     private String batteryLevel;
     private String cpuUsage;
-
+    private List<String> extra;
     private Intent battery;
 
-    protected ProfilingData(long st, Context ctx, String tp, Intent bat) {
+    protected ProfilingData(long st, Context ctx, String tp, Intent bat, List<String> extra) {
         battery = bat;
         type = tp;
         startTime = st;
         currentTime = System.currentTimeMillis();
         mContext = ctx;
+        this.extra = extra;
         setRAMInfo();
         setBatteryLevel();
         setApplicationUsedMemory();
@@ -88,11 +89,29 @@ class ProfilingData {
         return type;
     }
 
+    protected List<String> getExtra() {
+        return extra;
+    }
+
     protected String[] getCSVFormattedString() {
-        String str[] = {getTimestamp(), getElapsedTime(), getUsedMemory(), getRAMMB(), getRAMPercentage(),
-                        getMaxHeapSize(), getRamThreshold(), getRamInLowMemory(),
-                        getCpuUsage(), getBatteryLevel(), getType()};
-        return str;
+        ArrayList<String> values = new ArrayList<>();
+        values.add(getTimestamp());
+        values.add(getElapsedTime());
+        values.add(getUsedMemory());
+        values.add(getRAMMB());
+        values.add(getRAMPercentage());
+        values.add(getMaxHeapSize());
+        values.add(getRamThreshold());
+        values.add(getRamInLowMemory());
+        values.add(getCpuUsage());
+        values.add(getBatteryLevel());
+        values.add(getType());
+
+        for (String extraValue : getExtra()) {
+            values.add(extraValue);
+        }
+
+        return values.toArray(new String[0]);
     }
 
     private void setCpuUsage() {
@@ -122,7 +141,7 @@ class ProfilingData {
 
         double percentUsed = (mi.totalMem - mi.availMem) / (double)mi.totalMem * 100.0;
         ramMB = String.valueOf(usedMegs);
-        ramPercentage = String.valueOf((int)percentUsed);
+        ramPercentage = String.format("%.2f", percentUsed).replace(',', '.');
 
         maxHeapSize = String.valueOf(activityManager.getMemoryClass());
         ramInLowMemory = String.valueOf(mi.lowMemory);
@@ -140,7 +159,8 @@ class ProfilingData {
                 .append("RAM threshold: ").append(getRamThreshold()).append("MB, ")
                 .append("Is in low memory mode: ").append(getRamInLowMemory()).append(", ")
                 .append("Used CPU: ").append(getCpuUsage()).append("%, ")
-                .append("Battery Level: ").append(getBatteryLevel());
+                .append("Battery Level: ").append(getBatteryLevel())
+                .append("Extra: ").append(getExtra());
 
         return sb.toString();
     }
