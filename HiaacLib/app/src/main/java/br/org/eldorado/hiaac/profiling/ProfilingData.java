@@ -21,6 +21,9 @@ class ProfilingData {
 
     private String ramMB;
     private String ramPercentage;
+    private String maxHeapSize;
+    private String ramInLowMemory;
+    private String ramThreshold;
     private String usedMemory;
     private String batteryLevel;
     private String cpuUsage;
@@ -57,6 +60,18 @@ class ProfilingData {
         return ramPercentage;
     }
 
+    protected String getMaxHeapSize() {
+        return maxHeapSize;
+    }
+
+    protected String getRamInLowMemory() {
+        return ramInLowMemory;
+    }
+
+    protected String getRamThreshold() {
+        return ramThreshold;
+    }
+
     protected String getUsedMemory() {
         return usedMemory;
     }
@@ -74,8 +89,9 @@ class ProfilingData {
     }
 
     protected String[] getCSVFormattedString() {
-        String str[] = {getTimestamp(), getElapsedTime(), getUsedMemory(), getRAMMB(), getRAMPercentage(), getCpuUsage(),
-                        getBatteryLevel(), getType()};
+        String str[] = {getTimestamp(), getElapsedTime(), getUsedMemory(), getRAMMB(), getRAMPercentage(),
+                        getMaxHeapSize(), getRamThreshold(), getRamInLowMemory(),
+                        getCpuUsage(), getBatteryLevel(), getType()};
         return str;
     }
 
@@ -107,6 +123,10 @@ class ProfilingData {
         double percentUsed = (mi.totalMem - mi.availMem) / (double)mi.totalMem * 100.0;
         ramMB = String.valueOf(usedMegs);
         ramPercentage = String.valueOf((int)percentUsed);
+
+        maxHeapSize = String.valueOf(activityManager.getMemoryClass());
+        ramInLowMemory = String.valueOf(mi.lowMemory);
+        ramThreshold = String.valueOf(mi.threshold / 0x100000L);
     }
 
     @Override
@@ -116,6 +136,9 @@ class ProfilingData {
                 .append("Application Used Memory: ").append(getUsedMemory()).append(" bytes, ")
                 .append("Used RAM Memory: ").append(getRAMMB()).append("MB, ")
                 .append("Used RAM Memory: ").append(getRAMPercentage()).append("%, ")
+                .append("Max Heap Size: ").append(getMaxHeapSize()).append("MB, ")
+                .append("RAM threshold: ").append(getRamThreshold()).append("MB, ")
+                .append("Is in low memory mode: ").append(getRamInLowMemory()).append(", ")
                 .append("Used CPU: ").append(getCpuUsage()).append("%, ")
                 .append("Battery Level: ").append(getBatteryLevel());
 

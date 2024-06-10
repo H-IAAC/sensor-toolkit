@@ -29,7 +29,7 @@ class ProfilingController {
     private String csvFileName;
     private Thread profilingThread;
     private String[] csvHeader = {"Timestamp", "Elapsed Time", "Used Memory from Application (bytes)", "Used System`s RAM (MB)",
-            "Used System`s RAM (%)", "Used System`s CPU (%)", "Battery Level", "Profiling Type"};
+            "Used System`s RAM (%)", "Used System`s CPU (%)", "Max Heap Size (MB)", "RAM threshold (MB)", "Is in low memory mode", "Battery Level", "Profiling Type"};
 
     private Intent batteryStatus;
 
