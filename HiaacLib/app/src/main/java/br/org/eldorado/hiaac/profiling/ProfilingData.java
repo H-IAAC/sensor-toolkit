@@ -4,6 +4,8 @@ import android.app.ActivityManager;
 import android.content.Context;
 import android.content.Intent;
 import android.os.BatteryManager;
+import android.os.Debug;
+
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.TimeZone;
@@ -130,7 +132,7 @@ class ProfilingData {
 
     private void setApplicationUsedMemory() {
         Runtime runtime = Runtime.getRuntime();
-        usedMemory = String.valueOf(runtime.totalMemory() - runtime.freeMemory());
+        usedMemory = String.valueOf(((runtime.totalMemory() - runtime.freeMemory()) + Debug.getNativeHeapAllocatedSize()) / 0x100000L);
     }
 
     private void setRAMInfo() {
@@ -143,7 +145,7 @@ class ProfilingData {
         ramMB = String.valueOf(usedMegs);
         ramPercentage = String.format("%.2f", percentUsed).replace(',', '.');
 
-        maxHeapSize = String.valueOf(activityManager.getMemoryClass());
+        maxHeapSize = String.valueOf(Runtime.getRuntime().maxMemory() / 0x100000L);
         ramInLowMemory = String.valueOf(mi.lowMemory);
         ramThreshold = String.valueOf(mi.threshold / 0x100000L);
     }
