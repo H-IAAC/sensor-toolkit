@@ -32,13 +32,16 @@ class ProfilingController {
 
     private ArrayList<String> csvHeader = new ArrayList<>(Arrays.asList("Timestamp",
             "Elapsed Time",
-            "Used Memory from Application (bytes)",
-            "Used System`s RAM (MB)",
-            "Used System`s RAM (%)",
-            "Max Heap Size (MB)",
-            "RAM threshold (MB)",
-            "Is in low memory mode",
-            "Used System`s CPU (%)",
+            "App VM Used RAM (MB)",
+            "App Native Used RAM (MB)",
+            "App Total Used RAM (MB)",
+            "App VM Heap Size (MB)",
+            "App Native Heap Size (MB)",
+            "System Used RAM (MB)",
+            "System Used RAM (%)",
+            "System RAM threshold (MB)",
+            "System in low memory",
+            "System CPU (%)",
             "Battery Level",
             "Profiling Type"));
 

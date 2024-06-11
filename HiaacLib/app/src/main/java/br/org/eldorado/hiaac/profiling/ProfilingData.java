@@ -23,10 +23,13 @@ class ProfilingData {
     private String type;
     private String ramMB;
     private String ramPercentage;
-    private String maxHeapSize;
+    private String maxAppHeapSize;
+    private String maxNativeHeapSize;
     private String ramInLowMemory;
     private String ramThreshold;
-    private String usedMemory;
+    private String nativeAppUsedRAM;
+    private String vmAppUsedRAM;
+    private String totalAppUsedRAM;
     private String batteryLevel;
     private String cpuUsage;
     private List<String> extra;
@@ -63,8 +66,12 @@ class ProfilingData {
         return ramPercentage;
     }
 
-    protected String getMaxHeapSize() {
-        return maxHeapSize;
+    protected String getAppMaxHeapSize() {
+        return maxAppHeapSize;
+    }
+
+    protected String getNativeMaxHeapSize() {
+        return maxNativeHeapSize;
     }
 
     protected String getRamInLowMemory() {
@@ -75,8 +82,16 @@ class ProfilingData {
         return ramThreshold;
     }
 
-    protected String getUsedMemory() {
-        return usedMemory;
+    protected String getVMAppUsedRAM() {
+        return vmAppUsedRAM;
+    }
+
+    protected String getNativeAppUsedRAM() {
+        return nativeAppUsedRAM;
+    }
+
+    protected String getTotalAppUsedRAM() {
+        return totalAppUsedRAM;
     }
 
     protected String getBatteryLevel() {
@@ -99,10 +114,13 @@ class ProfilingData {
         ArrayList<String> values = new ArrayList<>();
         values.add(getTimestamp());
         values.add(getElapsedTime());
-        values.add(getUsedMemory());
+        values.add(getVMAppUsedRAM());
+        values.add(getNativeAppUsedRAM());
+        values.add(getTotalAppUsedRAM());
+        values.add(getAppMaxHeapSize());
+        values.add(getNativeMaxHeapSize());
         values.add(getRAMMB());
         values.add(getRAMPercentage());
-        values.add(getMaxHeapSize());
         values.add(getRamThreshold());
         values.add(getRamInLowMemory());
         values.add(getCpuUsage());
@@ -132,7 +150,9 @@ class ProfilingData {
 
     private void setApplicationUsedMemory() {
         Runtime runtime = Runtime.getRuntime();
-        usedMemory = String.valueOf(((runtime.totalMemory() - runtime.freeMemory()) + Debug.getNativeHeapAllocatedSize()) / 0x100000L);
+        vmAppUsedRAM = String.valueOf((runtime.totalMemory() - runtime.freeMemory()) / 0x100000L);
+        nativeAppUsedRAM = String.valueOf(Debug.getNativeHeapAllocatedSize() / 0x100000L);
+        totalAppUsedRAM = String.valueOf(((runtime.totalMemory() - runtime.freeMemory()) + Debug.getNativeHeapAllocatedSize()) / 0x100000L);
     }
 
     private void setRAMInfo() {
@@ -145,7 +165,8 @@ class ProfilingData {
         ramMB = String.valueOf(usedMegs);
         ramPercentage = String.format("%.2f", percentUsed).replace(',', '.');
 
-        maxHeapSize = String.valueOf(Runtime.getRuntime().maxMemory() / 0x100000L);
+        maxAppHeapSize = String.valueOf(Runtime.getRuntime().maxMemory() / 0x100000L);
+        maxNativeHeapSize = String.valueOf(Debug.getNativeHeapSize() / 0x100000L);
         ramInLowMemory = String.valueOf(mi.lowMemory);
         ramThreshold = String.valueOf(mi.threshold / 0x100000L);
     }
@@ -154,10 +175,13 @@ class ProfilingData {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("Elapsed Time: ").append(getElapsedTime()).append(", ")
-                .append("Application Used Memory: ").append(getUsedMemory()).append(" bytes, ")
-                .append("Used RAM Memory: ").append(getRAMMB()).append("MB, ")
-                .append("Used RAM Memory: ").append(getRAMPercentage()).append("%, ")
-                .append("Max Heap Size: ").append(getMaxHeapSize()).append("MB, ")
+                .append("App VM Used RAM (MB)").append(getVMAppUsedRAM()).append("MB, ")
+                .append("App Native Used RAM (MB)").append(getNativeAppUsedRAM()).append("MB, ")
+                .append("App Total Used RAM (MB)").append(getTotalAppUsedRAM()).append("MB, ")
+                .append("App VM Heap Size (MB)").append(getAppMaxHeapSize()).append("MB, ")
+                .append("App Native Heap Size (MB)").append(getNativeMaxHeapSize()).append("MB, ")
+                .append("System Used RAM: ").append(getRAMMB()).append("MB, ")
+                .append("System Used RAM: ").append(getRAMPercentage()).append("%, ")
                 .append("RAM threshold: ").append(getRamThreshold()).append("MB, ")
                 .append("Is in low memory mode: ").append(getRamInLowMemory()).append(", ")
                 .append("Used CPU: ").append(getCpuUsage()).append("%, ")
