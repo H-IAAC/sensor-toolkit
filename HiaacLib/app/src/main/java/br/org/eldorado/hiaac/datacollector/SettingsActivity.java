@@ -68,7 +68,7 @@ public class SettingsActivity extends AppCompatActivity {
 
         private void showServerAddressDialog(Context c) {
             final EditText serverAddress = new EditText(c);
-            if (actualSelectedServerAddress.equalsIgnoreCase("custom")) {
+            if (actualSelectedServerAddress.equalsIgnoreCase("custom") || actualSelectedServerAddress.equalsIgnoreCase("Personalizado")) {
                 serverAddress.setText(Preferences.getPreferredServer());
             }
             AlertDialog dialog = new AlertDialog.Builder(c)
