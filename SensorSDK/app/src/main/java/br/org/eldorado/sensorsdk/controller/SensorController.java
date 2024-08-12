@@ -11,6 +11,7 @@ import android.os.RemoteException;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.locks.LockSupport;
 
 import br.org.eldorado.sensoragent.ISensorAgentListener;
 import br.org.eldorado.sensoragent.model.ISensorAgent;
@@ -141,7 +142,7 @@ public class SensorController {
     public void spinWait(long end) {
 //        long current = System.nanoTime();
         while (end > System.nanoTime()) {
-            ;
+            LockSupport.parkNanos(250000);
         }
 //        while (current < end) {
 //            // if current time is less 1ms from the 'end', then ignore sleep()

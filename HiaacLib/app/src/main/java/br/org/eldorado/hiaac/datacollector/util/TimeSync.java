@@ -34,6 +34,9 @@ public class TimeSync {
     }
 
     private static void syncServerTime() {
+        if (ExecutionController.isRunning()) {
+            return;
+        }
         Call<JsonObject> call = ClientAPI.get(ClientAPI.httpLowTimeout()).getServerTime();
         call.enqueue(new Callback<JsonObject>() {
             @Override

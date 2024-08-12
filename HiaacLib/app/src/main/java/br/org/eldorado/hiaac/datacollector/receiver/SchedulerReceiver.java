@@ -5,6 +5,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Handler;
 
+import java.util.concurrent.locks.LockSupport;
+
 import br.org.eldorado.hiaac.datacollector.DataCollectorActivity;
 import br.org.eldorado.hiaac.datacollector.data.LabelConfig;
 import br.org.eldorado.hiaac.datacollector.data.LabelConfigViewModel;
@@ -15,6 +17,7 @@ import br.org.eldorado.hiaac.datacollector.util.Utils;
 import br.org.eldorado.hiaac.datacollector.util.WakeLocks;
 import br.org.eldorado.hiaac.datacollector.util.AlarmConfig;
 import br.org.eldorado.hiaac.datacollector.view.adapter.LabelRecyclerViewAdapter;
+import br.org.eldorado.sensorsdk.SensorSDK;
 
 public class SchedulerReceiver extends BroadcastReceiver {
     private static final Log log = new Log("SchedulerReceiver");
@@ -32,6 +35,7 @@ public class SchedulerReceiver extends BroadcastReceiver {
 
                 LabelRecyclerViewAdapter.ViewHolder holder = LabelRecyclerViewAdapter.getViewHolder(intent.getStringExtra("holder"));
                 long configId = intent.getLongExtra("configId", 0L);
+                long time = intent.getLongExtra("time", SensorSDK.getInstance().getRemoteTime());
 
                 if (holder != null && !holder.isStarted()) {
                     log.d("SchedulerReceiver: Broadcast received");
@@ -55,6 +59,9 @@ public class SchedulerReceiver extends BroadcastReceiver {
                                 log.d("SchedulerReceiver: Cant startExecution as adapter is null!!");
                                 Utils.emitErrorBeep();
                             } else {
+                                while(SensorSDK.getInstance().getRemoteTime() < time) {
+                                    LockSupport.parkNanos(10);
+                                }
                                 log.d("SchedulerReceiver: Broadcast received - startExecution");
                                 DataCollectorActivity.getAdapter().startExecution(holder);
                             }
