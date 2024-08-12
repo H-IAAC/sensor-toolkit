@@ -741,6 +741,7 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
                 if (dt.equals(execService.isRunning())) {
                     log.d("checkExecution - Experiment already running " + dt.getLabel());
                     holder.getEditButton().setEnabled(false);
+                    holder.getFilmButton().setEnabled(false);
                     setAsStop(holder.getStartButton(), holder);
                     execService.changeExecutionServiceListener(new MyExecutionListener(dt, holder));
                 } else {
@@ -936,6 +937,7 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
                 public void run() {
                     log.d("MyExecutionListener - onError - " + message);
                     holder.getEditButton().setEnabled(true);
+                    holder.getFilmButton().setEnabled(true);
                     setAsStart(holder.getStartButton(), holder);
                     AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
                     builder.setTitle("Error");
@@ -966,6 +968,7 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
                     @Override
                     public void run() {
                         holder.getEditButton().setEnabled(true);
+                        holder.getFilmButton().setEnabled(true);
                         setAsStart(holder.getStartButton(), holder);
                         holder.getLabelTimer().setText(
                                 Tools.getFormatedTime(labelConfigs.get(holder.getAdapterPosition()).stopTime, Tools.CHRONOMETER));
@@ -1013,6 +1016,7 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
                 public void run() {
                     log.d("MyExecutionListener - disabling buttons");
                     holder.getEditButton().setEnabled(false);
+                    holder.getFilmButton().setEnabled(false);
                     setAsStop(holder.getStartButton(), holder);
                 }
             });

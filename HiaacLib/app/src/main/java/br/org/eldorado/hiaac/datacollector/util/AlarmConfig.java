@@ -113,6 +113,7 @@ public class AlarmConfig {
         i.setAction(AlarmConfig.SCHEDULER_ACTIONS);
         i.putExtra("holder", holderKey);
         i.putExtra("configId", labelConfig.id);
+        i.putExtra("time", scheduledTime);
 
         pendingAlarm = PendingIntent.getBroadcast(mContext,
                                                   0,
@@ -127,7 +128,7 @@ public class AlarmConfig {
         log.i("Scheduler: " + labelConfig.experiment + " to start at [" + c.getTime() + "] id: " + labelConfig.id);
 
         mgr.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP,
-                alarmStartTime,
+                alarmStartTime-5000,
                 pendingAlarm);
 
         configuration = new Configuration(true, labelConfig.id, alarmStartTime, labelConfig.experiment, labelConfig.activity, labelConfig.userId);
