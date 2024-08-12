@@ -34,11 +34,19 @@ public class SensorSDK extends Application {
         return sensorManager.getDefaultSensor(sensorType) != null;
     }
 
-    public void setRemoteTime(long time) {
-        RemoteApplicationTime.setCurrentTimeMillis(time);
+    public void setRemoteTime(long time, long offset) {
+        RemoteApplicationTime.setCurrentTimeMillis(time, offset);
     }
 
     public long getRemoteTime() {
         return RemoteApplicationTime.getCurrentRemoteTimeMillis();
+    }
+
+    public long getServerTime() {
+        return RemoteApplicationTime.getServerTime();
+    }
+
+    public long getOffsetTime() {
+        return RemoteApplicationTime.getOffsetTime();
     }
 }

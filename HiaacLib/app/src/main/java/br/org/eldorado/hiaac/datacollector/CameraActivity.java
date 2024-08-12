@@ -234,47 +234,43 @@ public class CameraActivity extends AppCompatActivity {
                                 }
                             }
                             else if (videoRecordEvent instanceof VideoRecordEvent.Finalize) {
-                                if (epochTimeIsServerBased) {
-                                    endEpochMilli = TimeSync.getTimestampBasedOnDiffFromServer(serverTimeDiff);
-                                } else {
-                                    endEpochMilli = System.currentTimeMillis();
-                                }
-
-                                // Filming has stop
-                                currentRecording = null;
-
-                                List<File> filesList;
-                                File directory = getPath();
-                                if (directory.exists()) {
-                                    filesList = new ArrayList<>(Arrays.asList(directory.listFiles()));
-
-                                    // Each experiment must have only 1 video,
-                                    // so when filming ends, previous video must be deleted.
-                                    for (File file: filesList) {
-                                        // Ignore csv file, and ignore the file with same name
-                                        // from the one created in the latest film.
-                                        if (!"csv".equals(Tools.getFileExtension(file.getName())) &&
-                                            !file.getName().equals(outputFile.getName())) {
-                                            file.delete();
-                                        }
-                                    }
-
-                                    try {
-                                        VideoMetadata.create(outputFile.getName(),
-                                                             endEpochMilli - startEpochMilli,
-                                                             startEpochMilli,
-                                                             endEpochMilli,
-                                                             epochTimeIsServerBased,
-                                                             serverTimeDiff,
-                                                             getPath());
-                                    } catch (Exception e) {
-                                        Toast.makeText(ctx, "Failed to access video metadata", Toast.LENGTH_SHORT).show();
-                                    }
-                                }
-
-                                // After stop filming, return to previous activity
-                                finish();
+                                endEpochMilli = TimeSync.getTimestamp();
                             }
+
+                            // Filming has stop
+                            currentRecording = null;
+
+                            List<File> filesList;
+                            File directory = getPath();
+                            if (directory.exists()) {
+                                filesList = new ArrayList<>(Arrays.asList(directory.listFiles()));
+
+                                // Each experiment must have only 1 video,
+                                // so when filming ends, previous video must be deleted.
+                                for (File file: filesList) {
+                                    // Ignore csv file, and ignore the file with same name
+                                    // from the one created in the latest film.
+                                    if (!"csv".equals(Tools.getFileExtension(file.getName())) &&
+                                        !file.getName().equals(outputFile.getName())) {
+                                        file.delete();
+                                    }
+                                }
+
+                                try {
+                                    VideoMetadata.create(outputFile.getName(),
+                                                         endEpochMilli - startEpochMilli,
+                                                         startEpochMilli,
+                                                         endEpochMilli,
+                                                         epochTimeIsServerBased,
+                                                         serverTimeDiff,
+                                                         getPath());
+                                } catch (Exception e) {
+                                    Toast.makeText(ctx, "Failed to access video metadata", Toast.LENGTH_SHORT).show();
+                                }
+                            }
+
+                            // After stop filming, return to previous activity
+                            finish();
                         }
                     });
 

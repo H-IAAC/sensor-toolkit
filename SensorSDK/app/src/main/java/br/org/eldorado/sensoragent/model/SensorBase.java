@@ -119,8 +119,8 @@ public class SensorBase implements Parcelable, Cloneable {
         } else if (values.length != s.getValuesArray().length) {
             values = new float[s.getValuesArray().length];
         }
-        //this.timestamp = s.getTimestamp();
-        this.timestamp = SensorSDK.getInstance().getRemoteTime();
+        this.timestamp = s.getTimestamp();
+        //this.timestamp = SensorSDK.getInstance().getRemoteTime();
         this.power = s.getPower();
         for (int i = 0; i < values.length; i++) {
             this.values[i] = s.getValuesArray()[i];

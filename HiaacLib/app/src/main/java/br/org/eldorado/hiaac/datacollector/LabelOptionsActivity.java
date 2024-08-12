@@ -64,6 +64,7 @@ import br.org.eldorado.hiaac.datacollector.util.AlarmConfig;
 import br.org.eldorado.hiaac.datacollector.util.CsvFiles;
 import br.org.eldorado.hiaac.datacollector.util.Log;
 import br.org.eldorado.hiaac.datacollector.util.Preferences;
+import br.org.eldorado.hiaac.datacollector.util.TimeSync;
 import br.org.eldorado.hiaac.datacollector.util.Tools;
 import br.org.eldorado.hiaac.datacollector.view.adapter.SensorFrequencyViewAdapter;
 import br.org.eldorado.sensoragent.model.Accelerometer;
@@ -157,7 +158,7 @@ public class LabelOptionsActivity extends AppCompatActivity {
             public void onClick(View v) {
                 Calendar now = Calendar.getInstance();
                 // Increment 5 min (300000 min), to always suggest schedule time 5 min ahead
-                now.setTimeInMillis(SensorSDK.getInstance().getRemoteTime() + 300000);
+                now.setTimeInMillis(System.currentTimeMillis() + 300000);
 
                 timePickerDialog = new TimePickerDialog(LabelOptionsActivity.this, new TimePickerDialog.OnTimeSetListener() {
                     @Override
@@ -475,7 +476,9 @@ public class LabelOptionsActivity extends AppCompatActivity {
         long scheduledTime = 0;
         if (!scheduledTimeStr.isEmpty()) {
             Calendar c = Calendar.getInstance();
-            c.setTimeInMillis(SensorSDK.getInstance().getRemoteTime());
+            //c.setTimeInMillis(SensorSDK.getInstance().getRemoteTime());
+            //c.setTimeInMillis(TimeSync.getTimestamp());
+            c.setTimeInMillis(System.currentTimeMillis());
             String[] timeSplit = scheduledTimeStr.split(":");
             c.set(Calendar.HOUR_OF_DAY, Integer.parseInt(timeSplit[0]));
             c.set(Calendar.MINUTE, Integer.parseInt(timeSplit[1]));

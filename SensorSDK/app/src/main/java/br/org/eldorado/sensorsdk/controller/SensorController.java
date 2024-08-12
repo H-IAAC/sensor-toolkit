@@ -8,6 +8,7 @@ import android.os.IBinder;
 import android.os.PowerManager;
 import android.os.Process;
 import android.os.RemoteException;
+import android.os.SystemClock;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -139,20 +140,14 @@ public class SensorController {
     }
 
     public void spinWait(long end) {
-//        long current = System.nanoTime();
-        while (end > System.nanoTime()) {
-            ;
+        long current = System.nanoTime();
+
+        while (current < end) {
+            // if current time is less 1ms from the 'end', then ignore sleep()
+            if (!(current > (end - 1000000)))
+                SystemClock.sleep(1);
+            current = System.nanoTime();
         }
-//        while (current < end) {
-//            // if current time is less 1ms from the 'end', then ignore sleep()
-//            if (!(current > (end - 1000000)))
-//                try {
-//                    Thread.sleep(0, 100000);
-//                } catch (Exception e) {
-//                    e.printStackTrace();
-//                }
-//            current = System.nanoTime();
-//        }
     }
     public void startGettingInformationThread(SensorBase sensor) {
 

@@ -2,6 +2,8 @@ package br.org.eldorado.hiaac.datacollector.util;
 
 import static android.content.Context.POWER_SERVICE;
 
+import static br.org.eldorado.hiaac.datacollector.util.TimeSync.isUsingServerTime;
+
 import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.content.Context;
@@ -68,7 +70,10 @@ public class AlarmConfig {
         scheduledDate.setTimeInMillis(scheduledTime);
 
         Calendar now = Calendar.getInstance();
-        now.setTimeInMillis(SensorSDK.getInstance().getRemoteTime());
+
+        if (isUsingServerTime())
+            //now.setTimeInMillis(SensorSDK.getInstance().getRemoteTime());
+            now.setTimeInMillis(TimeSync.getTimestamp());
 
         // If configured to saved after the current date, then set the scheduler to next day
         if (now.after(scheduledDate))

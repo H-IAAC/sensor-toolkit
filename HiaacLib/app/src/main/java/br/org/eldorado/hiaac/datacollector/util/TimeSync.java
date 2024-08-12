@@ -39,8 +39,8 @@ public class TimeSync {
             @Override
             public void onResponse(Call<JsonObject> call, Response<JsonObject> response) {
                 long timeInMillis = response.body().get("currentTimeMillis").getAsLong();
-                SensorSDK.getInstance().setRemoteTime(
-                        timeInMillis +(response.raw().receivedResponseAtMillis() - response.raw().sentRequestAtMillis())/2);
+                timeInMillis += (response.raw().receivedResponseAtMillis() - response.raw().sentRequestAtMillis())/2;
+                SensorSDK.getInstance().setRemoteTime(timeInMillis, timeInMillis - System.currentTimeMillis());
                 updateTimeInSync = true;
             }
             @Override
@@ -62,7 +62,7 @@ public class TimeSync {
         TimeSync.context = context;
 
         if (ExecutionController.isRunning()) {
-            setRemoteTimeText(0L, 0L, false, context);
+            setRemoteTimeText(false, context);
             return;
         }
 
@@ -77,9 +77,8 @@ public class TimeSync {
 
         updateTimeLabelHandler.post(new Runnable() {
             public void run() {
-                long remoteTime = SensorSDK.getInstance().getRemoteTime();
-                long localTime = System.currentTimeMillis();
-                setRemoteTimeText(remoteTime, localTime, true, context);
+                //long remoteTime = SensorSDK.getInstance().getRemoteTime();
+                setRemoteTimeText(true, context);
                 updateTimeLabelHandler.postDelayed(this, 50);
             }
         });
@@ -88,7 +87,7 @@ public class TimeSync {
     public static void stopServerTimeUpdates() {
         log.d("TimeSync: stopServerTimeUpdates");
 
-        setRemoteTimeText(0L, 0L, false, context);
+        setRemoteTimeText(false, context);
 
         updateTimeInSync = false;
         syncServerTimeHandler.removeCallbacksAndMessages(null);
@@ -96,18 +95,20 @@ public class TimeSync {
     }
 
     public static long getTimestampDiffFromServerAndLocal() {
-        long remote = SensorSDK.getInstance().getRemoteTime();
-        long local = System.currentTimeMillis();
-        return remote - local;
+        //long remote = SensorSDK.getInstance().getRemoteTime();
+        //long remote = SensorSDK.getInstance().getServerTime();
+        //long local = System.currentTimeMillis();
+        return SensorSDK.getInstance().getOffsetTime();
     }
 
-    public static long getTimestampBasedOnDiffFromServer(long diff) {
-            if (diff > 0)
-                // the local time must be incremented by this difference
-                return System.currentTimeMillis() + diff;
-            else
-                // otherwise, decrease the time difference
-                return System.currentTimeMillis() - Math.abs(diff);
+    private static long getTimestampBasedOnDiffFromServer() {
+        long diff = getTimestampDiffFromServerAndLocal();
+        if (diff > 0)
+            // the local time must be incremented by this difference
+            return System.currentTimeMillis() + diff;
+        else
+            // otherwise, decrease the time difference
+            return System.currentTimeMillis() - Math.abs(diff);
     }
 
     /**
@@ -119,10 +120,10 @@ public class TimeSync {
 
             if (diff > 0) {
                 // the local time must be incremented by this difference
-                return time + diff;
+                return time - diff;
             } else {
                 // otherwise, decrease the time difference
-                return time - Math.abs(diff);
+                return time + Math.abs(diff);
             }
         }
         return time;
@@ -130,19 +131,16 @@ public class TimeSync {
 
     public static long getTimestamp() {
         if (isUsingServerTime()) {
-            long diff = getTimestampDiffFromServerAndLocal();
-            return getTimestampBasedOnDiffFromServer(diff);
+            return getTimestampBasedOnDiffFromServer();
         }
 
         return System.currentTimeMillis();
     }
 
-    private static void setRemoteTimeText(long remoteTimeInMillis,
-                                          long localTimeInMillis,
-                                          final boolean timeIsRunning,
+    private static void setRemoteTimeText(final boolean timeIsRunning,
                                           Context context) {
         if (serverTimeTxt != null) {
-            Date date = new Date(remoteTimeInMillis);
+            Date date = new Date(TimeSync.getTimestamp());
             String time = df.format(date);
 
             if (!timeIsRunning) {
@@ -155,7 +153,7 @@ public class TimeSync {
             if (updateTimeInSync) {
                 serverTimeTxt.setText(context.getString(R.string.server_time) + " " + time);
                 serverTimeTxt.setTextColor(Color.BLUE);
-                timeDiffTxt.setText(context.getString(R.string.time_diff) + " " + (remoteTimeInMillis - localTimeInMillis) + "ms");
+                timeDiffTxt.setText(context.getString(R.string.time_diff) + " " + (TimeSync.getTimestampDiffFromServerAndLocal()) + "ms");
             } else {
                 serverTimeTxt.setText(context.getString(R.string.local_time) + " " + time);
                 serverTimeTxt.setTextColor(Color.GRAY);
