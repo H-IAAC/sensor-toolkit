@@ -142,7 +142,7 @@ public class SensorController {
     public void spinWait(long end) {
 //        long current = System.nanoTime();
         while (end > System.nanoTime()) {
-            LockSupport.parkNanos(250000);
+            //LockSupport.parkNanos(250000);
         }
 //        while (current < end) {
 //            // if current time is less 1ms from the 'end', then ignore sleep()
@@ -154,6 +154,10 @@ public class SensorController {
 //                }
 //            current = System.nanoTime();
 //        }
+    }
+
+    public void spinWait2(long end) {
+        while (end > System.currentTimeMillis()) {}
     }
     public void startGettingInformationThread(SensorBase sensor) {
 
@@ -182,11 +186,21 @@ public class SensorController {
                     PowerManager.WakeLock executionWakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK,
                             "SensorController::StartGettingInformationThread");
                     executionWakeLock.acquire();
+                    long times = 0;
                     while (sensor.isStarted()) {
                         try {
-                            long end = System.nanoTime() + (freqInMs * 1000000); // convert freqInMs to nanosec
+                            //long end = System.nanoTime() + (freqInMs * 1000000); // convert freqInMs to nanosec
+                            long now = System.currentTimeMillis();
+                            long end = now + (freqInMs);
                             getInformation(sensor);
-                            spinWait(end);
+                            if (now != sensor.getTimestamp()) {
+                                log.d("TEST TIMESTAMP DIFERENCA SENSOR " + sensor.getName() + "  deveria ser: " + now + " real: " + sensor.getTimestamp() + " proximo: " + end + " differenca: " + (now - sensor.getTimestamp()));
+                            }
+                            spinWait2(end);
+                            long final1 = System.currentTimeMillis();
+                            if (final1 != end) {
+                                log.d("TEST TIMESTAMP DIFERENCA THREAD " + (final1 - end));
+                            }
                         } catch (Exception e) {
                             sensor.setIsStarted(false);
                             e.printStackTrace();

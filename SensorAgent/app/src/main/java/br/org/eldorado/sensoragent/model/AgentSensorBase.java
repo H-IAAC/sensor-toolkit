@@ -97,11 +97,12 @@ public class AgentSensorBase
     @Override
     public void onSensorChanged(SensorEvent event) {
         try {
-            if (power != event.sensor.getPower() || !Arrays.equals(event.values, values)) {
+            //if (power != event.sensor.getPower() || !Arrays.equals(event.values, values)) {
                 /* TODO save data to database */
                 /*log.i(event.sensor.getStringType() + " power: " + event.sensor.getPower() + " values: " +
                         (event.values == null ? "null" : event.values[0]));*/
                 this.timestamp = System.currentTimeMillis();
+                this.timestamp = System.currentTimeMillis() + (event.timestamp - SystemClock.elapsedRealtimeNanos()) / 1000000;
                 this.power = event.sensor.getPower();
                 this.values = Arrays.copyOf(event.values, event.values.length);
                 //this.timestamp = System.currentTimeMillis() + (event.timestamp - SystemClock.elapsedRealtimeNanos()) / 1000000;
@@ -113,7 +114,7 @@ public class AgentSensorBase
                                 APICommand.CommandType.TYPE_GET_SENSOR_DATA,
                                 Arrays.asList(type, new Gson().toJson(AgentSensorBase.this, AgentSensorBase.class)));
                 APIController.getInstance().sendForAll(cmd);*/
-            }
+            //}
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -124,7 +125,7 @@ public class AgentSensorBase
 
     public void registerListener(Sensor sensor) {
         log.i("Starting sensor: " + sensor.getName());
-        sensorManager.registerListener(this, sensor, SensorManager.SENSOR_DELAY_FASTEST);
+        sensorManager.registerListener(this, sensor, SensorManager.SENSOR_DELAY_FASTEST, 1000);
     }
 
     public void unregisterListener() {
