@@ -194,6 +194,11 @@ public class ExecutionController {
             this.minTimestampDifference = Long.MAX_VALUE;
         }
 
+        public long getExpectedCollectedData(int frequency) {
+            long expectedFinalTime = startTime + (dataTrack.getStopTime() * 1000);
+            return ((expectedFinalTime - startTime) / 1000) * frequency;
+        }
+
         public List<LabeledData> getLabeledDataList() {
             return labeledData;
         }
@@ -254,7 +259,15 @@ public class ExecutionController {
         @Override
         public void onSensorChanged(SensorBase sensor) {
             try {
-                if (lastTimestamp == sensor.getTimestamp()) return;
+//                if (lastTimestamp == sensor.getTimestamp()) {
+//                    log.d("TESTE_TIMESTAMP Invalid - Same timestamp as last data");
+//                    invalidData++;
+//                    return;
+//                }
+
+                if (totalData >= getExpectedCollectedData(sensor.getFrequency())) {
+                    return;
+                }
 
                 long localTime = sensor.getTimestamp();
                 long serverTime = localTime;
@@ -271,7 +284,7 @@ public class ExecutionController {
                     maxTimestampDifference = Math.max((localTime - lastTimestamp), maxTimestampDifference);
                     minTimestampDifference = Math.min((localTime - lastTimestamp), minTimestampDifference);
                 }
-                lastTimestamp = localTime;
+                //lastTimestamp = localTime;
 
                 LabeledData data = new LabeledData(dataTrack.getLabel(),
                                                    sensor,
@@ -291,10 +304,11 @@ public class ExecutionController {
                     dbView.insertLabeledData((ArrayList<LabeledData>)labeledData.clone());
                     labeledData.clear();
                 }
-                if (!sensor.isValidValues()) {
+                if (!sensor.isValidValues() || lastTimestamp == sensor.getTimestamp()) {
                     data.setValidData(false);
                     invalidData++;
                 }
+                lastTimestamp = localTime;
             } catch (Exception e) {
                 if (labeledData.size() > 0) {
                     dbView.insertLabeledData(labeledData);
