@@ -28,7 +28,7 @@ public class SensorAgentService extends Service {
 
     @Override
     public void onCreate() {
-        log.i("onCreate");
+        log.i("onCreate SensorAgentService");
         super.onCreate();
         initService();
     }
