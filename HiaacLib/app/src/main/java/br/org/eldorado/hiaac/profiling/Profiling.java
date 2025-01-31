@@ -55,8 +55,8 @@ public class Profiling {
      * @param seconds Data will be collected every parameter seconds
      */
     public void setFrequency(int seconds) {
-        if (seconds < 1 || seconds > 3600) {
-            throw new IllegalArgumentException("Frequency should be a value between 1 and 3600");
+        if (seconds < 1 || seconds > 5) {
+            throw new IllegalArgumentException("Frequency should be a value between 1 and 5 seconds");
         }
         frequency = seconds*1000;
     }
