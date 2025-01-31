@@ -7,8 +7,6 @@ import android.content.IntentFilter;
 import com.opencsv.CSVWriter;
 import java.io.File;
 import java.io.FileWriter;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;

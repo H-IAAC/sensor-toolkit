@@ -1,9 +1,6 @@
 package br.org.eldorado.hiaac.profiling;
 
 import android.content.Context;
-import android.content.Intent;
-import android.content.IntentFilter;
-import android.os.BatteryManager;
 
 import java.io.File;
 import java.text.DateFormat;
@@ -58,7 +55,7 @@ public class Profiling {
      * @param seconds Data will be collected every parameter seconds
      */
     public void setFrequency(int seconds) {
-        if (frequency < 1 || frequency > 3600) {
+        if (frequency < 1 || frequency >= 3600) {
             throw new IllegalArgumentException("Frequency should be a value between 1 and 3600");
         }
         frequency = seconds*1000;
