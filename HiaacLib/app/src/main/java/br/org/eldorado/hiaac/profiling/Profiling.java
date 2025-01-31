@@ -55,10 +55,21 @@ public class Profiling {
      * @param seconds Data will be collected every parameter seconds
      */
     public void setFrequency(int seconds) {
-        if (frequency < 1 || frequency >= 3600) {
+        if (seconds < 1 || seconds > 3600) {
             throw new IllegalArgumentException("Frequency should be a value between 1 and 3600");
         }
         frequency = seconds*1000;
+    }
+
+    /**
+     * Sets the frequency of the profiling collection in milliseconds
+     * @param milliseconds Data will be collected every parameter milliseconds
+     */
+    public void setFrequencyInMilliseconds(int milliseconds) {
+        if (milliseconds < 1000 || milliseconds > 5000) {
+            throw new IllegalArgumentException("Frequency should be a value between 1000 and 5000 milliseconds");
+        }
+        frequency = milliseconds;
     }
 
     public void start() {
