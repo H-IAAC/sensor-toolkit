@@ -6,6 +6,8 @@ import android.content.IntentFilter;
 import android.os.BatteryManager;
 
 import java.io.File;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.HashMap;
 
 import br.org.eldorado.sensorsdk.SensorSDKContext;
@@ -17,6 +19,7 @@ public class Profiling {
     private boolean isManualOnly;
     private static Profiling inst;
     private int frequency;
+    private String csvPath;
     private String csvFileName;
 
 
@@ -31,7 +34,9 @@ public class Profiling {
         mContext = ctx;
         isManualOnly = false;
         frequency = 1;
-        csvFileName = "";
+        DateFormat df = new SimpleDateFormat("yyyyMMdd.HHmmss");
+        csvFileName = df.format(System.currentTimeMillis());
+        csvPath = ctx.getFilesDir().getAbsolutePath() + File.separator + "profiling";
     }
 
     /**
@@ -43,8 +48,9 @@ public class Profiling {
         isManualOnly = manualOnly;
     }
 
-    public void setCsvFileName(String name) {
-        csvFileName = name;
+    public void setCsvFileName(String path, String filename) {
+        csvPath = path;
+        csvFileName = filename;
     }
 
     /**
@@ -76,10 +82,7 @@ public class Profiling {
     }
 
     public File finishProfiling() {
-        if (!csvFileName.isEmpty()) {
-            controller.setCsvFileName(csvFileName);
-        }
-        File csv = controller.finishProfiling();
+        File csv = controller.finishProfiling(csvPath, csvFileName);
         controller = null;
         return csv;
     }

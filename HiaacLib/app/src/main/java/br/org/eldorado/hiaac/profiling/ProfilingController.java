@@ -27,7 +27,6 @@ class ProfilingController {
     private Context mContext;
     private List<ProfilingData> data;
     private long frequency;
-    private String csvFileName;
     private Thread profilingThread;
 
     private ArrayList<String> csvHeader = new ArrayList<>(Arrays.asList("Timestamp",
@@ -54,8 +53,6 @@ class ProfilingController {
         data = new ArrayList<>(120);
         log = new Log(TAG);
         frequency = 1000;
-        DateFormat df = new SimpleDateFormat("yyyyMMdd.HHmmss");
-        setCsvFileName(df.format(System.currentTimeMillis()));
     }
 
     protected void setContext(Context ctx) {
@@ -67,10 +64,6 @@ class ProfilingController {
 
     protected void setFrequency(long t) {
         frequency = t;
-    }
-
-    protected void setCsvFileName(String str) {
-        csvFileName = str;
     }
 
     protected void start() {
@@ -94,23 +87,20 @@ class ProfilingController {
         profilingThread = null;
     }
 
-    protected File finishProfiling() {
+    protected File finishProfiling(String path, String filename) {
         log.d("Finishing profiling . . .");
         shouldFinish = true;
         checkPoint(new HashMap<String, String>());
         stop();
-        File f = createCSVFile();
+        File f = createCSVFile(path, filename);
         showData();
         data.clear();
         initialTime = -1;
         return f;
     }
 
-    private File createCSVFile() {
-        File directory = new File(
-                mContext.getFilesDir().getAbsolutePath() +
-                        File.separator +
-                        "profiling");
+    private File createCSVFile(String path, String filename) {
+        File directory = new File(path);
         if (!directory.exists()) {
             directory.mkdir();
         }
@@ -118,17 +108,17 @@ class ProfilingController {
         File csvFile = new File(
                 directory.getAbsolutePath() +
                         File.separator +
-                        csvFileName +
+                        filename +
                         ".csv");
         try {
             log.d("Creating  profiling CSV . . .");
             Locale l = Locale.getDefault();
             Locale.setDefault(new Locale("pt", "BR"));
             CSVWriter writer = new CSVWriter(new FileWriter(csvFile),
-                              ';',
-                               CSVWriter.NO_QUOTE_CHARACTER,
-                               CSVWriter.DEFAULT_ESCAPE_CHARACTER,
-                               CSVWriter.DEFAULT_LINE_END);
+                    ';',
+                    CSVWriter.NO_QUOTE_CHARACTER,
+                    CSVWriter.DEFAULT_ESCAPE_CHARACTER,
+                    CSVWriter.DEFAULT_LINE_END);
             writer.writeNext(csvHeader.toArray(new String[0]));
             for (ProfilingData dt : data) {
                 writer.writeNext(dt.getCSVFormattedString());
