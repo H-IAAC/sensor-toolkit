@@ -27,10 +27,10 @@ public class Profiling {
         return inst;
     }
 
-    private Profiling(Context ctx) {
+    public Profiling(Context ctx) {
         mContext = ctx;
         isManualOnly = false;
-        frequency = 1;
+        frequency = 5000;
         DateFormat df = new SimpleDateFormat("yyyyMMdd.HHmmss");
         csvFileName = df.format(System.currentTimeMillis());
         csvPath = ctx.getFilesDir().getAbsolutePath() + File.separator + "profiling";
