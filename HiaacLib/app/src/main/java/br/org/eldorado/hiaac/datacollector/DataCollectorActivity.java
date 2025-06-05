@@ -1,11 +1,19 @@
 package br.org.eldorado.hiaac.datacollector;
 
+import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.WindowManager;
+import android.widget.ImageButton;
+import android.widget.PopupMenu;
+import android.widget.PopupWindow;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -48,6 +56,9 @@ public class DataCollectorActivity extends AppCompatActivity {
     private static LabelRecyclerViewAdapter adapter = null;
     private static final Log log = new Log("DataCollectorActivity");
     private Permissions permissions;
+
+    public static final String OPTION_UNICAMP = "Unicamp";
+    public static final String OPTION_ELDORADO = "Eldorado";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -107,14 +118,53 @@ public class DataCollectorActivity extends AppCompatActivity {
         mAddButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(getApplicationContext(), LabelOptionsActivity.class);
-                intent.putExtra(LABEL_CONFIG_ACTIVITY_TYPE, NEW_LABEL_CONFIG_ACTIVITY);
-                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                startActivity(intent);
+                showPopupMenu(v);
+//                Intent intent = new Intent(getApplicationContext(), LabelOptionsActivity.class);
+//                intent.putExtra(LABEL_CONFIG_ACTIVITY_TYPE, NEW_LABEL_CONFIG_ACTIVITY);
+//                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+//                startActivity(intent);
             }
         });
 
         permissions.askPermissions();
+    }
+
+    private void showPopupMenu(View v) {
+        LayoutInflater inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        View popupView = inflater.inflate(R.layout.fab_options_menu, null);
+
+        // Criar PopupWindow
+        final PopupWindow popupWindow = new PopupWindow(
+                popupView,
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+                true // focusable
+        );
+
+        // Clique nos botões
+        ImageButton btnUnicamp = popupView.findViewById(R.id.btn_unicamp);
+        TextView btnEldorado = popupView.findViewById(R.id.option_eldorado);
+
+        btnUnicamp.setOnClickListener(view -> {
+            // ação Unicamp
+            Toast.makeText(this, "Unicamp", Toast.LENGTH_SHORT).show();
+            popupWindow.dismiss();
+        });
+
+        btnEldorado.setOnClickListener(view -> {
+            // ação Eldorado
+            Toast.makeText(this, "Eldorado", Toast.LENGTH_SHORT).show();
+            popupWindow.dismiss();
+        });
+
+        // Mostrar acima do FAB (ou ao lado, você pode ajustar)
+        popupWindow.setElevation(10); // se precisar de sombra
+        popupWindow.setOutsideTouchable(true);
+        popupWindow.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT)); // necessário para dismiss externo
+
+        // Exibe acima do FAB
+        popupWindow.showAsDropDown(mAddButton, -40, -400); // ajuste a posição conforme necessário
+
     }
 
     @Override
