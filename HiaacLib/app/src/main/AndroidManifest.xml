@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_CONNECTED_DEVICE"/>
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC"/>
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION"/>
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
+    <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
+    <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS"/>
+
+    <uses-permission
+        android:name="android.permission.WRITE_SETTINGS"
+        tools:ignore="ProtectedPermissions" />
+
+    <application
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:screenOrientation="portrait"
+        android:supportsRtl="true"
+        android:usesCleartextTraffic="true"
+        android:largeHeap="true">
+        <activity
+            android:configChanges="uiMode|orientation|screenSize"
+            android:name=".datacollector.CameraActivity"
+            android:exported="false"
+            android:theme="@style/Theme.AppCompat" />
+        <activity
+            android:configChanges="uiMode"
+            android:name=".datacollector.SettingsActivity"
+            android:exported="false"
+            android:theme="@style/PreferenceScreen" />
+        <activity
+            android:configChanges="uiMode"
+            android:name=".datacollector.LabelOptionsActivity"
+            android:exported="false"
+            android:screenOrientation="portrait" />
+        <activity
+            android:configChanges="uiMode"
+            android:name=".datacollector.StatisticsActivity"
+            android:exported="false"
+            android:screenOrientation="portrait" />
+        <activity
+            android:configChanges="uiMode"
+            android:name=".datacollector.DataCollectorActivity"
+            android:exported="true"
+            android:label="@string/app_name"
+            android:screenOrientation="portrait" />
+
+        <receiver
+            android:name=".datacollector.receiver.SchedulerReceiver"
+            android:exported="false">
+            <intent-filter android:priority="1000">
+                <action android:name="br.org.eldorado.hiaac.datacollector.SCHEDULER" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </receiver>
+
+        <service
+            android:name=".datacollector.service.ExecutionService"
+            android:foregroundServiceType="location|connectedDevice|dataSync"
+            android:enabled="true" />
+
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.provider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/provider_paths" />
+        </provider>
+    </application>
+
+</manifest>

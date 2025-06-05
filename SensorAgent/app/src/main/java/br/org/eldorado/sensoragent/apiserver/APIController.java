@@ -5,7 +5,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import br.org.eldorado.sensoragent.controller.SensorController;
-import br.org.eldorado.sensoragent.model.SensorBase;
+import br.org.eldorado.sensoragent.model.AgentSensorBase;
 import br.org.eldorado.sensoragent.util.Log;
 
 public class APIController {
@@ -55,7 +55,7 @@ public class APIController {
                 /* TODO send msg to sensormanager app */
                 break;
             case TYPE_GET_SENSOR_DATA:
-                SensorBase sensor = SensorController.getInstance().getInformation(Double.valueOf(message.getParameters().get(0).toString()).intValue());
+                AgentSensorBase sensor = SensorController.getInstance().getInformation(Double.valueOf(message.getParameters().get(0).toString()).intValue());
                 message.setParameters(Arrays.asList(message.getParameters().get(0), sensor));
                 origin.sendMessage(message);
                 break;

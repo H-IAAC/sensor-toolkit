@@ -4,20 +4,25 @@ import android.hardware.Sensor;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import br.org.eldorado.sensorsdk.SensorSDK;
 import br.org.eldorado.sensorsdk.controller.SensorController;
 import br.org.eldorado.sensorsdk.listener.SensorSDKListener;
 import br.org.eldorado.sensorsdk.util.Log;
 
-
-public class SensorBase implements Parcelable {
+public class SensorBase implements Parcelable, Cloneable {
     public static final int TYPE_ACCELEROMETER = Sensor.TYPE_ACCELEROMETER;
-    public static final int TYPE_AMBIENT_TEMPERATUR = Sensor.TYPE_AMBIENT_TEMPERATURE;
+    public static final int TYPE_LINEAR_ACCELEROMETER = Sensor.TYPE_LINEAR_ACCELERATION;
+    public static final int TYPE_AMBIENT_TEMPERATURE = Sensor.TYPE_AMBIENT_TEMPERATURE;
     public static final int TYPE_GYROSCOPE = Sensor.TYPE_GYROSCOPE;
     public static final int TYPE_LUMINOSITY = Sensor.TYPE_LIGHT;
     public static final int TYPE_PROXIMITY = Sensor.TYPE_PROXIMITY;
     public static final int TYPE_MAGNETIC_FIELD = Sensor.TYPE_MAGNETIC_FIELD;
     public static final int TYPE_GRAVITY = Sensor.TYPE_GRAVITY;
+    public static final int TYPE_GPS = 100;
 
+    private static final int ON_STARTED = 0;
+    private static final int ON_STOPPED = 1;
+    private static final int ON_CHANGED = 2;
 
     private long timestamp;
     private String name;
@@ -30,23 +35,41 @@ public class SensorBase implements Parcelable {
     private boolean isStarted;
     private int frequency;
 
-    /* TODO limitar funcoes se listener estiver null */
+
 
     public SensorBase(String sensorClass, int type) {
         this.log = new Log(sensorClass);
         this.listener = null;
-        this.frequency = 5;
+        this.frequency = 1;
         this.name = sensorClass;
         this.type = type;
         this.values = new float[1];
         this.isStarted = false;
         this.controller = SensorController.getInstance();
-        this.controller.addSensor(this);
+        for (float value : values) {
+            value = Float.MIN_VALUE;
+        }
     }
 
     public void registerListener(SensorSDKListener l) {
         this.listener = l;
         this.controller.getInformation(this);
+    }
+
+    public boolean isValidValues() {
+        int unchangedValue = 0;
+        for (float value : values) {
+            if (value == Float.MIN_VALUE) {
+                unchangedValue++;
+            }
+        }
+        int zeros = 0;
+        for (float value : values) {
+            if (value == 0f) {
+                zeros++;
+            }
+        }
+        return (unchangedValue != values.length) && ((zeros != values.length) ||  type == TYPE_PROXIMITY  || type == TYPE_LUMINOSITY);
     }
 
     public void setFrequency(int f) {
@@ -79,7 +102,7 @@ public class SensorBase implements Parcelable {
         return timestamp;
     }
 
-    protected float[] getValuesArray() {
+    public float[] getValuesArray() {
         return values;
     }
 
@@ -87,23 +110,32 @@ public class SensorBase implements Parcelable {
         return power;
     }
 
-    public void updateInformation(SensorBase s) {
+    public void updateInformation(AgentSensorBase s) {
         if (s == null || s.getValuesArray() == null) {
-            log.i("Sensor not started");
+            log.i(getName() + " sensor not started");
             isStarted = false;
-            listener.onSensorStopped(this);
+            fireListener(ON_STOPPED);
             return;
+        } else if (values.length != s.getValuesArray().length) {
+            values = new float[s.getValuesArray().length];
         }
         this.timestamp = s.getTimestamp();
+        //this.timestamp = System.currentTimeMillis();
         this.power = s.getPower();
-        this.values = s.getValuesArray();
-        log.i("Update information " + toString());
+        for (int i = 0; i < values.length; i++) {
+            this.values[i] = s.getValuesArray()[i];
+        }
+        //this.values = s.getValuesArray();
+        if (values.length == 3 && values[0] == Float.MIN_VALUE && values[1] == Float.MIN_VALUE && values[2] == Float.MIN_VALUE) {
+            log.d("INVALID " + getName() + " " + values[0] + " " + values[1] + " " + values[2]);
+        }
+        //log.i("Update information " + toString());
         if (!isStarted) {
             //isStarted = true;
-            listener.onSensorStarted(this);
+            fireListener(ON_STARTED);
             controller.startGettingInformationThread(this);
         } else {
-            this.listener.onSensorChanged(this);
+            fireListener(ON_CHANGED);
         }
     }
 
@@ -120,7 +152,7 @@ public class SensorBase implements Parcelable {
     }
 
     public void startSensor() {
-        log.i("Starting sensor isStarted: " + isStarted);
+        log.i(getName() + " sensor isStarted: " + isStarted);
         if (!isStarted) {
             controller.startSensor(this);
         }
@@ -128,7 +160,28 @@ public class SensorBase implements Parcelable {
 
     public void stopSensor() {
         controller.stopSensor(this);
-        listener.onSensorStopped(this);
+    }
+
+    private void fireListener(int type) {
+        if (listener != null) {
+            try {
+                switch (type) {
+                    case ON_STARTED:
+                        listener.onSensorStarted((SensorBase)this.clone());
+                        break;
+                    case ON_STOPPED:
+                        listener.onSensorStopped((SensorBase)this.clone());
+                        break;
+                    case ON_CHANGED:
+                        listener.onSensorChanged((SensorBase) this.clone());
+                        break;
+                }
+            } catch (CloneNotSupportedException ex) {
+                ex.printStackTrace();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     @Override
@@ -162,6 +215,7 @@ public class SensorBase implements Parcelable {
                 .append("isStarted: ").append(isStarted).append("\n")
                 .append("power: ").append(power).append(" mAh\n")
                 .append("Timestamp: ").append(timestamp).append("\n")
+                .append("Frequency: ").append(frequency).append("\n")
                 .append("Values: [");
         if (values == null) {
             sb.append("null]");

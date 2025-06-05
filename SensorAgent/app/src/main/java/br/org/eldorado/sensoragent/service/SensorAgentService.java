@@ -16,24 +16,18 @@ import androidx.core.app.NotificationCompat;
 import br.org.eldorado.sensoragent.ISensorAgentListener;
 import br.org.eldorado.sensoragent.R;
 import br.org.eldorado.sensoragent.SensorAgentContext;
-import br.org.eldorado.sensoragent.apiserver.APIController;
+import br.org.eldorado.sensoragent.model.AgentSensorBase;
 import br.org.eldorado.sensoragent.model.ISensorAgent;
 import br.org.eldorado.sensoragent.controller.SensorController;
-import br.org.eldorado.sensoragent.model.Accelerometer;
-import br.org.eldorado.sensoragent.model.ISensorAgent;
-import br.org.eldorado.sensoragent.model.SensorBase;
 import br.org.eldorado.sensoragent.util.Log;
 
 public class SensorAgentService extends Service {
-
-    private static final String TAG = "SensorAgentService";
-    private Log log;
+    private Log log = new Log("SensorAgentService");
     private SensorAgentBind sensorBind = new SensorAgentBind();
     private RemoteCallbackList<ISensorAgentListener> mClientListener;
 
     @Override
     public void onCreate() {
-        log = new Log(TAG);
         log.i("onCreate");
         super.onCreate();
         initService();
@@ -45,6 +39,8 @@ public class SensorAgentService extends Service {
         NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this, channelId);
         Notification notification = notificationBuilder.setOngoing(true)
                 .setSmallIcon(R.mipmap.ic_launcher)
+                .setContentTitle("Sensor Agent Service")
+                .setContentText("Running")
                 .setPriority(NotificationManager.IMPORTANCE_LOW)
                 .setCategory(NotificationCompat.CATEGORY_SERVICE)
                 .build();
@@ -53,7 +49,7 @@ public class SensorAgentService extends Service {
         if (SensorAgentContext.getInstance().getContext() == null) {
             SensorAgentContext.getInstance().setContext(this);
         }
-        APIController.getInstance();
+        //APIController.getInstance();
         mClientListener = new RemoteCallbackList<ISensorAgentListener>();
         SensorController.getInstance().setListener(mClientListener);
     }
@@ -87,7 +83,7 @@ public class SensorAgentService extends Service {
         }
 
         @Override
-        public SensorBase getInformation(int sensor) throws RemoteException {
+        public AgentSensorBase getInformation(int sensor) throws RemoteException {
             return SensorController.getInstance().getInformation(sensor);
         }
 

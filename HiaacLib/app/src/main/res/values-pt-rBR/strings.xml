@@ -1,0 +1,130 @@
+<resources>
+    <string name="app_name">HIAAC</string>
+    <string name="action_settings">Configurações</string>
+    <string name="action_camera">Camera</string>
+    <string name="next">Próximo</string>
+    <string name="previous">Anterior</string>
+
+    <string name="server_time">Horário do Server: </string>
+    <string name="local_time">Horário Local: </string>
+    <string name="time_diff">Diff entre Server e Local: </string>
+    <string name="csv_files">Arquivos:</string>
+    <string name="creating_csv_file">Criando arquivo CSV . . .</string>
+    <string name="before_create_csv_file">Finalizando a coleta de dados para criação do arquivo CSV. Aguarde por favor . . .</string>
+    <string name="starting_upload_file">Iniciando Upload . . .</string>
+    <string name="share_with_firebase">Would you like to send data to Firebase Server?</string>
+    <string name="share_with_firebase_title">Send to Firebase.</string>
+    <string name="share_with_server">Gostaria de enviar os dados para o servidor IC??</string>
+    <string name="share_with_server_no_files">Não há arquivos para serem compartilhados!!</string>
+    <string name="share_with_server_title">Enviar para o servidor IC.</string>
+    <string name="download_progress">Uploading . . .  %1$d%%</string>
+    <string name="success">Sucesso</string>
+    <string name="success_csv_file">Arquivo CSV criado com sucesso</string>
+    <string name="success_csv_uploaded_firebase">CVS file successfully uploaded to Firebase</string>
+    <string name="error_no_data_create_csc">Nenhum dado encontrado para criar o arquivo CSV!</string>
+    <string name="error_no_data_upload_firebase">There was any data to upload to Firebase server!</string>
+    <string name="dont_use_gps">Não use o GPS</string>
+    <string name="gps_ok">Ok, Entendo</string>
+    <string name="button_ok">OK</string>
+    <string name="button_cancel">Cancelar</string>
+    <string name="add_new_frequency_title">Adicionar Frequência</string>
+    <string name="add_new_frequency_msg">Selecione uma nova frequência para ser adicionada</string>
+    <string name="gps_permission_description">Para utilizar o GPS, a aplicação precisa da permissão de Background. Se você deseja utilizar o GPS, por favor selecione \"Utilizar Sempre\".</string>
+    <string name="sensor_not_available">Este Sensor (%s) não está disponível neste dispositivo!</string>
+    <string name="too_many_sensors_checked">Utilizar muitos sensores ao mesmo tempo pode causar perda de dados devido a limitações do sistema Android.</string>
+    <string name="dialog_alert_title">ALERTA!</string>
+
+    <!-- Notifications -->
+    <string name="experiment_finished_title">Experimento Finalizado!</string>
+    <string name="experiment_finished_description">O experimento %s terminou!</string>
+    <string name="experiment_timer_title">O experimento começará em . . .</string>
+
+
+    <string name="label">Label</string>
+    <string name="start">Iniciar</string>
+    <string name="stop">Parar</string>
+    <string name="edit">Editar</string>
+    <string name="label_title">Nome do experimento</string>
+    <string name="choose_experiment">Escolha um experimento</string>
+    <string name="activity_title">Atividade</string>
+    <string name="delete_label">Deletar label</string>
+    <string name="load_config">Carregar Config</string>
+    <string name="stops_at">Parar após:</string>
+    <string name="device_location">Localização do dispositivo:</string>
+    <string name="device_location_add">Adicionar nova localização</string>
+    <string name="user_id">Id do Usuário</string>
+    <string name="not_editable_warn">Experimento possui dados coletados. Alguns campos não podem ser editados.</string>
+    <string name="send_files_to_server">Enviar arquivos para o servidor</string>
+    <string name="delete_config_confirmation">Gostaria de deletar esta configuração?</string>
+    <string name="save_config_on_server_confirmation">Gostaria de salvar esta configuração no servidor?</string>
+    <string name="delete_config_title">Deletar Configuração</string>
+    <string name="yes">Sim</string>
+    <string name="no">Não</string>
+    <string name="configuration_deleted">Configuração deletada</string>
+    <string name="label_title_empty">Nome do experimento está vazio</string>
+    <string name="activity_title_empty">Atividade está vazia</string>
+    <string name="user_id_empty">ID do usuário está vazio</string>
+    <string name="frequency_not_set">A frequência do %1$s não foi configurada!</string>
+    <string name="any_sensor_selected">Você deve selecionar ao menos 1 sensor</string>
+    <string name="schedule_time">Agendar:</string>
+    <string name="schedule_time_hint">Horário de início automático:</string>
+    <string name="statistics_title">Estatísticas</string>
+    <string name="statistics_period">Período:</string>
+    <string name="statistics_device_info">Dispositivo:</string>
+    <string name="statistics_timeframe">Time frame:</string>
+    <string name="statistics_valid_data">Válidos:</string>
+    <string name="statistics_expected_data">Esperado:</string>
+    <string name="statistics_collected_data">Coletados:</string>
+    <string name="statistics_invalid_data">Descartados:</string>
+    <string name="statistics_timestamp_average">Média:</string>
+    <string name="statistics_max_timestamp_difference">Max diff:</string>
+    <string name="statistics_min_timestamp_difference">Min diff:</string>
+    <string name="statistics_collect_timestamp">Detalhes de time frame:</string>
+    <string name="statistics_samples">Amostras:</string>
+    <string name="statistics_time">Relógio usado:</string>
+    <string name="conflict">CONFLITO</string>
+
+
+    <string name="delete_experiment_file_title">Deletar Arquivo</string>
+    <string name="delete_experiment_file">Gostaria de deletar este arquivo? (%s)</string>
+
+    <string name="settings_upload_title">Upload de arquivo</string>
+    <string name="settings_upload_summary">Escolha para onde os dados coletados serão enviados.</string>
+
+    <string name="settings_server">Ambiente</string>
+    <string name="settings_server_address">Destino</string>
+    <string name="settings_server_config">Config do Servidor</string>
+    <string name="settings_custom_server_config">Config do Servidor Personalizada</string>
+    <string name="settings_custom_server_dialog_title">Endereço Personalizado</string>
+    <string name="settings_custom_server_dialog_message">Coloque o IP e porta do servidor (IP:Port)</string>
+
+    <string name="settings_collect_title">Configuração de Coleta</string>
+    <string name="settings_collect_summary">Opções para personalizar o processo de coleta de dados.</string>
+
+    <string name="settings_counter">Contador de tempo</string>
+    <string name="settings_counter_summary">Valor em segundos:</string>
+    <string name="settings_counter_key">Config de início de coleta</string>
+    <string name="settings_device_locations">Localizações de dispositivos</string>
+
+    <string name="preferences_run_checking">Verificando</string>
+
+    <string name="camera_dialog_title">Alerta!</string>
+    <string name="camera_dialog_msg">Já contém um vídeo.\nNova gravação irá substituir a existente.</string>
+    <string name="camera_dialog_btn">Ok</string>
+
+    <string name="stop_filming_msg">Parar gravação?</string>
+
+    <string-array name="device_location_items">
+        <item>Mão Direita</item>
+        <item>Mão Esquerda</item>
+        <item>Braço Direito</item>
+        <item>Braço Esquerdo</item>
+        <item>Bolso Direito</item>
+        <item>Bolso Esquerdo</item>
+        <item>Perna Direita</item>
+        <item>Perna Esquerda</item>
+        <item>Mochila</item>
+        <item>Anotador</item>
+        <item>Vídeo</item>
+    </string-array>
+</resources>

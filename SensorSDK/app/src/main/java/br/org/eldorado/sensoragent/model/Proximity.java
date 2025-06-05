@@ -2,7 +2,7 @@ package br.org.eldorado.sensoragent.model;
 
 public class Proximity extends SensorBase {
 
-    private static final String TAG = "Proximity";
+    public static final String TAG = "Proximity";
 
     public Proximity() {
         super(TAG, SensorBase.TYPE_PROXIMITY);

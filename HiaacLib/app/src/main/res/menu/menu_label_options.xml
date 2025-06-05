@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context="br.org.eldorado.hiaac.LabelOptionsActivity">
+    <item
+        android:id="@+id/delete_label_button"
+        android:icon="@drawable/ic_baseline_delete_24"
+        android:title="@string/delete_label"
+        android:visible="false"
+        app:showAsAction="always" />
+    <item
+        android:id="@+id/load_config_button"
+        android:icon="@android:drawable/stat_sys_download"
+        android:title="@string/load_config"
+        android:visible="true"
+        app:showAsAction="always" />
+    <item
+        android:id="@+id/save_label_button"
+        android:icon="@drawable/ic_baseline_check_24"
+        android:title="@string/delete_label"
+        app:showAsAction="always" />
+</menu>
