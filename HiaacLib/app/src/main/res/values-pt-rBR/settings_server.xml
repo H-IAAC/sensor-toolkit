@@ -5,6 +5,7 @@
         <item>Teste</item>
         <item>Localhost</item>
         <item>Personalizado</item>
+        <item>Desabilitado</item>
     </string-array>
 
     <string-array name="collect_counter">

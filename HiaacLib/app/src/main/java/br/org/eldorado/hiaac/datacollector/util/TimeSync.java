@@ -73,7 +73,8 @@ public class TimeSync {
 
         syncServerTimeHandler.post(new Runnable() {
             public void run() {
-                syncServerTime();
+                if (Preferences.isServerEnabled())
+                    syncServerTime();
                 syncServerTimeHandler.postDelayed(this, 2000);
             }
         });

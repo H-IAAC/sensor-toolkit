@@ -5,6 +5,7 @@
         <item>Test</item>
         <item>Localhost</item>
         <item>Custom</item>
+        <item>Disabled</item>
     </string-array>
 
     <string-array name="server_urls">
@@ -15,6 +16,7 @@
         <item>vm.hiaac.ic.unicamp.br:7999</item>
         <item>localhost:8080</item>
         <item>custom:8080</item>
+        <item>disabled:8080</item>
     </string-array>
 
     <string-array name="collect_counter">
