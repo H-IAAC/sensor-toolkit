@@ -149,12 +149,22 @@ public class DataCollectorActivity extends AppCompatActivity {
             // ação Unicamp
             Toast.makeText(this, "Unicamp", Toast.LENGTH_SHORT).show();
             popupWindow.dismiss();
+
+            Intent intent = new Intent(getApplicationContext(), LabelOptionsActivity.class);
+            intent.putExtra(LABEL_CONFIG_ACTIVITY_TYPE, NEW_LABEL_CONFIG_ACTIVITY);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(intent);
         });
 
         btnEldorado.setOnClickListener(view -> {
             // ação Eldorado
             Toast.makeText(this, "Eldorado", Toast.LENGTH_SHORT).show();
             popupWindow.dismiss();
+
+            Intent intent = new Intent(getApplicationContext(), EldoradoLabelOptionsActivity.class);
+            intent.putExtra(LABEL_CONFIG_ACTIVITY_TYPE, NEW_LABEL_CONFIG_ACTIVITY);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(intent);
         });
 
         // Mostrar acima do FAB (ou ao lado, você pode ajustar)

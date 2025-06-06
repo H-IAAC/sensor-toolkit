@@ -84,7 +84,7 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class LabelOptionsActivity extends AppCompatActivity {
+public class EldoradoLabelOptionsActivity extends AppCompatActivity {
     public static final int MINUTE = 60;
     public static final int HOUR = 3600;
     public static final int DAY = 24 * HOUR;
@@ -144,7 +144,7 @@ public class LabelOptionsActivity extends AppCompatActivity {
         appContext = this.getApplicationContext();
         Preferences.init(this.getApplicationContext());
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
-        setContentView(R.layout.activity_label_options);
+        setContentView(R.layout.activity_eldorado_label_options);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         mLabelTile = findViewById(R.id.edit_label_name);
         mActivityTxt = findViewById(R.id.activity_txt);
@@ -159,7 +159,7 @@ public class LabelOptionsActivity extends AppCompatActivity {
                 // Increment 5 min (300000 min), to always suggest schedule time 5 min ahead
                 now.setTimeInMillis(SensorSDK.getInstance().getRemoteTime() + 300000);
 
-                timePickerDialog = new TimePickerDialog(LabelOptionsActivity.this, new TimePickerDialog.OnTimeSetListener() {
+                timePickerDialog = new TimePickerDialog(EldoradoLabelOptionsActivity.this, new TimePickerDialog.OnTimeSetListener() {
                     @Override
                     public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
                         mScheduleTimeTxt.setText(String.format("%02d", hourOfDay) + ":" + String.format("%02d", minute));
@@ -204,11 +204,11 @@ public class LabelOptionsActivity extends AppCompatActivity {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int position, long id) {
                 if (position == 0) {
-                    AlertDialog.Builder builder = new AlertDialog.Builder(LabelOptionsActivity.this);
+                    AlertDialog.Builder builder = new AlertDialog.Builder(EldoradoLabelOptionsActivity.this);
                     builder.setTitle(getResources().getString(R.string.device_location_add));
 
                     // Set up the input
-                    final EditText input = new EditText(LabelOptionsActivity.this);
+                    final EditText input = new EditText(EldoradoLabelOptionsActivity.this);
                     builder.setView(input);
 
                     // Set up the buttons
@@ -251,7 +251,7 @@ public class LabelOptionsActivity extends AppCompatActivity {
         });
 
         RecyclerView recyclerView = (RecyclerView) findViewById(R.id.sensors_recycler_view);
-        String type = "Unicamp";
+        String type = "Eldorado";
         mSensorFrequencyViewAdapter =
                 new SensorFrequencyViewAdapter(this, mSensorFrequencyChangeListener, type);
         recyclerView.setAdapter(mSensorFrequencyViewAdapter);
@@ -303,7 +303,7 @@ public class LabelOptionsActivity extends AppCompatActivity {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.menu_label_options, menu);
+        getMenuInflater().inflate(R.menu.menu_label_eldorado_options, menu);
 
         if (mIsUpdating) {
             menu.getItem(0).setVisible(true);
@@ -437,9 +437,9 @@ public class LabelOptionsActivity extends AppCompatActivity {
         Integer frequency = sensorTypeFrequencyMap.get(sensorType);
 
         return new SensorFrequencyViewAdapter.SelectedSensorFrequency(
-                        frequency != null,
-                        sensorName,
-                        frequency == null ? frequencyOptions.get(0) : frequency.intValue());
+                frequency != null,
+                sensorName,
+                frequency == null ? 40 : frequency.intValue());
     }
 
     private List<SensorFrequency> getSensorFrequenciesFromSelectedSensorFrequencies(long config_id) {
@@ -458,14 +458,14 @@ public class LabelOptionsActivity extends AppCompatActivity {
     }
 
     private void onSaveButtonClick() {
-        String label = mLabelTile.getText().toString().trim();
+        String label = "Experiment " + System.currentTimeMillis();
         if (label.isEmpty()) {
             Toast.makeText(getApplicationContext(),
                     R.string.label_title_empty, Toast.LENGTH_LONG).show();
             return;
         }
 
-        String activity = mActivityTxt.getText().toString().trim();
+        String activity = "Activity " + System.currentTimeMillis();
         if (activity.isEmpty()) {
             Toast.makeText(getApplicationContext(),
                     R.string.activity_title_empty, Toast.LENGTH_LONG).show();
@@ -485,7 +485,7 @@ public class LabelOptionsActivity extends AppCompatActivity {
             scheduledTime = c.getTimeInMillis();
         }
 
-        String userId = mUserIdTxt.getText().toString().trim();
+        String userId = String.valueOf(System.currentTimeMillis());
         if (userId.isEmpty()) {
             Toast.makeText(getApplicationContext(),
                     R.string.user_id_empty, Toast.LENGTH_LONG).show();
@@ -631,7 +631,7 @@ public class LabelOptionsActivity extends AppCompatActivity {
                     @Override
                     public void run() {
                         mLoadConfigBtn.setEnabled(true);
-                        AlertDialog.Builder builder = new AlertDialog.Builder(LabelOptionsActivity.this);
+                        AlertDialog.Builder builder = new AlertDialog.Builder(EldoradoLabelOptionsActivity.this);
                         builder.setTitle(R.string.choose_experiment);
                         builder.setItems(experiments.toArray(new String[0]), new DialogInterface.OnClickListener() {
                             @Override
@@ -656,7 +656,7 @@ public class LabelOptionsActivity extends AppCompatActivity {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        AlertDialog.Builder builder = new AlertDialog.Builder(LabelOptionsActivity.this);
+                        AlertDialog.Builder builder = new AlertDialog.Builder(EldoradoLabelOptionsActivity.this);
                         builder.setTitle("Error");
                         builder.setMessage(t.getMessage());
                         builder.show();
@@ -723,7 +723,7 @@ public class LabelOptionsActivity extends AppCompatActivity {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        AlertDialog.Builder builder = new AlertDialog.Builder(LabelOptionsActivity.this);
+                        AlertDialog.Builder builder = new AlertDialog.Builder(EldoradoLabelOptionsActivity.this);
                         builder.setTitle("Error");
                         builder.setMessage(t.getMessage());
                         builder.show();
@@ -809,8 +809,8 @@ public class LabelOptionsActivity extends AppCompatActivity {
         public Dialog onCreateDialog(@Nullable Bundle savedInstanceState) {
             AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
             builder.setMessage(R.string.save_config_on_server_confirmation)
-                   .setPositiveButton(R.string.yes, (dialog, which) -> mListener.onConfirmClick())
-                   .setNegativeButton(R.string.no, (dialog, which) -> mListener.onNegativeConfirm());
+                    .setPositiveButton(R.string.yes, (dialog, which) -> mListener.onConfirmClick())
+                    .setNegativeButton(R.string.no, (dialog, which) -> mListener.onNegativeConfirm());
             setCancelable(false);
             return builder.create();
         }

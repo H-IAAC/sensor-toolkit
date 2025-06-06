@@ -37,6 +37,7 @@ public class SensorFrequencyViewAdapter extends RecyclerView.Adapter<SensorFrequ
     private final Context mContext;
     private ViewHolder gpsHolder;
     private final Log log;
+    private String type;
 
     public static List<Integer> frequencyOptions = new ArrayList<Integer>(
             Arrays.asList(  0,
@@ -51,12 +52,18 @@ public class SensorFrequencyViewAdapter extends RecyclerView.Adapter<SensorFrequ
                         )
     );
 
-    public SensorFrequencyViewAdapter(Context context, SensorFrequencyChangeListener listener) {
+    public static List<Integer> eldoradoFrequencyOptions = new ArrayList<Integer>(
+            Arrays.asList( 40
+            )
+    );
+
+    public SensorFrequencyViewAdapter(Context context, SensorFrequencyChangeListener listener, String type) {
         log = new Log("SensorFrequencyViewAdapter");
         mInflater = LayoutInflater.from(context);
         mContext = context;
         mSelectedSensors = new ArrayList<>();
         mListener = listener;
+        this.type = type;
     }
 
     public void setSelectedSensors(List<SelectedSensorFrequency> selectedSensors) {
@@ -79,9 +86,19 @@ public class SensorFrequencyViewAdapter extends RecyclerView.Adapter<SensorFrequ
         SelectedSensorFrequency selectedSensorFrequency = mSelectedSensors.get(position);
         addFrequency(selectedSensorFrequency.getFrequency());
 
-        ArrayList<String> list = Tools.createHertzList(frequencyOptions);
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(frequenciesSpinner.getContext(),
-                R.layout.custom_spinner, list);
+        ArrayAdapter<String> adapter;
+
+        if (type.equals("Unicamp")) {
+
+            ArrayList<String> list = Tools.createHertzList(frequencyOptions);
+            adapter = new ArrayAdapter<>(frequenciesSpinner.getContext(),
+                    R.layout.custom_spinner, list);
+        } else {
+            ArrayList<String> list = Tools.createHertzList(eldoradoFrequencyOptions);
+            adapter = new ArrayAdapter<>(frequenciesSpinner.getContext(),
+                    R.layout.custom_spinner, list);
+        }
+
         frequenciesSpinner.setAdapter(adapter);
         frequenciesSpinner.setSelection(getFrequencySpinnerPositionForSelected(selectedSensorFrequency));
         if (selectedSensorFrequency.isSelected()) {
@@ -91,7 +108,7 @@ public class SensorFrequencyViewAdapter extends RecyclerView.Adapter<SensorFrequ
         frequenciesSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                if (position == 0) {
+                if (position == 0 && type.equals("Unicamp")) {
                     /* Abrir popup */
                     final AlertDialog.Builder d = new AlertDialog.Builder(mContext);
                     LayoutInflater inflater = ((Activity)(mContext)).getLayoutInflater();
@@ -150,12 +167,25 @@ public class SensorFrequencyViewAdapter extends RecyclerView.Adapter<SensorFrequ
 
     private int getFrequencySpinnerPositionForSelected(SensorFrequencyViewAdapter.SelectedSensorFrequency selectedSensorFrequency) {
         int spinnerPosition = 1;
-        for (int i = 1; i < frequencyOptions.size(); i++) {
-            if (selectedSensorFrequency.getFrequency() == frequencyOptions.get(i)) {
-                spinnerPosition = i;
-                break;
+
+
+        if (type.equals("Eldorado")) {
+
+            for (int i = 0; i < eldoradoFrequencyOptions.size(); i++) {
+                if (selectedSensorFrequency.getFrequency() == eldoradoFrequencyOptions.get(i)) {
+                    spinnerPosition = i;
+                    break;
+                }
+            }
+        } else {
+            for (int i = 1; i < frequencyOptions.size(); i++) {
+                if (selectedSensorFrequency.getFrequency() == frequencyOptions.get(i)) {
+                    spinnerPosition = i;
+                    break;
+                }
             }
         }
+
         selectedSensorFrequency.setFrequency(spinnerPosition);
         return spinnerPosition;
     }
@@ -189,6 +219,7 @@ public class SensorFrequencyViewAdapter extends RecyclerView.Adapter<SensorFrequ
             if (holder.getSelectSensorCheckBox().isChecked()
                     && isSensorAvailable) {
                 selectedSensorFrequency.setSelected(true);
+                System.out.println("Type: " + type);
                 frequencyContainer.expand(60);
                 nOfCheckedSensors++;
                 if (nOfCheckedSensors == 3) {
