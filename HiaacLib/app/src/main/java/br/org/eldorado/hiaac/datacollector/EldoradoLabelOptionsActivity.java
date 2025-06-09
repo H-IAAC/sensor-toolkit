@@ -495,11 +495,7 @@ public class EldoradoLabelOptionsActivity extends AppCompatActivity {
         for (SensorFrequencyViewAdapter.SelectedSensorFrequency mSensor : mSelectedSensors) {
             if (mSensor.isSelected()) {
                 selectedSensors++;
-                if (mSensor.getFrequency() == 0) {
-                    Toast.makeText(getApplicationContext(),
-                            getString(R.string.frequency_not_set, mSensor.getSensor()), Toast.LENGTH_LONG).show();
-                    return;
-                }
+                mSensor.setFrequency(40);
             }
         }
 
@@ -537,52 +533,53 @@ public class EldoradoLabelOptionsActivity extends AppCompatActivity {
 
         mLabelConfigViewModel.insertAllSensorFrequencies(getSensorFrequenciesFromSelectedSensorFrequencies(id));
 
-        if (isConfigLoaded) {
-            closeActivity();
-        } else {
-            SaveConfigDialogFragment saveDialogFragment = new SaveConfigDialogFragment(
-                    new SaveConfigListener() {
-                        @Override
-                        public void onConfirmClick() {
-                            try {
-                                Gson gson = new Gson();
-                                String json = gson.toJson(newConfig);
-                                String jsonSensors = gson.toJson(mSelectedSensors);
-                                json = "{\"main\":"+json+",\"sensors\":"+jsonSensors +"}";
-                                File directory = new File(
-                                        getApplicationContext().getFilesDir().getAbsolutePath() +
-                                                File.separator +
-                                                FOLDER_NAME +
-                                                File.separator);
-                                if (!directory.exists()) {
-                                    directory.mkdirs();
-                                }
-
-                                File configJson = new File(
-                                        getApplicationContext().getFilesDir().getAbsolutePath() +
-                                                File.separator +
-                                                FOLDER_NAME +
-                                                File.separator +
-                                                newConfig.userId+"_"+newConfig.experiment+"_"+newConfig.activity+".json");
-                                PrintWriter writer = new PrintWriter(configJson.getAbsolutePath(), "UTF-8");
-                                writer.println(json);
-                                writer.close();
-
-                                sendConfigurationToServer(configJson, newConfig);
-                            } catch (Exception e) {
-                                log.d("Error to send config to server: " + e.getMessage());
-                            }
-                        }
-
-                        @Override
-                        public void onNegativeConfirm() {
-                            closeActivity();
-                        }
-                    }
-            );
-            saveDialogFragment.show(getSupportFragmentManager().beginTransaction(),
-                    SaveConfigDialogFragment.class.toString());
-        }
+        closeActivity();
+//        if (isConfigLoaded) {
+//            closeActivity();
+//        } else {
+//            SaveConfigDialogFragment saveDialogFragment = new SaveConfigDialogFragment(
+//                    new SaveConfigListener() {
+//                        @Override
+//                        public void onConfirmClick() {
+//                            try {
+//                                Gson gson = new Gson();
+//                                String json = gson.toJson(newConfig);
+//                                String jsonSensors = gson.toJson(mSelectedSensors);
+//                                json = "{\"main\":"+json+",\"sensors\":"+jsonSensors +"}";
+//                                File directory = new File(
+//                                        getApplicationContext().getFilesDir().getAbsolutePath() +
+//                                                File.separator +
+//                                                FOLDER_NAME +
+//                                                File.separator);
+//                                if (!directory.exists()) {
+//                                    directory.mkdirs();
+//                                }
+//
+//                                File configJson = new File(
+//                                        getApplicationContext().getFilesDir().getAbsolutePath() +
+//                                                File.separator +
+//                                                FOLDER_NAME +
+//                                                File.separator +
+//                                                newConfig.userId+"_"+newConfig.experiment+"_"+newConfig.activity+".json");
+//                                PrintWriter writer = new PrintWriter(configJson.getAbsolutePath(), "UTF-8");
+//                                writer.println(json);
+//                                writer.close();
+//
+//                                sendConfigurationToServer(configJson, newConfig);
+//                            } catch (Exception e) {
+//                                log.d("Error to send config to server: " + e.getMessage());
+//                            }
+//                        }
+//
+//                        @Override
+//                        public void onNegativeConfirm() {
+//                            closeActivity();
+//                        }
+//                    }
+//            );
+//            saveDialogFragment.show(getSupportFragmentManager().beginTransaction(),
+//                    SaveConfigDialogFragment.class.toString());
+//        }
     }
 
     private void sendConfigurationToServer(File config, LabelConfig cfg) {
