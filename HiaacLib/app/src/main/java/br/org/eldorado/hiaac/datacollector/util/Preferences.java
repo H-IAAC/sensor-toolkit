@@ -91,17 +91,26 @@ public class Preferences {
         }
     }
 
+    public static Boolean isServerEnabled() {
+        String optionSelected = Preferences.prefs.getString(getResource(R.string.settings_server_config), "default");
+        String disabled = getArrayResource(R.array.server_urls, 3);
+        return !optionSelected.equals(disabled);
+    }
+
     public static String getPreferredServer() {
 
         String optionSelected = Preferences.prefs.getString(getResource(R.string.settings_server_config), "default");
         String localhost = getArrayResource(R.array.server_urls, 1);
         String custom = getArrayResource(R.array.server_urls, 2);
+        String disabled = getArrayResource(R.array.server_urls, 3);
         String ret;
 
         if (optionSelected.equals(localhost)) {
             ret = getGatewayIP();
         } else if (optionSelected.equals(custom)) {
             ret = Preferences.prefs.getString(getResource(R.string.settings_custom_server_config), "");
+        } else if (optionSelected.equals(disabled)) {
+            ret = Preferences.prefs.getString("", "");
         } else {
             ret = Preferences.prefs.getString(getResource(R.string.settings_server_config), "");
         }
