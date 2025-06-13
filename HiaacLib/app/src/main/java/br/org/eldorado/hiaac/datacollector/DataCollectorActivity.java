@@ -57,9 +57,6 @@ public class DataCollectorActivity extends AppCompatActivity {
     private static final Log log = new Log("DataCollectorActivity");
     private Permissions permissions;
 
-    public static final String OPTION_UNICAMP = "Unicamp";
-    public static final String OPTION_ELDORADO = "Eldorado";
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -133,7 +130,7 @@ public class DataCollectorActivity extends AppCompatActivity {
                 popupView,
                 ViewGroup.LayoutParams.WRAP_CONTENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT,
-                true // focusable
+                true
         );
 
         ImageButton btnUnicamp = popupView.findViewById(R.id.btn_unicamp);
@@ -162,7 +159,7 @@ public class DataCollectorActivity extends AppCompatActivity {
         popupWindow.setOutsideTouchable(true);
         popupWindow.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
 
-        popupWindow.showAsDropDown(mAddButton, -40, -400); // ajuste a posição conforme necessário
+        popupWindow.showAsDropDown(mAddButton, -40, -400);
 
     }
 
