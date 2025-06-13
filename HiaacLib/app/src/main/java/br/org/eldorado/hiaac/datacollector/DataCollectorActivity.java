@@ -119,10 +119,6 @@ public class DataCollectorActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 showPopupMenu(v);
-//                Intent intent = new Intent(getApplicationContext(), LabelOptionsActivity.class);
-//                intent.putExtra(LABEL_CONFIG_ACTIVITY_TYPE, NEW_LABEL_CONFIG_ACTIVITY);
-//                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-//                startActivity(intent);
             }
         });
 
@@ -133,7 +129,6 @@ public class DataCollectorActivity extends AppCompatActivity {
         LayoutInflater inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         View popupView = inflater.inflate(R.layout.fab_options_menu, null);
 
-        // Criar PopupWindow
         final PopupWindow popupWindow = new PopupWindow(
                 popupView,
                 ViewGroup.LayoutParams.WRAP_CONTENT,
@@ -141,13 +136,10 @@ public class DataCollectorActivity extends AppCompatActivity {
                 true // focusable
         );
 
-        // Clique nos botões
         ImageButton btnUnicamp = popupView.findViewById(R.id.btn_unicamp);
         TextView btnEldorado = popupView.findViewById(R.id.option_eldorado);
 
         btnUnicamp.setOnClickListener(view -> {
-            // ação Unicamp
-            Toast.makeText(this, "Unicamp", Toast.LENGTH_SHORT).show();
             popupWindow.dismiss();
 
             Intent intent = new Intent(getApplicationContext(), LabelOptionsActivity.class);
@@ -157,8 +149,6 @@ public class DataCollectorActivity extends AppCompatActivity {
         });
 
         btnEldorado.setOnClickListener(view -> {
-            // ação Eldorado
-            Toast.makeText(this, "Eldorado", Toast.LENGTH_SHORT).show();
             popupWindow.dismiss();
 
             Intent intent = new Intent(getApplicationContext(), EldoradoLabelOptionsActivity.class);
@@ -167,12 +157,11 @@ public class DataCollectorActivity extends AppCompatActivity {
             startActivity(intent);
         });
 
-        // Mostrar acima do FAB (ou ao lado, você pode ajustar)
-        popupWindow.setElevation(10); // se precisar de sombra
+        // Popup configurations
+        popupWindow.setElevation(10);
         popupWindow.setOutsideTouchable(true);
-        popupWindow.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT)); // necessário para dismiss externo
+        popupWindow.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
 
-        // Exibe acima do FAB
         popupWindow.showAsDropDown(mAddButton, -40, -400); // ajuste a posição conforme necessário
 
     }

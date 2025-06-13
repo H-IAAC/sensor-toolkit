@@ -219,8 +219,9 @@ public class SensorFrequencyViewAdapter extends RecyclerView.Adapter<SensorFrequ
             if (holder.getSelectSensorCheckBox().isChecked()
                     && isSensorAvailable) {
                 selectedSensorFrequency.setSelected(true);
-                System.out.println("Type: " + type);
-                frequencyContainer.expand(60);
+                if (type.equals("Unicamp")) {
+                    frequencyContainer.expand(60);
+                }
                 nOfCheckedSensors++;
                 if (nOfCheckedSensors == 3) {
                     showToManySensorsSelectedWarning();
