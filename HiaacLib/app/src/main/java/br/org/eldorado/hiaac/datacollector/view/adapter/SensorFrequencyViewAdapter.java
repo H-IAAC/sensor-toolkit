@@ -86,18 +86,9 @@ public class SensorFrequencyViewAdapter extends RecyclerView.Adapter<SensorFrequ
         SelectedSensorFrequency selectedSensorFrequency = mSelectedSensors.get(position);
         addFrequency(selectedSensorFrequency.getFrequency());
 
-        ArrayAdapter<String> adapter;
-
-        if (type.equals("Unicamp")) {
-
-            ArrayList<String> list = Tools.createHertzList(frequencyOptions);
-            adapter = new ArrayAdapter<>(frequenciesSpinner.getContext(),
+        ArrayList<String> list = Tools.createHertzList(frequencyOptions);
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(frequenciesSpinner.getContext(),
                     R.layout.custom_spinner, list);
-        } else {
-            ArrayList<String> list = Tools.createHertzList(eldoradoFrequencyOptions);
-            adapter = new ArrayAdapter<>(frequenciesSpinner.getContext(),
-                    R.layout.custom_spinner, list);
-        }
 
         frequenciesSpinner.setAdapter(adapter);
         frequenciesSpinner.setSelection(getFrequencySpinnerPositionForSelected(selectedSensorFrequency));
@@ -108,7 +99,7 @@ public class SensorFrequencyViewAdapter extends RecyclerView.Adapter<SensorFrequ
         frequenciesSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                if (position == 0 && type.equals("Unicamp")) {
+                if (position == 0) {
                     /* Abrir popup */
                     final AlertDialog.Builder d = new AlertDialog.Builder(mContext);
                     LayoutInflater inflater = ((Activity)(mContext)).getLayoutInflater();
@@ -168,23 +159,12 @@ public class SensorFrequencyViewAdapter extends RecyclerView.Adapter<SensorFrequ
     private int getFrequencySpinnerPositionForSelected(SensorFrequencyViewAdapter.SelectedSensorFrequency selectedSensorFrequency) {
         int spinnerPosition = 1;
 
-
-        if (type.equals("Eldorado")) {
-
-            for (int i = 0; i < eldoradoFrequencyOptions.size(); i++) {
-                if (selectedSensorFrequency.getFrequency() == eldoradoFrequencyOptions.get(i)) {
-                    spinnerPosition = i;
-                    break;
-                }
-            }
-        } else {
             for (int i = 1; i < frequencyOptions.size(); i++) {
                 if (selectedSensorFrequency.getFrequency() == frequencyOptions.get(i)) {
                     spinnerPosition = i;
                     break;
                 }
             }
-        }
 
         selectedSensorFrequency.setFrequency(spinnerPosition);
         return spinnerPosition;

@@ -10,5 +10,5 @@ rootProject.name = "sensor-toolkit"
 include ':HiaacLib:app'
 include ':SensorSDK:app'
 include ':SensorAgent:app'
-include ':Clients:HIAACApp:app'
+//include ':Clients:HIAACApp:app'
 /*include ':Clients:SensorManager:app'*/
