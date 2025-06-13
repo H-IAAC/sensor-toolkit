@@ -84,7 +84,7 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class LabelOptionsActivity extends AppCompatActivity {
+public class EldoradoLabelOptionsActivity extends AppCompatActivity {
     public static final int MINUTE = 60;
     public static final int HOUR = 3600;
     public static final int DAY = 24 * HOUR;
@@ -144,7 +144,7 @@ public class LabelOptionsActivity extends AppCompatActivity {
         appContext = this.getApplicationContext();
         Preferences.init(this.getApplicationContext());
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
-        setContentView(R.layout.activity_label_options);
+        setContentView(R.layout.activity_eldorado_label_options);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         mLabelTile = findViewById(R.id.edit_label_name);
         mActivityTxt = findViewById(R.id.activity_txt);
@@ -159,7 +159,7 @@ public class LabelOptionsActivity extends AppCompatActivity {
                 // Increment 5 min (300000 min), to always suggest schedule time 5 min ahead
                 now.setTimeInMillis(SensorSDK.getInstance().getRemoteTime() + 300000);
 
-                timePickerDialog = new TimePickerDialog(LabelOptionsActivity.this, new TimePickerDialog.OnTimeSetListener() {
+                timePickerDialog = new TimePickerDialog(EldoradoLabelOptionsActivity.this, new TimePickerDialog.OnTimeSetListener() {
                     @Override
                     public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
                         mScheduleTimeTxt.setText(String.format("%02d", hourOfDay) + ":" + String.format("%02d", minute));
@@ -204,11 +204,11 @@ public class LabelOptionsActivity extends AppCompatActivity {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int position, long id) {
                 if (position == 0) {
-                    AlertDialog.Builder builder = new AlertDialog.Builder(LabelOptionsActivity.this);
+                    AlertDialog.Builder builder = new AlertDialog.Builder(EldoradoLabelOptionsActivity.this);
                     builder.setTitle(getResources().getString(R.string.device_location_add));
 
                     // Set up the input
-                    final EditText input = new EditText(LabelOptionsActivity.this);
+                    final EditText input = new EditText(EldoradoLabelOptionsActivity.this);
                     builder.setView(input);
 
                     // Set up the buttons
@@ -251,7 +251,7 @@ public class LabelOptionsActivity extends AppCompatActivity {
         });
 
         RecyclerView recyclerView = (RecyclerView) findViewById(R.id.sensors_recycler_view);
-        String type = "Unicamp";
+        String type = "Eldorado";
         mSensorFrequencyViewAdapter =
                 new SensorFrequencyViewAdapter(this, mSensorFrequencyChangeListener, type);
         recyclerView.setAdapter(mSensorFrequencyViewAdapter);
@@ -303,7 +303,7 @@ public class LabelOptionsActivity extends AppCompatActivity {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.menu_label_options, menu);
+        getMenuInflater().inflate(R.menu.menu_label_eldorado_options, menu);
 
         if (mIsUpdating) {
             menu.getItem(0).setVisible(true);
@@ -315,25 +315,10 @@ public class LabelOptionsActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        if (item.getItemId() == R.id.delete_label_button) {
-            DeleteDialogFragment deleteDialogFragment = new DeleteDialogFragment(
-                    new DeleteDialogListener() {
-                        @Override
-                        public void onConfirmClick() {
-                            Toast.makeText(getApplicationContext(),
-                                    R.string.configuration_deleted, Toast.LENGTH_LONG).show();
-                            deleteCurrentConfig();
-                        }
-                    }
-            );
-            deleteDialogFragment.show(getSupportFragmentManager().beginTransaction(),
-                    DeleteDialogFragment.class.toString());
-            return true;
-        } else if (item.getItemId() == R.id.save_label_button) {
+
+        if (item.getItemId() == R.id.save_label_button) {
             onSaveButtonClick();
             return true;
-        } else if (item.getItemId() == R.id.load_config_button) {
-            getAllExperiments();
         }
         return super.onOptionsItemSelected(item);
     }
@@ -342,18 +327,6 @@ public class LabelOptionsActivity extends AppCompatActivity {
     public boolean onSupportNavigateUp() {
         closeActivity();
         return true;
-    }
-
-    private void deleteCurrentConfig() {
-        if (mCurrentConfig != null) {
-            mLabelConfigViewModel.deleteConfig(mCurrentConfig);
-            if (mSensorFrequencies != null) {
-                mLabelConfigViewModel.deleteAllSensorFrequencies(mSensorFrequencies);
-            } else {
-                mLabelConfigViewModel.deleteSensorsFromLabel(mCurrentConfig);
-            }
-            closeActivity();
-        }
     }
 
     private void updateFields() {
@@ -437,9 +410,9 @@ public class LabelOptionsActivity extends AppCompatActivity {
         Integer frequency = sensorTypeFrequencyMap.get(sensorType);
 
         return new SensorFrequencyViewAdapter.SelectedSensorFrequency(
-                        frequency != null,
-                        sensorName,
-                        frequency == null ? frequencyOptions.get(0) : frequency.intValue());
+                frequency != null,
+                sensorName,
+                frequency == null ? 40 : frequency.intValue());
     }
 
     private List<SensorFrequency> getSensorFrequenciesFromSelectedSensorFrequencies(long config_id) {
@@ -458,14 +431,14 @@ public class LabelOptionsActivity extends AppCompatActivity {
     }
 
     private void onSaveButtonClick() {
-        String label = mLabelTile.getText().toString().trim();
+        String label = "Eld " + System.currentTimeMillis();
         if (label.isEmpty()) {
             Toast.makeText(getApplicationContext(),
                     R.string.label_title_empty, Toast.LENGTH_LONG).show();
             return;
         }
 
-        String activity = mActivityTxt.getText().toString().trim();
+        String activity = "Activity " + System.currentTimeMillis();
         if (activity.isEmpty()) {
             Toast.makeText(getApplicationContext(),
                     R.string.activity_title_empty, Toast.LENGTH_LONG).show();
@@ -485,7 +458,7 @@ public class LabelOptionsActivity extends AppCompatActivity {
             scheduledTime = c.getTimeInMillis();
         }
 
-        String userId = mUserIdTxt.getText().toString().trim();
+        String userId = String.valueOf(System.currentTimeMillis());
         if (userId.isEmpty()) {
             Toast.makeText(getApplicationContext(),
                     R.string.user_id_empty, Toast.LENGTH_LONG).show();
@@ -495,11 +468,7 @@ public class LabelOptionsActivity extends AppCompatActivity {
         for (SensorFrequencyViewAdapter.SelectedSensorFrequency mSensor : mSelectedSensors) {
             if (mSensor.isSelected()) {
                 selectedSensors++;
-                if (mSensor.getFrequency() == 0) {
-                    Toast.makeText(getApplicationContext(),
-                            getString(R.string.frequency_not_set, mSensor.getSensor()), Toast.LENGTH_LONG).show();
-                    return;
-                }
+                mSensor.setFrequency(40);
             }
         }
 
@@ -537,264 +506,12 @@ public class LabelOptionsActivity extends AppCompatActivity {
 
         mLabelConfigViewModel.insertAllSensorFrequencies(getSensorFrequenciesFromSelectedSensorFrequencies(id));
 
-        if (isConfigLoaded) {
-            closeActivity();
-        } else {
-            SaveConfigDialogFragment saveDialogFragment = new SaveConfigDialogFragment(
-                    new SaveConfigListener() {
-                        @Override
-                        public void onConfirmClick() {
-                            try {
-                                Gson gson = new Gson();
-                                String json = gson.toJson(newConfig);
-                                String jsonSensors = gson.toJson(mSelectedSensors);
-                                json = "{\"main\":"+json+",\"sensors\":"+jsonSensors +"}";
-                                File directory = new File(
-                                        getApplicationContext().getFilesDir().getAbsolutePath() +
-                                                File.separator +
-                                                FOLDER_NAME +
-                                                File.separator);
-                                if (!directory.exists()) {
-                                    directory.mkdirs();
-                                }
-
-                                File configJson = new File(
-                                        getApplicationContext().getFilesDir().getAbsolutePath() +
-                                                File.separator +
-                                                FOLDER_NAME +
-                                                File.separator +
-                                                newConfig.userId+"_"+newConfig.experiment+"_"+newConfig.activity+".json");
-                                PrintWriter writer = new PrintWriter(configJson.getAbsolutePath(), "UTF-8");
-                                writer.println(json);
-                                writer.close();
-
-                                sendConfigurationToServer(configJson, newConfig);
-                            } catch (Exception e) {
-                                log.d("Error to send config to server: " + e.getMessage());
-                            }
-                        }
-
-                        @Override
-                        public void onNegativeConfirm() {
-                            closeActivity();
-                        }
-                    }
-            );
-            saveDialogFragment.show(getSupportFragmentManager().beginTransaction(),
-                    SaveConfigDialogFragment.class.toString());
-        }
-    }
-
-    private void sendConfigurationToServer(File config, LabelConfig cfg) {
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                log.d("sendConfigurationToServer ");
-                MultipartBody.Part experimentPart =
-                        MultipartBody.Part.createFormData("experiment", cfg.experiment);
-                MultipartBody.Part subjectPart =
-                        MultipartBody.Part.createFormData("subject", cfg.userId);
-                MultipartBody.Part activityPart =
-                        MultipartBody.Part.createFormData("activity", cfg.activity);
-
-                MultipartBody.Part filePart = filePart = MultipartBody.Part.createFormData(
-                        "file", config.getName(),
-                        RequestBody.create(MediaType.parse("multipart/form-data"), config));
-
-                Call<StatusResponse> call = ClientAPI.get(ClientAPI.httpHighTimeout()).uploadConfigFile(filePart, experimentPart, subjectPart, activityPart);
-                call.enqueue(uploadCallback(config));
-            }
-        }).start();
-    }
-
-    private void getAllExperiments() {
-        log.d("getAllExperiments from server");
-        if (mLoadConfigBtn == null) {
-            mLoadConfigBtn = findViewById(R.id.load_config_button);
-        }
-        mLoadConfigBtn.setEnabled(false);
-
-        Call<JsonObject> call = ClientAPI.get(ClientAPI.httpHighTimeout()).getAllExperiments();
-        call.enqueue(new Callback<JsonObject>() {
-            @Override
-            public void onResponse(Call<JsonObject> call, Response<JsonObject> response) {
-                JsonObject res = new Gson().fromJson(response.body(), JsonObject.class);
-                List<String> experiments = new ArrayList<String>();
-
-                for (JsonElement el : res.get("experiment").getAsJsonArray()) {
-                    JsonObject exp = el.getAsJsonObject();
-                    if (exp.get("configAvailable") == null || exp.get("configAvailable").getAsBoolean()) {
-                        experiments.add(exp.get("experiment").getAsString()+"_"+exp.get("activity").getAsString()+"_"+exp.get("user").getAsString());
-                    }
-                }
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        mLoadConfigBtn.setEnabled(true);
-                        AlertDialog.Builder builder = new AlertDialog.Builder(LabelOptionsActivity.this);
-                        builder.setTitle(R.string.choose_experiment);
-                        builder.setItems(experiments.toArray(new String[0]), new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                String[] exp = experiments.get(which).split("_");
-                                Call<JsonObject> call = ClientAPI.get(ClientAPI.httpHighTimeout()).getExperimentConfig(exp[0], exp[2], exp[1]);
-                                try {
-                                    loadServerConfig(call);
-                                } catch (Exception e) {
-                                    log.d("Failed to loadServerConfig: " + e.getMessage());
-                                }
-                            }
-                        });
-                        builder.show();
-                    }
-                });
-            }
-            @Override
-            public void onFailure(Call<JsonObject> call, Throwable t) {
-                log.d("Get Experiments list from server failed: " + t.getCause());
-                call.cancel();
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        AlertDialog.Builder builder = new AlertDialog.Builder(LabelOptionsActivity.this);
-                        builder.setTitle("Error");
-                        builder.setMessage(t.getMessage());
-                        builder.show();
-                        mLoadConfigBtn.setEnabled(true);
-                    }
-                });
-            }
-        });
-    }
-
-    private void loadServerConfig(Call<JsonObject> call) throws Exception {
-        call.enqueue(new Callback<JsonObject>() {
-            @Override
-            public void onResponse(Call<JsonObject> call, Response<JsonObject> response) {
-
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (mLoadConfigBtn == null) {
-                            mLoadConfigBtn = findViewById(R.id.load_config_button);
-                        }
-                        mLoadConfigBtn.setEnabled(true);
-                        JsonObject config = new Gson().fromJson(response.body(), JsonObject.class);
-                        if (config.get("main") == null || config.get("sensors") == null ) {
-                            Exception t = new Exception("No configuration found for this experiment!");
-                            onFailure(call, t);
-                            return;
-                        }
-                        isConfigLoaded = true;
-
-                        mCurrentConfig = new Gson().fromJson(config.get("main").getAsJsonObject().toString(), LabelConfig.class);
-                        updateFields();
-                        mLabelConfigViewModel.deleteSensorsFromLabel(mCurrentConfig);
-                        JsonArray sensors = new Gson().fromJson(config.get("sensors").getAsJsonArray().toString(), JsonArray.class);
-                        boolean checkGPSPermission = false;
-                        for (int i = 0; i < sensors.size(); i++) {
-                            JsonObject sensor = sensors.get(i).getAsJsonObject();
-                            if (sensor.get("isSelected").getAsBoolean() && mSensorFrequencyViewAdapter.checkSensorAvailability(sensor.get("sensor").getAsString())) {
-                                for (SensorFrequencyViewAdapter.SelectedSensorFrequency mSensor : mSelectedSensors) {
-                                    if (mSensor.getSensor().equalsIgnoreCase(sensor.get("sensor").getAsString())) {
-                                        mSensor.setFrequency(sensor.get("frequency").getAsInt());
-                                        mSensor.setSelected(sensor.get("isSelected").getAsBoolean());
-                                        if (mSensor.getSensor().equalsIgnoreCase("gps")) {
-                                            checkGPSPermission = true;
-                                        }
-                                        break;
-                                    }
-                                }
-                            }
-                        }
-                        //log.d(sensors.toString());
-                        mSensorFrequencyViewAdapter.setSelectedSensors(mSelectedSensors);
-                        mLabelConfigViewModel.insertAllSensorFrequencies(getSensorFrequenciesFromSelectedSensorFrequencies(mCurrentConfig.id));
-                        if (checkGPSPermission) {
-                            mSensorFrequencyViewAdapter.checkGPSPermission();
-                        }
-                    }
-                });
-            }
-            @Override
-            public void onFailure(Call<JsonObject> call, Throwable t) {
-                log.d("Get Configs from server failed: " + t.getCause());
-                call.cancel();
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        AlertDialog.Builder builder = new AlertDialog.Builder(LabelOptionsActivity.this);
-                        builder.setTitle("Error");
-                        builder.setMessage(t.getMessage());
-                        builder.show();
-                        if (mLoadConfigBtn == null) {
-                            mLoadConfigBtn = findViewById(R.id.load_config_button);
-                        }
-                        mLoadConfigBtn.setEnabled(true);
-                    }
-                });
-            }
-        });
-    }
-
-    private Callback<StatusResponse> uploadCallback(final File file) {
-        return new Callback<StatusResponse>() {
-            @Override
-            public void onResponse(Call<StatusResponse> call, Response<StatusResponse> response) {
-                try {
-                    log.d("Config sent to the server: " + response.code());
-                    Toast.makeText(appContext, "Config sent to server", Toast.LENGTH_SHORT).show();
-                    file.delete();
-                    closeActivity();
-                } catch (Exception e) {
-                    log.d("Failed to delete config file: " + e.getMessage());
-                    closeActivity();
-                }
-            }
-
-            @Override
-            public void onFailure(Call<StatusResponse> call, Throwable t) {
-                log.d("Failed to send config to the server: " + t.getMessage());
-                Toast.makeText(appContext, "Failed to send config to the server", Toast.LENGTH_SHORT).show();
-                call.cancel();
-                try {
-                    file.delete();
-                    closeActivity();
-                } catch (Exception e) {
-                    log.d("Failed to delete config file: " + e.getMessage());
-                    closeActivity();
-                }
-            }
-        };
+        closeActivity();
     }
 
     private void closeActivity() {
         //super.onBackPressed();
         finish();
-    }
-
-    public static class DeleteDialogFragment extends DialogFragment {
-        private final DeleteDialogListener mListener;
-
-        public DeleteDialogFragment(DeleteDialogListener listener) {
-            this.mListener = listener;
-        }
-
-        @NonNull
-        @Override
-        public Dialog onCreateDialog(@Nullable Bundle savedInstanceState) {
-            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-            builder.setMessage(R.string.delete_config_confirmation)
-                    .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            mListener.onConfirmClick();
-                        }
-                    })
-                    .setNegativeButton(R.string.no, null);
-
-            return builder.create();
-        }
     }
 
     public static class SaveConfigDialogFragment extends DialogFragment {
@@ -809,15 +526,11 @@ public class LabelOptionsActivity extends AppCompatActivity {
         public Dialog onCreateDialog(@Nullable Bundle savedInstanceState) {
             AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
             builder.setMessage(R.string.save_config_on_server_confirmation)
-                   .setPositiveButton(R.string.yes, (dialog, which) -> mListener.onConfirmClick())
-                   .setNegativeButton(R.string.no, (dialog, which) -> mListener.onNegativeConfirm());
+                    .setPositiveButton(R.string.yes, (dialog, which) -> mListener.onConfirmClick())
+                    .setNegativeButton(R.string.no, (dialog, which) -> mListener.onNegativeConfirm());
             setCancelable(false);
             return builder.create();
         }
-    }
-
-    public interface DeleteDialogListener {
-        void onConfirmClick();
     }
 
     public interface SaveConfigListener {

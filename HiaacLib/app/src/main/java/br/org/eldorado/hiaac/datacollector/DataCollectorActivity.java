@@ -1,11 +1,19 @@
 package br.org.eldorado.hiaac.datacollector;
 
+import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.WindowManager;
+import android.widget.ImageButton;
+import android.widget.PopupMenu;
+import android.widget.PopupWindow;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -107,14 +115,52 @@ public class DataCollectorActivity extends AppCompatActivity {
         mAddButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(getApplicationContext(), LabelOptionsActivity.class);
-                intent.putExtra(LABEL_CONFIG_ACTIVITY_TYPE, NEW_LABEL_CONFIG_ACTIVITY);
-                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                startActivity(intent);
+                showPopupMenu(v);
             }
         });
 
         permissions.askPermissions();
+    }
+
+    private void showPopupMenu(View v) {
+        LayoutInflater inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        View popupView = inflater.inflate(R.layout.fab_options_menu, null);
+
+        final PopupWindow popupWindow = new PopupWindow(
+                popupView,
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+                true
+        );
+
+        ImageButton btnUnicamp = popupView.findViewById(R.id.btn_unicamp);
+        TextView btnEldorado = popupView.findViewById(R.id.option_eldorado);
+
+        btnUnicamp.setOnClickListener(view -> {
+            popupWindow.dismiss();
+
+            Intent intent = new Intent(getApplicationContext(), LabelOptionsActivity.class);
+            intent.putExtra(LABEL_CONFIG_ACTIVITY_TYPE, NEW_LABEL_CONFIG_ACTIVITY);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(intent);
+        });
+
+        btnEldorado.setOnClickListener(view -> {
+            popupWindow.dismiss();
+
+            Intent intent = new Intent(getApplicationContext(), EldoradoLabelOptionsActivity.class);
+            intent.putExtra(LABEL_CONFIG_ACTIVITY_TYPE, NEW_LABEL_CONFIG_ACTIVITY);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(intent);
+        });
+
+        // Popup configurations
+        popupWindow.setElevation(10);
+        popupWindow.setOutsideTouchable(true);
+        popupWindow.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+
+        popupWindow.showAsDropDown(mAddButton, -40, -400);
+
     }
 
     @Override
