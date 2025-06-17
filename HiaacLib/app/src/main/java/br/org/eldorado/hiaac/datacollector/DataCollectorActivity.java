@@ -134,7 +134,7 @@ public class DataCollectorActivity extends AppCompatActivity {
         );
 
         ImageButton btnUnicamp = popupView.findViewById(R.id.btn_unicamp);
-        TextView btnEldorado = popupView.findViewById(R.id.option_eldorado);
+        ImageButton btnEldorado = popupView.findViewById(R.id.option_eldorado);
 
         btnUnicamp.setOnClickListener(view -> {
             popupWindow.dismiss();
