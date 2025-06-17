@@ -52,11 +52,6 @@ public class SensorFrequencyViewAdapter extends RecyclerView.Adapter<SensorFrequ
                         )
     );
 
-    public static List<Integer> eldoradoFrequencyOptions = new ArrayList<Integer>(
-            Arrays.asList( 40
-            )
-    );
-
     public SensorFrequencyViewAdapter(Context context, SensorFrequencyChangeListener listener, String type) {
         log = new Log("SensorFrequencyViewAdapter");
         mInflater = LayoutInflater.from(context);
@@ -92,9 +87,14 @@ public class SensorFrequencyViewAdapter extends RecyclerView.Adapter<SensorFrequ
 
         frequenciesSpinner.setAdapter(adapter);
         frequenciesSpinner.setSelection(getFrequencySpinnerPositionForSelected(selectedSensorFrequency));
-        if (selectedSensorFrequency.isSelected()) {
+        if (selectedSensorFrequency.isSelected() && type.equals("Unicamp")) {
             frequencyContainer.expand(60);
             checkBox.setChecked(true);
+        } else {
+
+            if (selectedSensorFrequency.isSelected && type.equals("Eldorado")) {
+                checkBox.setChecked(true);
+            }
         }
         frequenciesSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
@@ -153,6 +153,10 @@ public class SensorFrequencyViewAdapter extends RecyclerView.Adapter<SensorFrequ
         });
         if (checkBox.getText().equals("GPS")) {
             gpsHolder = holder;
+
+            if (type.equals("Eldorado")) {
+                checkGPSPermission();
+            }
         }
     }
 
@@ -173,7 +177,6 @@ public class SensorFrequencyViewAdapter extends RecyclerView.Adapter<SensorFrequ
     public void setFrequencyForAll(int freq) {
         addFrequency(freq);
         for (SelectedSensorFrequency sensor : mSelectedSensors) {
-            
             if (sensor.isSelected) {
                 sensor.setFrequency(freq);
             }
@@ -300,7 +303,9 @@ public class SensorFrequencyViewAdapter extends RecyclerView.Adapter<SensorFrequ
                 gpsCheckBox.setEnabled(true);
                 if (gpsCheckBox.isChecked()) {
                     mSelectedSensors.get(gpsHolder.getAdapterPosition()).setSelected(true);
-                    gpsHolder.getFrequencyContainer().expand(60);
+                    if (type.equals("Unicamp")) {
+                        gpsHolder.getFrequencyContainer().expand(60);
+                    }
                 } else {
                     mSelectedSensors.get(gpsHolder.getAdapterPosition()).setSelected(false);
                     gpsHolder.getFrequencyContainer().close();

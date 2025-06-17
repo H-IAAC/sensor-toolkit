@@ -51,6 +51,7 @@ import java.util.Map;
 import java.util.Set;
 
 import br.org.eldorado.hiaac.datacollector.CameraActivity;
+import br.org.eldorado.hiaac.datacollector.EldoradoLabelOptionsActivity;
 import br.org.eldorado.hiaac.datacollector.LabelOptionsActivity;
 import br.org.eldorado.hiaac.R;
 import br.org.eldorado.hiaac.datacollector.api.ClientAPI;
@@ -198,11 +199,23 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
         editButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(editButton.getContext(), LabelOptionsActivity.class);
-                intent.putExtra(LABEL_CONFIG_ACTIVITY_TYPE, UPDATE_LABEL_CONFIG_ACTIVITY);
-                intent.putExtra(LABEL_CONFIG_ACTIVITY_ID, labelConfig.id);
-                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                editButton.getContext().startActivity(intent);
+
+                if (labelConfig.experiment.matches("^Eld_\\d{13,}$")) {
+
+                    Intent intent = new Intent(editButton.getContext(), EldoradoLabelOptionsActivity.class);
+                    intent.putExtra(LABEL_CONFIG_ACTIVITY_TYPE, UPDATE_LABEL_CONFIG_ACTIVITY);
+                    intent.putExtra(LABEL_CONFIG_ACTIVITY_ID, labelConfig.id);
+                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    editButton.getContext().startActivity(intent);
+
+                } else {
+
+                    Intent intent = new Intent(editButton.getContext(), LabelOptionsActivity.class);
+                    intent.putExtra(LABEL_CONFIG_ACTIVITY_TYPE, UPDATE_LABEL_CONFIG_ACTIVITY);
+                    intent.putExtra(LABEL_CONFIG_ACTIVITY_ID, labelConfig.id);
+                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    editButton.getContext().startActivity(intent);
+                }
             }
         });
 
@@ -236,6 +249,13 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
         });
 
         ImageView filmButton = holder.getFilmButton();
+
+        if (labelConfig.experiment.matches("^Eld_\\d{13,}$")) {
+            filmButton.setVisibility(View.GONE);
+        } else {
+            filmButton.setVisibility(View.VISIBLE);
+        }
+
         filmButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

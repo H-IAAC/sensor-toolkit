@@ -263,6 +263,7 @@ public class EldoradoLabelOptionsActivity extends AppCompatActivity {
             case NEW_LABEL_CONFIG_ACTIVITY:
                 mIsUpdating = false;
                 mSelectedSensors = getSelectedSensorFrequenciesFromSensorFrequencies();
+                checkAllSensors();
                 mSensorFrequencyViewAdapter.setSelectedSensors(mSelectedSensors);
                 break;
             case UPDATE_LABEL_CONFIG_ACTIVITY:
@@ -289,6 +290,14 @@ public class EldoradoLabelOptionsActivity extends AppCompatActivity {
         }
     }
 
+    private void checkAllSensors() {
+        for (SensorFrequencyViewAdapter.SelectedSensorFrequency sensor : mSelectedSensors) {
+            sensor.setSelected(true);
+            sensor.setFrequency(40);
+        }
+
+    }
+
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
@@ -297,7 +306,10 @@ public class EldoradoLabelOptionsActivity extends AppCompatActivity {
             mSensorFrequencyViewAdapter.requestBackgroundPermission();
         } else if (101 == requestCode) {
             log.d("request background");
-            mSensorFrequencyViewAdapter.updateGPS(grantResults[0]);
+
+            if (grantResults.length > 0) {
+                mSensorFrequencyViewAdapter.updateGPS(grantResults[0]);
+            }
         }
     }
 
@@ -305,10 +317,10 @@ public class EldoradoLabelOptionsActivity extends AppCompatActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_label_eldorado_options, menu);
 
-        if (mIsUpdating) {
-            menu.getItem(0).setVisible(true);
-            menu.getItem(1).setVisible(false);
-        }
+//        if (mIsUpdating) {
+//            menu.getItem(0).setVisible(true);
+//            menu.getItem(1).setVisible(false);
+//        }
 
         return true;
     }
@@ -431,7 +443,7 @@ public class EldoradoLabelOptionsActivity extends AppCompatActivity {
     }
 
     private void onSaveButtonClick() {
-        String label = "Eld " + System.currentTimeMillis();
+        String label = "Eld_" + System.currentTimeMillis();
         if (label.isEmpty()) {
             Toast.makeText(getApplicationContext(),
                     R.string.label_title_empty, Toast.LENGTH_LONG).show();
