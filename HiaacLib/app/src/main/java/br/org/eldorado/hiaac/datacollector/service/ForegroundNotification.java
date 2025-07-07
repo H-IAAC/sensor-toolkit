@@ -16,14 +16,16 @@ public class ForegroundNotification {
     public static final int NOTIFICATION_SERVICE_ID = (int) (System.currentTimeMillis() % Integer.MAX_VALUE);
     public static final String NOTIFICATION_CHANNEL_ID = "br.org.eldorado.hiaac.channelId";
     public static final String NOTIFICATION_CHANNEL_NAME = "hiaac.channel";
+    public static final String NOTIFICATION_CHANNEL_ID_SILENT = "br.org.eldorado.hiaac.channelId.silent";
+    public static final String NOTIFICATION_CHANNEL_NAME_SILENT = "hiaac.channel.silent";
     public static final String NOTIFICATION_CHANNEL_DESCRIPTION = "Use to handle foreground service";
 
     public static Notification getNotification(Context context, String text) {
-        return getNotification(context, "H-IAAC", text);
+        return getNotification(context, "H-IAAC", text, false);
     }
 
-    public static Notification getNotification(Context context, String title, String text) {
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(context, NOTIFICATION_CHANNEL_ID);
+    public static Notification getNotification(Context context, String title, String text, boolean isEldoradoProfile) {
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(context, isEldoradoProfile ? NOTIFICATION_CHANNEL_ID_SILENT : NOTIFICATION_CHANNEL_ID);
 
         return builder.setOngoing(true)
                 .setSmallIcon(R.mipmap.ic_launcher)
@@ -45,6 +47,20 @@ public class ForegroundNotification {
 
         mChannel.setDescription(ForegroundNotification.NOTIFICATION_CHANNEL_DESCRIPTION);
         mChannel.setShowBadge(true);
+
+        nm.createNotificationChannel(mChannel);
+    }
+
+    public static void createSilentNotificationChannel(Context context) {
+        NotificationManager nm = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+        NotificationChannel mChannel = new NotificationChannel(NOTIFICATION_CHANNEL_ID_SILENT,
+                ForegroundNotification.NOTIFICATION_CHANNEL_NAME_SILENT,
+                NotificationManager.IMPORTANCE_LOW);
+
+        mChannel.setDescription(ForegroundNotification.NOTIFICATION_CHANNEL_DESCRIPTION);
+        mChannel.setShowBadge(true);
+        mChannel.setSound(null, null);
+        mChannel.enableVibration(false);
 
         nm.createNotificationChannel(mChannel);
     }

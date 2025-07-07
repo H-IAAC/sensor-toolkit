@@ -75,6 +75,7 @@ import br.org.eldorado.hiaac.datacollector.util.Tools;
 import br.org.eldorado.hiaac.datacollector.util.Utils;
 import br.org.eldorado.hiaac.datacollector.util.VideoMetadata;
 import br.org.eldorado.hiaac.datacollector.util.AlarmConfig;
+import br.org.eldorado.sensorsdk.SensorSDK;
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
 import okhttp3.RequestBody;
@@ -98,6 +99,7 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
     private LabelConfigViewModel mLabelConfigViewModel;
     private static final Map<String, ViewHolder> holdersMap = new HashMap<>();
     private boolean deleteButtonClicked;
+    private boolean stopButtonClicked;
     private final CsvFiles csvFiles;
     private AlertDialog dialog;
     private Boolean isSendingData = false;
@@ -200,22 +202,12 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
             @Override
             public void onClick(View v) {
 
-                if (labelConfig.experiment.matches("^Eld_\\d{13,}$")) {
-
-                    Intent intent = new Intent(editButton.getContext(), EldoradoLabelOptionsActivity.class);
-                    intent.putExtra(LABEL_CONFIG_ACTIVITY_TYPE, UPDATE_LABEL_CONFIG_ACTIVITY);
-                    intent.putExtra(LABEL_CONFIG_ACTIVITY_ID, labelConfig.id);
-                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                    editButton.getContext().startActivity(intent);
-
-                } else {
-
-                    Intent intent = new Intent(editButton.getContext(), LabelOptionsActivity.class);
-                    intent.putExtra(LABEL_CONFIG_ACTIVITY_TYPE, UPDATE_LABEL_CONFIG_ACTIVITY);
-                    intent.putExtra(LABEL_CONFIG_ACTIVITY_ID, labelConfig.id);
-                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                    editButton.getContext().startActivity(intent);
-                }
+                Intent intent = new Intent(editButton.getContext(),
+                        labelConfig.isEldoradoProfile() ? EldoradoLabelOptionsActivity.class : LabelOptionsActivity.class);
+                intent.putExtra(LABEL_CONFIG_ACTIVITY_TYPE, UPDATE_LABEL_CONFIG_ACTIVITY);
+                intent.putExtra(LABEL_CONFIG_ACTIVITY_ID, labelConfig.id);
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                editButton.getContext().startActivity(intent);
             }
         });
 
@@ -249,12 +241,7 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
         });
 
         ImageView filmButton = holder.getFilmButton();
-
-        if (labelConfig.experiment.matches("^Eld_\\d{13,}$")) {
-            filmButton.setVisibility(View.GONE);
-        } else {
-            filmButton.setVisibility(View.VISIBLE);
-        }
+        filmButton.setVisibility(labelConfig.isEldoradoProfile() ? View.GONE : View.VISIBLE);
 
         filmButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -318,7 +305,12 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
                     startExecution(holder);
                 } else {
                     if (execService != null) {
-                        execService.stopExecution();
+                        stopButtonClicked = true;
+                        if (labelConfig.isEldoradoProfile()) {
+                            holder.setStarted(false);
+                            AlarmConfig.cancelAlarm();
+                        }
+                        execService.stopExecution(stopButtonClicked);
                     }
                 }
             }
@@ -667,7 +659,7 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
             dialog.setCancelable(false);
 
             String serviceTitle = holder.labelTitle.getText().toString() + " " + holder.labelActivity.getText().toString();
-            CountDownTimer countDown = launchCounterToStartService(serviceTitle);
+            CountDownTimer countDown = launchCounterToStartService(serviceTitle, labelConfigs.get(holder.getAdapterPosition()).isEldoradoProfile());
 
             try {
                 dialog.show();
@@ -691,8 +683,9 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
         }
     }
 
-    private CountDownTimer launchCounterToStartService(String title) {
-        return new CountDownTimer((Preferences.getPreferredStartDelay() * 1000), 1000) {
+    private CountDownTimer launchCounterToStartService(String title, boolean isEldoradoProfile) {
+        long time = isEldoradoProfile ? 0 : (Preferences.getPreferredStartDelay() * 1000);
+        return new CountDownTimer(time, isEldoradoProfile ? 0 : 1000) {
             @Override
             public void onTick(long timeRemaining) {
                 ((Activity) mContext).runOnUiThread(new Runnable() {
@@ -711,11 +704,15 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
                     log.e("App is not running");
                 }
 
-                Utils.emitStartBeep();
+                if (!isEldoradoProfile) {
+                    Utils.emitStartBeep();
+                }
 
                 Intent execServiceIntent = new Intent(mContext, ExecutionService.class);
                 execServiceIntent.setAction(ExecutionService.ACTION_START_FOREGROUND_SERVICE);
                 execServiceIntent.putExtra("Title", title);
+                execServiceIntent.putExtra("isEldoradoProfile", isEldoradoProfile);
+
                 log.d("startExecution - Counter finished! starting Foreground services");
 
                 if (mContext.startForegroundService(execServiceIntent) == null)
@@ -776,11 +773,14 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
             public void onServiceDisconnected(ComponentName name) { }
         };
 
-        Intent execServiceIntent = new Intent(mContext, ExecutionService.class);
-        execServiceIntent.setAction(ExecutionService.ACTION_CHECK_FOREGROUND_SERVICE);
-        execServiceIntent.putExtra("Title", holder.labelTitle.getText().toString());
-        mContext.startForegroundService(execServiceIntent);
-        mContext.bindService(execServiceIntent, checkingServiceConnection, Context.BIND_AUTO_CREATE);
+        if (!labelConfigs.get(holder.getAdapterPosition()).isEldoradoProfile()) {
+            Intent execServiceIntent = new Intent(mContext, ExecutionService.class);
+            execServiceIntent.setAction(ExecutionService.ACTION_CHECK_FOREGROUND_SERVICE);
+            execServiceIntent.putExtra("Title", holder.labelTitle.getText().toString());
+            execServiceIntent.putExtra("isEldoradoProfile", labelConfigs.get(holder.getAdapterPosition()).isEldoradoProfile());
+            mContext.startForegroundService(execServiceIntent);
+            mContext.bindService(execServiceIntent, checkingServiceConnection, Context.BIND_AUTO_CREATE);
+        }
         Preferences.setToRunChecking(false);
     }
 
@@ -987,11 +987,29 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
                 ((Activity) mContext).runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
+                        LabelConfig labelConfig = labelConfigs.get(holder.getAdapterPosition());
+                        log.d("ELDORADO " + labelConfig.isEldoradoProfile() + " STOP " + stopButtonClicked);
+                        AlarmConfig.cancelAlarm();
+                        if (labelConfig.isEldoradoProfile() && !stopButtonClicked) {
+                            holder.getLabelTimer().setText(
+                                    Tools.getFormatedTime(labelConfigs.get(holder.getAdapterPosition()).stopTime, Tools.CHRONOMETER));
+                            labelConfig.scheduledTime = SensorSDK.getInstance().getRemoteTime() + (1000 * 60 * 20 );
+                            AlarmConfig.configureScheduler(labelConfig,
+                                                                    getHolderKey(
+                                                                            labelConfig.experiment,
+                                                                            labelConfig.activity,
+                                                                            labelConfig.userId));
+
+                            holder.setStarted(false);
+                            Preferences.setToRunChecking(false);
+                            return;
+                        }
+
                         holder.getEditButton().setEnabled(true);
                         holder.getFilmButton().setEnabled(true);
                         setAsStart(holder.getStartButton(), holder);
                         holder.getLabelTimer().setText(
-                                Tools.getFormatedTime(labelConfigs.get(holder.getAdapterPosition()).stopTime, Tools.CHRONOMETER));
+                                Tools.getFormatedTime(labelConfig.stopTime, Tools.CHRONOMETER));
 
                         AlertDialog.Builder timer = new AlertDialog.Builder(mContext);
                         AlertDialog createCSVDialog;
@@ -1021,6 +1039,7 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
                         messageView.setTextSize(26);
                         countDown.start();
                         holder.setStarted(false);
+                        stopButtonClicked = false;
                     }
                 });
             } catch (WindowManager.BadTokenException e) {

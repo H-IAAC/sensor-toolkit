@@ -101,7 +101,7 @@ public class ExecutionController {
     }
 
     public void stopExecution(DataTrack dataTrack) {
-        if (isRunning) {
+        if (isRunning && dataTrack != null) {
             timer.cancel();
             List<ExperimentStatistics> statistics = new ArrayList<ExperimentStatistics>();
             for (SensorFrequency sensorFrequency : dataTrack.getSensorList()) {
@@ -118,12 +118,12 @@ public class ExecutionController {
                 service.stopSelf();
                 service = null;
             }
-
-            //dbView.insertLabeledData(labeledDataList);
-            listener.onStopped();
-
-            setAsNotRunning();
         }
+
+        //dbView.insertLabeledData(labeledDataList);
+        listener.onStopped();
+
+        setAsNotRunning();
     }
 
     private void setAsRunning() {
@@ -151,7 +151,7 @@ public class ExecutionController {
 
                 @Override
                 public void onFinish() {
-                    service.stopExecution();
+                    service.stopExecution(false);
                 }
             }.start();
         }

@@ -112,6 +112,10 @@ public class DataTrack {
         return sensorList;
     }
 
+    public boolean isEldoradoProfile() {
+        return label.matches("^Eld\\d{10,14}$");
+    }
+
     @Override
     public boolean equals(Object obj) {
         if (obj instanceof DataTrack) {

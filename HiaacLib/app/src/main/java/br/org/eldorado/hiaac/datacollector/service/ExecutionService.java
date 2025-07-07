@@ -39,6 +39,7 @@ public class ExecutionService extends Service {
     @Override
     public void onCreate() {
         ForegroundNotification.createNotificationChannel(this);
+        ForegroundNotification.createSilentNotificationChannel(this);
     }
 
     @Override
@@ -46,25 +47,28 @@ public class ExecutionService extends Service {
 
         if (intent != null) {
             String nTitle = "H-IAAC";
+            boolean isEldoradoProfile = false;
             String action = intent.getAction();
             Bundle extras = intent.getExtras();
 
-            if (extras != null)
+            if (extras != null) {
                 nTitle = extras.getString("Title");
+                isEldoradoProfile = extras.getBoolean("isEldoradoProfile", false);
+            }
 
             if (action != null) {
                 switch (action) {
                     case ACTION_START_FOREGROUND_SERVICE:
                         startForeground(ForegroundNotification.NOTIFICATION_SERVICE_ID,
-                                        ForegroundNotification.getNotification(getApplicationContext(), nTitle,  "Running..."));
+                                        ForegroundNotification.getNotification(getApplicationContext(), nTitle,  "Running...", isEldoradoProfile));
                         break;
                     case ACTION_CHECK_FOREGROUND_SERVICE:
                         startForeground(ForegroundNotification.NOTIFICATION_SERVICE_ID,
-                                        ForegroundNotification.getNotification(getApplicationContext(), nTitle, "Checking..."));
+                                        ForegroundNotification.getNotification(getApplicationContext(), nTitle, "Checking...", isEldoradoProfile));
                         break;
                     case ACTION_START_ANOTHER_FOREGROUND_SERVICE:
                         startForeground(ForegroundNotification.NOTIFICATION_SERVICE_ID,
-                                        ForegroundNotification.getNotification(getApplicationContext(), nTitle, "Another..."));
+                                        ForegroundNotification.getNotification(getApplicationContext(), nTitle, "Another...", isEldoradoProfile));
                         break;
                     default:
                         log.d("Invalid action");
@@ -128,17 +132,15 @@ public class ExecutionService extends Service {
         ExecutionController.getInstance().setListener(l);
     }
 
-    public void stopExecution() {
-        if (dataTrack != null) {
-            log.d("ExecutionService: stopForeground " +  dataTrack.getLabel());
+    public void stopExecution(boolean stopBurttonClicked) {
+        log.d("ExecutionService: stopExecution " +  (dataTrack == null ? "NULL" : dataTrack.getLabel()));
+        if (dataTrack == null || (!dataTrack.isEldoradoProfile() || (dataTrack.isEldoradoProfile() && stopBurttonClicked))) {
             Utils.emitStopBeep();
-
-            ExecutionController.getInstance().stopExecution(dataTrack);
-            stopForeground(true);
-            dataTrack = null;
-
             Preferences.setToRunChecking(true);
         }
+        ExecutionController.getInstance().stopExecution(dataTrack);
+        stopForeground(true);
+        dataTrack = null;
 
         WakeLocks.collectRelease();
         WakeLocks.executionRelease();

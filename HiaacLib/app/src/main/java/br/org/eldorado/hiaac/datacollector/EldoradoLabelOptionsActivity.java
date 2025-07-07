@@ -443,7 +443,7 @@ public class EldoradoLabelOptionsActivity extends AppCompatActivity {
     }
 
     private void onSaveButtonClick() {
-        String label = "Eld_" + System.currentTimeMillis();
+        String label = "Eld" + System.currentTimeMillis();
         if (label.isEmpty()) {
             Toast.makeText(getApplicationContext(),
                     R.string.label_title_empty, Toast.LENGTH_LONG).show();
