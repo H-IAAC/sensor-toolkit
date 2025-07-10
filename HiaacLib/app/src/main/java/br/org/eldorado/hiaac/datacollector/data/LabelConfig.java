@@ -40,6 +40,10 @@ public class LabelConfig {
     @ColumnInfo(name = "sendToServer")
     public boolean sendToServer;
 
+    public boolean isEldoradoProfile() {
+        return experiment.matches("^Eld\\d{10,14}$");
+    }
+
     public LabelConfig(@NonNull String experiment, int stopTime, String deviceLocation, String userId, boolean sendToServer, String activity, long scheduledTime) {
         this.experiment = experiment;
         this.activity = activity;
