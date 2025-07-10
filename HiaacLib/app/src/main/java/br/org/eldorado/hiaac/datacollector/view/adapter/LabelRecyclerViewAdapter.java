@@ -988,7 +988,6 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
                     @Override
                     public void run() {
                         LabelConfig labelConfig = labelConfigs.get(holder.getAdapterPosition());
-                        log.d("ELDORADO " + labelConfig.isEldoradoProfile() + " STOP " + stopButtonClicked);
                         AlarmConfig.cancelAlarm();
                         if (labelConfig.isEldoradoProfile() && !stopButtonClicked) {
                             holder.getLabelTimer().setText(
