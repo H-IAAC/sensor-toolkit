@@ -1,5 +1,9 @@
 package br.org.eldorado.hiaac.datacollector.service.listener;
 
+import java.util.List;
+import java.util.Map;
+
+import br.org.eldorado.hiaac.datacollector.data.LabeledData;
 import br.org.eldorado.hiaac.datacollector.model.DataTrack;
 
 public class ExecutionServiceListenerAdapter implements ExecutionServiceListener {
@@ -25,4 +29,7 @@ public class ExecutionServiceListenerAdapter implements ExecutionServiceListener
 
     @Override
     public void onError(String message){}
+
+    @Override
+    public void onExtraSensoryConversion(Map<Integer, List<LabeledData>> extraSensoryData) {}
 }

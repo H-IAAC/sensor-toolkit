@@ -113,7 +113,7 @@ public class DataTrack {
     }
 
     public boolean isEldoradoProfile() {
-        return label.matches("^Eld\\d{10,14}$");
+        return label != null && label.matches("^Eld\\d{10,14}$");
     }
 
     @Override

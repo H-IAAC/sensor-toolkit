@@ -194,12 +194,12 @@ public class SensorController {
                             long end = now + (freqInMs);
                             getInformation(sensor);
                             if (now != sensor.getTimestamp()) {
-                                log.d("TEST TIMESTAMP DIFERENCA SENSOR " + sensor.getName() + "  deveria ser: " + now + " real: " + sensor.getTimestamp() + " proximo: " + end + " differenca: " + (now - sensor.getTimestamp()));
+                                //log.d("TEST TIMESTAMP DIFERENCA SENSOR " + sensor.getName() + "  deveria ser: " + now + " real: " + sensor.getTimestamp() + " proximo: " + end + " differenca: " + (now - sensor.getTimestamp()));
                             }
                             spinWait2(end);
                             long final1 = System.currentTimeMillis();
                             if (final1 != end) {
-                                log.d("TEST TIMESTAMP DIFERENCA THREAD " + (final1 - end));
+                               // log.d("TEST TIMESTAMP DIFERENCA THREAD " + (final1 - end));
                             }
                         } catch (Exception e) {
                             sensor.setIsStarted(false);

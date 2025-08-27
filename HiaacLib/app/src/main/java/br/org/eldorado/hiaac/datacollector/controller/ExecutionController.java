@@ -5,7 +5,11 @@ import android.os.CountDownTimer;
 import androidx.lifecycle.ViewModelProvider;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 import br.org.eldorado.hiaac.datacollector.data.ExperimentStatistics;
 import br.org.eldorado.hiaac.datacollector.data.LabelConfigViewModel;
@@ -101,18 +105,28 @@ public class ExecutionController {
     }
 
     public void stopExecution(DataTrack dataTrack) {
+        Map<Integer, List<LabeledData>> extraSensoryDataMap=null;
         if (isRunning && dataTrack != null) {
             timer.cancel();
             List<ExperimentStatistics> statistics = new ArrayList<ExperimentStatistics>();
+            extraSensoryDataMap = new HashMap<Integer, List<LabeledData>>();
+            extraSensoryDataMap.put(SensorBase.TYPE_ACCELEROMETER, null);
+            extraSensoryDataMap.put(SensorBase.TYPE_GYROSCOPE, null);
+            extraSensoryDataMap.put(SensorBase.TYPE_MAGNETIC_FIELD, null);
             for (SensorFrequency sensorFrequency : dataTrack.getSensorList()) {
                 sensorFrequency.sensor.stopSensor();
 
                 if (sensorFrequency.sensor.getListener() != null) {
+                    MySensorListener sensorListener = (MySensorListener) sensorFrequency.sensor.getListener();
                     statistics.add(getExperimentStatistics(dataTrack, sensorFrequency));
                     dbView.insertLabeledData(((MySensorListener) sensorFrequency.sensor.getListener()).getLabeledDataList());
+                    if (dataTrack.isEldoradoProfile() ) {
+                        extraSensoryDataMap.compute(sensorFrequency.sensor.getType(), (k,v) -> sensorListener.getExtraSensoryData());
+                    }
                 }
             }
             dbView.insertExperimentStatistics(statistics);
+
             if (service != null) {
                 service.stopForeground(true);
                 service.stopSelf();
@@ -122,6 +136,10 @@ public class ExecutionController {
 
         //dbView.insertLabeledData(labeledDataList);
         listener.onStopped();
+        if (dataTrack!= null && dataTrack.isEldoradoProfile() && extraSensoryDataMap != null) {
+            log.d("Collected data will be converted to ExtraSensory format " + extraSensoryDataMap);
+            listener.onExtraSensoryConversion(extraSensoryDataMap);
+        }
 
         setAsNotRunning();
     }
@@ -183,6 +201,7 @@ public class ExecutionController {
         private long invalidData = 0;
         // Valid + Invalid data
         private long totalData = 0;
+        private List<LabeledData> extraSensoryData;
 
         public MySensorListener(DataTrack data) {
             this.dataTrack = data;
@@ -192,6 +211,13 @@ public class ExecutionController {
             this.lastTimestamp = 0;
             this.maxTimestampDifference = 0;
             this.minTimestampDifference = Long.MAX_VALUE;
+            if (dataTrack.isEldoradoProfile()) {
+                extraSensoryData = new ArrayList<LabeledData>(1500);
+            }
+        }
+
+        public List<LabeledData> getExtraSensoryData() {
+            return extraSensoryData;
         }
 
         public long getExpectedCollectedData(int frequency) {
@@ -309,6 +335,10 @@ public class ExecutionController {
                     invalidData++;
                 }
                 lastTimestamp = localTime;
+
+                if (dataTrack.isEldoradoProfile() && data.isValidData()) {
+                    extraSensoryData.add(data);
+                }
             } catch (Exception e) {
                 if (labeledData.size() > 0) {
                     dbView.insertLabeledData(labeledData);

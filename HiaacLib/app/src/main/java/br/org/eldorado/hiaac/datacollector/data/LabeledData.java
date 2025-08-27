@@ -196,6 +196,15 @@ public class LabeledData {
         this.uid = uid;
     }
 
+    public double[] getSensorValuesAsDouble() {
+        String[] values = getSensorValues().split(",");
+        double[] doubleValues = new double[values.length];
+        for (int i = 0; i < values.length; i++) {
+            doubleValues[i] = Double.parseDouble(values[i]);
+        }
+        return doubleValues;
+    }
+
     public String[] getCSVFormattedString() {
         String[] values = sensorValues.split(",");
         return new String[]{experiment, sensorName, String.valueOf(power), String.valueOf(frequency), String.valueOf(timestamp), String.valueOf(localTimestamp),
