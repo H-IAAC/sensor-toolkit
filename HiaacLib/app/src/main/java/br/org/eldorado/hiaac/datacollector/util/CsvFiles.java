@@ -34,6 +34,22 @@ public class CsvFiles {
         return filesList;
     }
 
+    public List<File> listFilesFromAllConfigs() {
+        File directory = new File(
+                mContext.getFilesDir().getAbsolutePath() +
+                        File.separator +
+                        FOLDER_NAME);
+        List<File> filesList = new ArrayList<File>();
+        if (directory.exists()) {
+            for (File configDir : directory.listFiles()) {
+                if (configDir.isDirectory()) {
+                    filesList.addAll(Arrays.asList(configDir.listFiles()));
+                }
+            }
+        }
+        return filesList;
+    }
+
     public void deleteDirectory(long id) {
         try {
             File directory = new File(

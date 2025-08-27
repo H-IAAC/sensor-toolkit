@@ -14,14 +14,18 @@ import com.google.firebase.storage.UploadTask;
 
 import java.io.File;
 import java.util.List;
+import java.util.Map;
 
 import br.org.eldorado.hiaac.R;
 import br.org.eldorado.hiaac.datacollector.controller.ExecutionController;
+import br.org.eldorado.hiaac.datacollector.controller.ExtraSensoryConverterController;
 import br.org.eldorado.hiaac.datacollector.data.LabelConfigRepository;
 import br.org.eldorado.hiaac.datacollector.data.LabelConfigViewModel;
 import br.org.eldorado.hiaac.datacollector.data.LabeledData;
+import br.org.eldorado.hiaac.datacollector.model.ExtraSensoryData;
 import br.org.eldorado.hiaac.datacollector.util.CsvBuilder;
 import br.org.eldorado.hiaac.datacollector.util.Log;
+import br.org.eldorado.sensoragent.model.SensorBase;
 
 public class FirebaseUploadController {
     private final Log log  = new Log("FirebaseUploadController");
@@ -195,6 +199,57 @@ public class FirebaseUploadController {
                 dbView.deleteLabeledData(labelId);
 
                 fireListener(SUCCESS, mContext.getString(R.string.success_csv_file));
+            }
+        }).start();
+    }
+
+    public void convertToExtraSensory(final String uid, long labelId, Map<Integer, List<LabeledData>> extraSensoryData) {
+
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    long start = System.currentTimeMillis();
+                    String innerUid = uid;
+
+                    // Wait (10 secs) for the execution stops before collect from db
+                    int waitSecs = 0;
+                    while (ExecutionController.getInstance().isRunning() && waitSecs < 10) {
+                        try {
+                            Thread.sleep(1000);
+                            waitSecs++;
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                    log.d("convertToExtraSensory - uuid: " + uid + " labelId: " + labelId);
+                    if (ExecutionController.getInstance().isRunning()) {
+                        log.d("convertToExtraSensory - exporting data while execution controller still running");
+                    }
+
+                    if (uid == null || "0".equals(uid) || "null".equals(uid)) {
+                        innerUid = dbView.getLabeledDataUidCsv(labelId);
+                        log.d("convertToExtraSensory - uid was wrong! New uid = " + innerUid);
+                    }
+
+                    fireListener(ON_PROGRESS, mContext.getString(R.string.creating_csv_file));
+
+                    ExtraSensoryConverterController esConverter = new ExtraSensoryConverterController();
+                    ExtraSensoryData esData = esConverter.convertData(extraSensoryData);
+
+                    File csvFile = csvBuilder.getExtraSensoryCsvFile(extraSensoryData.get(SensorBase.TYPE_ACCELEROMETER).get(0),
+                            innerUid);
+                    csvBuilder.appendExtraSensoryData(csvFile, esData, true);
+
+                    long end = System.currentTimeMillis();
+                    log.d("convertToExtraSensory - Csv file created. Time consumed: " + ((end - start) / 1000) / 60 + "m" + ((end - start) / 1000) % 60 + "s");
+
+
+                    fireListener(SUCCESS, mContext.getString(R.string.success_csv_file));
+                } catch(Exception e) {
+                    e.printStackTrace();
+                    fireListener(ERROR, e.getMessage());
+                }
             }
         }).start();
     }

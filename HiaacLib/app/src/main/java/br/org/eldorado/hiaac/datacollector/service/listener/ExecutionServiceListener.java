@@ -1,5 +1,9 @@
 package br.org.eldorado.hiaac.datacollector.service.listener;
 
+import java.util.List;
+import java.util.Map;
+
+import br.org.eldorado.hiaac.datacollector.data.LabeledData;
 import br.org.eldorado.hiaac.datacollector.model.DataTrack;
 
 public interface ExecutionServiceListener {
@@ -9,4 +13,5 @@ public interface ExecutionServiceListener {
     void onStopped();
     void onStarted();
     void onError(String errorMessage);
+    void onExtraSensoryConversion(Map<Integer, List<LabeledData>> extraSensoryData);
 }

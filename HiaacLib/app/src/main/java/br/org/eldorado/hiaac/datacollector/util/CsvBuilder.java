@@ -14,6 +14,7 @@ import java.util.Locale;
 
 import br.org.eldorado.hiaac.datacollector.data.LabelConfigViewModel;
 import br.org.eldorado.hiaac.datacollector.data.LabeledData;
+import br.org.eldorado.hiaac.datacollector.model.ExtraSensoryData;
 
 public class CsvBuilder {
     private final Log log = new Log("CsvBuilder");
@@ -122,6 +123,60 @@ public class CsvBuilder {
         return csvFile;
     }
 
+    public synchronized void appendExtraSensoryData(File csvFile, ExtraSensoryData data, boolean createHeader) {
+
+        if (csvFile == null) return;
+
+        log.d("Appending ExtraSensory data");
+        CSVWriter writer = null;
+
+        try {
+            Locale.setDefault(new Locale("pt", "BR"));
+            writer = new CSVWriter(new FileWriter(csvFile, true),
+                    ';',
+                    CSVWriter.NO_QUOTE_CHARACTER,
+                    CSVWriter.DEFAULT_ESCAPE_CHARACTER,
+                    CSVWriter.DEFAULT_LINE_END);
+
+            if (createHeader)
+                writer.writeNext(data.getCsvHeaders());
+
+            writer.writeNext(data.getCsvValues());
+            writer.flushQuietly();
+        } catch (Exception e) {
+            log.d("Appending ExtraSensory CSV data failed: " + e.getMessage());
+        } finally {
+            if (writer != null) {
+                Locale.setDefault(l);
+
+                try {
+                    writer.close();
+                } catch (IOException e) {
+                    log.d("Appending ExtraSensory CSV data, file failed: " + e.getMessage());
+                }
+            }
+        }
+    }
+
+    public synchronized File getExtraSensoryCsvFile(LabeledData data, String uid) {
+        File directory = new File(
+                mContext.getFilesDir().getAbsolutePath() +
+                        File.separator +
+                        FOLDER_NAME +
+                        File.separator +
+                        data.getConfigId());
+
+        if (!directory.exists())
+            directory.mkdirs();
+
+        File csvFile = new File(directory.getAbsolutePath() +
+                File.separator +
+                composeExtraSensoryFileName(data, uid));
+
+        log.d("ExtraSensory FileName: " + csvFile.getName());
+        return csvFile;
+    }
+
     /* Used by firebase, as it is always sending timestamp as '0' */
     public synchronized File create(List<LabeledData> data) {
 
@@ -139,5 +194,14 @@ public class CsvBuilder {
                data.getDevicePosition() + "__" +
                timestamp + // UID
                ".csv";
+    }
+
+    private String composeExtraSensoryFileName(LabeledData data, String timestamp) {
+        return data.getUserId() + "_" +
+                data.getExperiment() + "_" +
+                "ExtraSensory_" +
+                data.getTimestamp() + "__" +
+                timestamp + // UID
+                ".csv";
     }
 }

@@ -90,6 +90,13 @@
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/provider_paths" />
         </provider>
+
+        <provider
+            android:name=".datacollector.provider.HiaacExtraSensoryProvider"
+            android:authorities="br.org.eldorado.hiaac.hiaacextrasensoryprovider"
+            android:exported="true"
+            android:grantUriPermissions="true"/>
+
     </application>
 
 </manifest>

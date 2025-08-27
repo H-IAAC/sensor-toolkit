@@ -58,6 +58,7 @@ import br.org.eldorado.hiaac.datacollector.api.ClientAPI;
 import br.org.eldorado.hiaac.datacollector.api.StatusResponse;
 import br.org.eldorado.hiaac.datacollector.data.LabelConfig;
 import br.org.eldorado.hiaac.datacollector.data.LabelConfigViewModel;
+import br.org.eldorado.hiaac.datacollector.data.LabeledData;
 import br.org.eldorado.hiaac.datacollector.data.Repository;
 import br.org.eldorado.hiaac.datacollector.data.SensorFrequency;
 import br.org.eldorado.hiaac.datacollector.firebase.FirebaseListener;
@@ -67,6 +68,7 @@ import br.org.eldorado.hiaac.datacollector.model.DataTrack;
 import br.org.eldorado.hiaac.datacollector.service.ExecutionService;
 import br.org.eldorado.hiaac.datacollector.service.ForegroundNotification;
 import br.org.eldorado.hiaac.datacollector.service.listener.ExecutionServiceListenerAdapter;
+import br.org.eldorado.hiaac.datacollector.util.CsvBuilder;
 import br.org.eldorado.hiaac.datacollector.util.CsvFiles;
 import br.org.eldorado.hiaac.datacollector.util.Log;
 import br.org.eldorado.hiaac.datacollector.util.Preferences;
@@ -978,6 +980,45 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
                     holder.getLabelTimer().setText(labelTimer);
                 }
             });
+        }
+
+        @Override
+        public void onExtraSensoryConversion(Map<Integer, List<LabeledData>> extraSensoryData) {
+            try {
+                ((Activity) mContext).runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        FirebaseUploadController firebase = new FirebaseUploadController(mContext);
+                        firebase.registerListener(new FirebaseListener() {
+
+                            @Override
+                            public void onProgress(String message) {
+                                ((Activity)mContext).runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+
+                                    }
+                                });
+                            }
+
+                            @Override
+                            public void onCompleted(String message) {
+                                ((Activity)mContext).runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        //log.d("ATUALIZANDO " + labelConfigs.get(holder.getAdapterPosition()).id);
+                                        List<File> files = csvFiles.getFiles(labelConfigs.get(holder.getAdapterPosition()).id);
+                                        ((CSVFilesRecyclerAdapter)holder.getCsvRecyclerView().getAdapter()).updateFileList(files);
+                                    }
+                                });
+                            }
+                        });
+                        firebase.convertToExtraSensory(getDataTrack().getUid(), labelConfigs.get(holder.getAdapterPosition()).id, extraSensoryData);
+                    }
+                });
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
 
         @Override
