@@ -14,6 +14,9 @@ import android.os.ParcelFileDescriptor;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.List;
 
@@ -49,7 +52,11 @@ public class HiaacExtraSensoryProvider extends ContentProvider {
     }
 
     /**
-     * List all extrasensory files
+     * List all extrasensory files filtering it on date range
+     * Filters must be passed in selectionArgs parameter (format dd/MM/yyyy) like this:
+     * selectionArgs[0] -> StartDate
+     * selectionArgs[1] -> EndDate
+     * If only the StartDate is provided, the filter will be applied between StartDate and StartDate + 24 hours.
      * @param uri
      * @param projection
      * @param selection
@@ -61,17 +68,50 @@ public class HiaacExtraSensoryProvider extends ContentProvider {
     public Cursor query(Uri uri, String[] projection, String selection,
                         String[] selectionArgs, String sortOrder) {
 
-        //log.d("Querying files");
         if (uriMatcher.match(uri) == FILE_LIST) {
+            long startDate = 0;
+            long endDate = Long.MAX_VALUE;
             String[] cols = new String[]{"timestamp", "name"};
             MatrixCursor cursor = new MatrixCursor(cols);
 
             List<File> files = csvFiles.listFilesFromAllConfigs();
-            log.d(Arrays.asList(files).toString());
+
+            /* Filter files on a date range */
+            if (selectionArgs != null && selectionArgs.length > 0) {
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+                try {
+                    LocalDate localDate = LocalDate.parse(selectionArgs[0], formatter);
+
+                    startDate = localDate
+                            .atStartOfDay(ZoneId.systemDefault())
+                            .toInstant()
+                            .toEpochMilli();
+                    endDate = localDate
+                            .plusDays(1)
+                            .atStartOfDay(ZoneId.systemDefault())
+                            .toInstant()
+                            .toEpochMilli();
+                } catch (Exception e) {
+                    throw new IllegalArgumentException("StartDate format must be dd/MM/yyyy");
+                }
+                if (selectionArgs.length > 1) {
+                    try {
+                        LocalDate localDate = LocalDate.parse(selectionArgs[1], formatter);
+                        endDate = localDate
+                                .atStartOfDay(ZoneId.systemDefault())
+                                .toInstant()
+                                .toEpochMilli();
+                    } catch (Exception e) {
+                        throw new IllegalArgumentException("EndDate format must be dd/MM/yyyy");
+                    }
+                }
+            }
+
             if (files != null) {
                 for (File f : files) {
-                    if (isExtraSensoryFile(f)) {
-                        cursor.addRow(new Object[]{CsvFiles.decomposeFileName(f.getName()).devicePosition, f.getName()});
+                    CsvFiles.CsvFileName fileName =  CsvFiles.decomposeFileName(f.getName());
+                    if (isExtraSensoryFile(f) && Long.parseLong(fileName.devicePosition) >= startDate && Long.parseLong(fileName.devicePosition) <= endDate) {
+                        cursor.addRow(new Object[]{fileName.devicePosition, f.getName()});
                     }
                 }
             }
