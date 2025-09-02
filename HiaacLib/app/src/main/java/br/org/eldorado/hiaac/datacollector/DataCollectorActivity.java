@@ -159,7 +159,7 @@ public class DataCollectorActivity extends AppCompatActivity {
         popupWindow.setOutsideTouchable(true);
         popupWindow.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
 
-        popupWindow.showAsDropDown(mAddButton, -40, -400);
+        popupWindow.showAsDropDown(mAddButton, -40, -440);
 
     }
 

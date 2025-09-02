@@ -11,6 +11,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
+        android:backgroundTint="@color/orange_primary"
         android:text="Collect Sensors Data" />
 
     <TextView
@@ -19,7 +20,7 @@
         android:layout_height="wrap_content"
         android:layout_marginBottom="20px"
         android:layout_gravity="bottom|center_horizontal"
-        android:textColor="@color/purple_700"
+        android:textColor="@color/orange_primary"
         android:text="Open Source Licenses"/>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
