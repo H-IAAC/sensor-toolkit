@@ -6,7 +6,6 @@
     android:orientation="vertical"
     android:padding="8dp">
 
-    <!-- Primeiro item: Eldorado -->
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -32,7 +31,6 @@
 
     </LinearLayout>
 
-    <!-- Segundo item: Unicamp -->
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
