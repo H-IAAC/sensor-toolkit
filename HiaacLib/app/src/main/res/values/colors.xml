@@ -11,5 +11,6 @@
     <color name="red">#FF0000</color>
     <color name="inprogress">#34FF2828</color>
     <color name="gray">#9c9c9c</color>
+    <color name="orange_primary">#FFA726</color>
 
 </resources>

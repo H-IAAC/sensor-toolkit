@@ -47,6 +47,7 @@
             android:configChanges="uiMode"
             android:name=".datacollector.LabelOptionsActivity"
             android:exported="false"
+            android:theme="@style/PreferenceScreen"
             android:screenOrientation="portrait" />
         <activity
             android:configChanges="uiMode"
@@ -58,6 +59,7 @@
             android:name=".datacollector.DataCollectorActivity"
             android:exported="true"
             android:label="@string/app_name"
+            android:theme="@style/PreferenceScreen"
             android:screenOrientation="portrait" />
 
         <activity
@@ -65,6 +67,7 @@
             android:name=".datacollector.EldoradoLabelOptionsActivity"
             android:exported="true"
             android:label="@string/app_name"
+            android:theme="@style/PreferenceScreen"
             android:screenOrientation="portrait" />
 
         <receiver
