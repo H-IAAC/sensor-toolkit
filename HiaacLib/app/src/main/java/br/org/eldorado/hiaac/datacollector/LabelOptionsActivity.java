@@ -406,40 +406,42 @@ public class LabelOptionsActivity extends AppCompatActivity {
         Map<Integer, Integer> sensorTypeFrequencyMap = new HashMap<>();
         if (mSensorFrequencies != null) {
             for (SensorFrequency sensorFrequency : mSensorFrequencies) {
-                sensorTypeFrequencyMap.put(sensorFrequency.sensor.getType(), sensorFrequency.frequency);
+                sensorTypeFrequencyMap.put(sensorFrequency.getSensor().getType(), sensorFrequency.getFrequency());
             }
         }
 
         selectedSensorFrequencies.add(createSelectedSensorFrequency(sensorTypeFrequencyMap,
-                SensorBase.TYPE_LINEAR_ACCELEROMETER, LinearAccelerometer.TAG));
+                SensorBase.TYPE_LINEAR_ACCELEROMETER, LinearAccelerometer.TAG, false));
         selectedSensorFrequencies.add(createSelectedSensorFrequency(sensorTypeFrequencyMap,
-                SensorBase.TYPE_ACCELEROMETER, Accelerometer.TAG));
+                SensorBase.TYPE_ACCELEROMETER, Accelerometer.TAG, false));
         selectedSensorFrequencies.add(createSelectedSensorFrequency(sensorTypeFrequencyMap,
-                SensorBase.TYPE_AMBIENT_TEMPERATURE, AmbientTemperature.TAG));
+                SensorBase.TYPE_AMBIENT_TEMPERATURE, AmbientTemperature.TAG, false));
         selectedSensorFrequencies.add(createSelectedSensorFrequency(sensorTypeFrequencyMap,
-                SensorBase.TYPE_GYROSCOPE, Gyroscope.TAG));
+                SensorBase.TYPE_GYROSCOPE, Gyroscope.TAG, false));
         selectedSensorFrequencies.add(createSelectedSensorFrequency(sensorTypeFrequencyMap,
-                SensorBase.TYPE_LUMINOSITY, Luminosity.TAG));
+                SensorBase.TYPE_LUMINOSITY, Luminosity.TAG, false));
         selectedSensorFrequencies.add(createSelectedSensorFrequency(sensorTypeFrequencyMap,
-                SensorBase.TYPE_PROXIMITY, Proximity.TAG));
+                SensorBase.TYPE_PROXIMITY, Proximity.TAG, false));
         selectedSensorFrequencies.add(createSelectedSensorFrequency(sensorTypeFrequencyMap,
-                SensorBase.TYPE_MAGNETIC_FIELD, MagneticField.TAG));
+                SensorBase.TYPE_MAGNETIC_FIELD, MagneticField.TAG, false));
         selectedSensorFrequencies.add(createSelectedSensorFrequency(sensorTypeFrequencyMap,
-                SensorBase.TYPE_GRAVITY, Gravity.TAG));
+                SensorBase.TYPE_GRAVITY, Gravity.TAG, false));
         selectedSensorFrequencies.add(createSelectedSensorFrequency(sensorTypeFrequencyMap,
-                SensorBase.TYPE_GPS, GPS.TAG));
+                SensorBase.TYPE_GPS, GPS.TAG, false));
+        selectedSensorFrequencies.add(createSelectedSensorFrequency(sensorTypeFrequencyMap,
+                SensorBase.TYPE_AUDIO, "AUDIO", true));
 
         return selectedSensorFrequencies;
     }
 
     private SensorFrequencyViewAdapter.SelectedSensorFrequency createSelectedSensorFrequency(
-            Map<Integer, Integer> sensorTypeFrequencyMap, int sensorType, String sensorName) {
+            Map<Integer, Integer> sensorTypeFrequencyMap, int sensorType, String sensorName, Boolean isAudio) {
         Integer frequency = sensorTypeFrequencyMap.get(sensorType);
 
         return new SensorFrequencyViewAdapter.SelectedSensorFrequency(
                         frequency != null,
                         sensorName,
-                        frequency == null ? frequencyOptions.get(0) : frequency.intValue());
+                        frequency == null ? frequencyOptions.get(0) : frequency.intValue(), isAudio);
     }
 
     private List<SensorFrequency> getSensorFrequenciesFromSelectedSensorFrequencies(long config_id) {
@@ -449,7 +451,7 @@ public class LabelOptionsActivity extends AppCompatActivity {
                 SensorFrequency sensorFrequency = new SensorFrequency(
                         config_id,
                         Tools.getSensorFromTitleName(selectedSensorFrequency.getSensor()),
-                        selectedSensorFrequency.getFrequency());
+                        selectedSensorFrequency.getFrequency(), selectedSensorFrequency.isAudio());
                 sensorFrequencies.add(sensorFrequency);
             }
         }

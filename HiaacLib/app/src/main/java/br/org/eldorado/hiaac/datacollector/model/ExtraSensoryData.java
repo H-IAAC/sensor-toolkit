@@ -5,9 +5,12 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import br.org.eldorado.hiaac.datacollector.util.Log;
 import br.org.eldorado.sensoragent.model.SensorBase;
 
 public class ExtraSensoryData {
+
+    private final Log log = new Log("ExtraSensoryData");
 
     private Map<String, Double> features;
 
@@ -46,7 +49,13 @@ public class ExtraSensoryData {
         THREE_D_STD_Z(":3d:std_z"),
         THREE_D_RO_XY(":3d:ro_xy"),
         THREE_D_RO_XZ(":3d:ro_xz"),
-        THREE_D_RO_YZ(":3d:ro_yz");
+        THREE_D_RO_YZ(":3d:ro_yz"),
+
+        /* Audio Features */
+        AUDIO_MAX_ABS("audio_properties:max_abs_value"),
+        AUDIO_NORMALIZATION_MULTIPLIER("audio_properties:normalization_multiplier"),
+        AUDIO_MFCC_MEAN("audio_naive:mfcc%d:mean"),
+        AUDIO_MFCC_STD("audio_naive:mfcc%d:mean");
 
 
         private final String value;
@@ -62,8 +71,10 @@ public class ExtraSensoryData {
 
     private String[] csvHeaders;
 
-    public ExtraSensoryData() {
+    public ExtraSensoryData(Long timestamp) {
         this.features = new LinkedHashMap<>();
+        log.d("long " + timestamp + " double " + timestamp.doubleValue());
+        this.features.put("timestamp",timestamp.doubleValue());
     }
     public boolean isSensorSupported(int type) {
         return type == SensorBase.TYPE_ACCELEROMETER || type == SensorBase.TYPE_GYROSCOPE || type == SensorBase.TYPE_MAGNETIC_FIELD;
@@ -71,6 +82,10 @@ public class ExtraSensoryData {
 
     public void addFeature(FeatureName name, int sensor, double value) {
         features.put(getSensorPrefix(sensor) + name.getValue(), value);
+    }
+
+    public void addMFCCFeature(FeatureName name, int mfccNum, double value) {
+        features.put(name.getValue().replaceAll("%d", String.valueOf(mfccNum)), value);
     }
 
     public String[] getCsvHeaders() {
@@ -81,7 +96,7 @@ public class ExtraSensoryData {
     }
 
     public String[] getCsvValues() {
-        List<String> values = new ArrayList<String>(csvHeaders.length);
+        List<String> values = new ArrayList<String>(csvHeaders.length+1);
         for (String key : csvHeaders) {
             values.add(String.valueOf(features.get(key)));
         }
@@ -96,6 +111,8 @@ public class ExtraSensoryData {
                 return "proc_gyro";
             case SensorBase.TYPE_MAGNETIC_FIELD:
                 return "raw_magnet";
+            case SensorBase.TYPE_AUDIO:
+                return "";
             default:
                 return "unsupported";
         }

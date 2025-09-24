@@ -39,6 +39,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import org.json.JSONObject;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -983,7 +984,7 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
         }
 
         @Override
-        public void onExtraSensoryConversion(Map<Integer, List<LabeledData>> extraSensoryData) {
+        public void onExtraSensoryConversion(Map<Integer, List<LabeledData>> extraSensoryData, ByteArrayInputStream audioData) {
             try {
                 ((Activity) mContext).runOnUiThread(new Runnable() {
                     @Override
@@ -1006,14 +1007,13 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
                                 ((Activity)mContext).runOnUiThread(new Runnable() {
                                     @Override
                                     public void run() {
-                                        //log.d("ATUALIZANDO " + labelConfigs.get(holder.getAdapterPosition()).id);
                                         List<File> files = csvFiles.getFiles(labelConfigs.get(holder.getAdapterPosition()).id);
                                         ((CSVFilesRecyclerAdapter)holder.getCsvRecyclerView().getAdapter()).updateFileList(files);
                                     }
                                 });
                             }
                         });
-                        firebase.convertToExtraSensory(getDataTrack().getUid(), labelConfigs.get(holder.getAdapterPosition()).id, extraSensoryData);
+                        firebase.convertToExtraSensory(getDataTrack().getUid(), labelConfigs.get(holder.getAdapterPosition()).id, extraSensoryData, audioData);
                     }
                 });
             } catch (Exception e) {

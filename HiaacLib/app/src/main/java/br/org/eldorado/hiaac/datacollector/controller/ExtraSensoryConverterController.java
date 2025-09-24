@@ -5,6 +5,8 @@ import org.apache.commons.math3.stat.correlation.PearsonsCorrelation;
 import org.apache.commons.math3.stat.descriptive.moment.StandardDeviation;
 import org.jtransforms.fft.DoubleFFT_1D;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -23,19 +25,27 @@ public class ExtraSensoryConverterController {
 
     private ExtraSensoryData esData;
 
-    public ExtraSensoryConverterController() {
-        this(40.0);
+    public ExtraSensoryConverterController(Long timestamp) {
+        this(40.0, timestamp);
     }
 
-    public ExtraSensoryConverterController(double samplingRate) {
+    public ExtraSensoryConverterController(double samplingRate, Long timestamp) {
         this.samplingRate = samplingRate;
-        this.esData = new ExtraSensoryData();
+        this.esData = new ExtraSensoryData(timestamp);
     }
 
-    public ExtraSensoryData convertData(Map<Integer, List<LabeledData>> data) {
+    public ExtraSensoryData convertData(Map<Integer, List<LabeledData>> data, ByteArrayInputStream audioData) {
         for (Integer sensor : data.keySet()) {
             List<LabeledData> sensorData = data.get(sensor);
             extractFeatures(sensorData);
+        }
+        if (audioData != null) {
+            AudioFeaturesExtrator audioEx = new AudioFeaturesExtrator(22050);
+            try {
+                audioEx.extractFeaturesFromStream(audioData, esData);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
         return esData;
     }
