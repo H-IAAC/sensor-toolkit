@@ -1,5 +1,6 @@
 package br.org.eldorado.hiaac.datacollector.service.listener;
 
+import java.io.ByteArrayInputStream;
 import java.util.List;
 import java.util.Map;
 
@@ -13,5 +14,5 @@ public interface ExecutionServiceListener {
     void onStopped();
     void onStarted();
     void onError(String errorMessage);
-    void onExtraSensoryConversion(Map<Integer, List<LabeledData>> extraSensoryData);
+    void onExtraSensoryConversion(Map<Integer, List<LabeledData>> extraSensoryData, ByteArrayInputStream audioData);
 }

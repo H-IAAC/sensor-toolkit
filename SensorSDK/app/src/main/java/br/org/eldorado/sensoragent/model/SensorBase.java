@@ -19,6 +19,7 @@ public class SensorBase implements Parcelable, Cloneable {
     public static final int TYPE_MAGNETIC_FIELD = Sensor.TYPE_MAGNETIC_FIELD;
     public static final int TYPE_GRAVITY = Sensor.TYPE_GRAVITY;
     public static final int TYPE_GPS = 100;
+    public static final int TYPE_AUDIO = 150;
 
     private static final int ON_STARTED = 0;
     private static final int ON_STOPPED = 1;
@@ -69,7 +70,7 @@ public class SensorBase implements Parcelable, Cloneable {
                 zeros++;
             }
         }
-        return (unchangedValue != values.length) && ((zeros != values.length) ||  type == TYPE_PROXIMITY  || type == TYPE_LUMINOSITY);
+        return type == TYPE_AUDIO || (unchangedValue != values.length) && ((zeros != values.length) ||  type == TYPE_PROXIMITY  || type == TYPE_LUMINOSITY);
     }
 
     public void setFrequency(int f) {
@@ -111,6 +112,7 @@ public class SensorBase implements Parcelable, Cloneable {
     }
 
     public void updateInformation(AgentSensorBase s) {
+        if (type == TYPE_AUDIO) return;
         if (s == null || s.getValuesArray() == null) {
             log.i(getName() + " sensor not started");
             isStarted = false;
@@ -154,11 +156,19 @@ public class SensorBase implements Parcelable, Cloneable {
     public void startSensor() {
         log.i(getName() + " sensor isStarted: " + isStarted);
         if (!isStarted) {
+            if (type == TYPE_AUDIO) {
+                fireListener(ON_STARTED);
+                return;
+            }
             controller.startSensor(this);
         }
     }
 
     public void stopSensor() {
+        if (type == TYPE_AUDIO) {
+            fireListener(ON_STOPPED);
+            return;
+        }
         controller.stopSensor(this);
     }
 
@@ -191,6 +201,7 @@ public class SensorBase implements Parcelable, Cloneable {
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
+        if (type == TYPE_AUDIO) return;
         dest.writeLong(timestamp);
         dest.writeFloatArray(values);
         dest.writeFloat(power);

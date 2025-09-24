@@ -27,6 +27,7 @@ import br.org.eldorado.hiaac.R;
 import br.org.eldorado.hiaac.datacollector.layout.AnimatedLinearLayout;
 import br.org.eldorado.hiaac.datacollector.util.Log;
 import br.org.eldorado.hiaac.datacollector.util.Tools;
+import br.org.eldorado.sensoragent.model.Audio;
 import br.org.eldorado.sensoragent.model.GPS;
 import br.org.eldorado.sensorsdk.SensorSDK;
 
@@ -36,6 +37,7 @@ public class SensorFrequencyViewAdapter extends RecyclerView.Adapter<SensorFrequ
     private SensorFrequencyChangeListener mListener;
     private final Context mContext;
     private ViewHolder gpsHolder;
+    private ViewHolder audioHolder;
     private final Log log;
     private String type;
 
@@ -157,6 +159,9 @@ public class SensorFrequencyViewAdapter extends RecyclerView.Adapter<SensorFrequ
             if (type.equals("Eldorado")) {
                 checkGPSPermission();
             }
+        } else if (checkBox.getText().toString().equalsIgnoreCase("audio")) {
+            audioHolder = holder;
+            checkAudioPermission();
         }
     }
 
@@ -197,6 +202,8 @@ public class SensorFrequencyViewAdapter extends RecyclerView.Adapter<SensorFrequ
             // Check if we have GPS permission
             //gpsHolder = holder;
             checkGPSPermission();
+        } else if (Audio.TAG.equalsIgnoreCase(holder.getSelectSensorCheckBox().getText().toString())) {
+            checkAudioPermission();
         } else {
             boolean isSensorAvailable = checkSensorAvailability(selectedSensorFrequency.sensor);
             if (holder.getSelectSensorCheckBox().isChecked()
@@ -260,8 +267,31 @@ public class SensorFrequencyViewAdapter extends RecyclerView.Adapter<SensorFrequ
         }
     }
 
+    public void checkAudioPermission() {
+        boolean show = ActivityCompat.shouldShowRequestPermissionRationale((Activity)mContext, Manifest.permission.RECORD_AUDIO);
+        if (show) {
+            AlertDialog alert = new AlertDialog.Builder(mContext).setMessage(mContext.getString(R.string.audio_permission_description))
+                    .setCancelable(false)
+                    .setPositiveButton(mContext.getString(R.string.gps_ok), new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            requestAudioPermission();
+                        }
+                    }).setNegativeButton(mContext.getString(R.string.dont_use_gps), new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            updateAudio(PackageManager.PERMISSION_DENIED);
+                        }
+                    }).create();
+            alert.setTitle(mContext.getString(R.string.dialog_alert_title));
+            alert.show();
+        } else {
+            requestAudioPermission();
+        }
+    }
+
     public boolean checkSensorAvailability(String sensorName) {
-        if (sensorName.equalsIgnoreCase("gps")) return true;
+        if (sensorName.equalsIgnoreCase("gps") || sensorName.equalsIgnoreCase("audio")) return true;
         boolean isAvailable = true;
         if (!SensorSDK.getInstance().checkSensorAvailability(Tools.getSensorFromTitleName(sensorName).getType())) {
             AlertDialog alert = new AlertDialog.Builder(mContext)
@@ -288,6 +318,13 @@ public class SensorFrequencyViewAdapter extends RecyclerView.Adapter<SensorFrequ
                         Manifest.permission.ACCESS_FINE_LOCATION,
                         Manifest.permission.ACCESS_COARSE_LOCATION },
                 100);
+    }
+
+    private void requestAudioPermission() {
+        log.d("requestAudioPermission");
+        ActivityCompat.requestPermissions((Activity)mContext, new String[] {
+                        Manifest.permission.RECORD_AUDIO},
+                105);
     }
 
     public void requestBackgroundPermission() {
@@ -317,6 +354,28 @@ public class SensorFrequencyViewAdapter extends RecyclerView.Adapter<SensorFrequ
                 gpsCheckBox.setChecked(false);
                 mSelectedSensors.get(gpsHolder.getAdapterPosition()).setSelected(false);
                 gpsHolder.getFrequencyContainer().close();
+            }
+        }
+    }
+
+    public void updateAudio(int permission) {
+        if (audioHolder != null && audioHolder.getSelectSensorCheckBox() != null) {
+            CheckBox audioCheckBox = audioHolder.getSelectSensorCheckBox();
+            if (permission == PackageManager.PERMISSION_GRANTED) {
+                audioCheckBox.setEnabled(true);
+                if (audioCheckBox.isChecked()) {
+                    mSelectedSensors.get(audioHolder.getAdapterPosition()).setSelected(true);
+                } else {
+                    mSelectedSensors.get(audioHolder.getAdapterPosition()).setSelected(false);
+                    audioHolder.getFrequencyContainer().close();
+                }
+                notifySensorFrequencyChanged();
+            } else {
+                Toast.makeText(mContext, "Audio permission not granted", Toast.LENGTH_SHORT).show();
+                audioCheckBox.setEnabled(false);
+                audioCheckBox.setChecked(false);
+                mSelectedSensors.get(audioHolder.getAdapterPosition()).setSelected(false);
+                audioHolder.getFrequencyContainer().close();
             }
         }
     }
@@ -363,11 +422,13 @@ public class SensorFrequencyViewAdapter extends RecyclerView.Adapter<SensorFrequ
         private boolean isSelected;
         private String sensor;
         private int frequency;
+        private boolean isAudio;
 
-        public SelectedSensorFrequency(boolean isSelected, String sensor, int frequency) {
+        public SelectedSensorFrequency(boolean isSelected, String sensor, int frequency, boolean isAudio) {
             this.isSelected = isSelected;
             this.sensor = sensor;
             this.frequency = frequency;
+            this.isAudio = isAudio;
         }
 
         public boolean isSelected() {
@@ -388,6 +449,10 @@ public class SensorFrequencyViewAdapter extends RecyclerView.Adapter<SensorFrequ
 
         public void setFrequency(int frequency) {
             this.frequency = frequency;
+        }
+
+        public Boolean isAudio() {
+            return isAudio;
         }
     }
 }

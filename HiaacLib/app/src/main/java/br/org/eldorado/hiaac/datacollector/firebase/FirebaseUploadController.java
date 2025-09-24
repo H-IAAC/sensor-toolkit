@@ -3,6 +3,9 @@ package br.org.eldorado.hiaac.datacollector.firebase;
 import android.app.Application;
 import android.content.Context;
 import android.net.Uri;
+import android.os.Handler;
+import android.os.Looper;
+
 import androidx.annotation.NonNull;
 import androidx.lifecycle.ViewModelProvider;
 import com.google.android.gms.tasks.OnFailureListener;
@@ -12,6 +15,7 @@ import com.google.firebase.storage.OnProgressListener;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.util.List;
 import java.util.Map;
@@ -23,6 +27,7 @@ import br.org.eldorado.hiaac.datacollector.data.LabelConfigRepository;
 import br.org.eldorado.hiaac.datacollector.data.LabelConfigViewModel;
 import br.org.eldorado.hiaac.datacollector.data.LabeledData;
 import br.org.eldorado.hiaac.datacollector.model.ExtraSensoryData;
+import br.org.eldorado.hiaac.datacollector.service.InferenceService;
 import br.org.eldorado.hiaac.datacollector.util.CsvBuilder;
 import br.org.eldorado.hiaac.datacollector.util.Log;
 import br.org.eldorado.sensoragent.model.SensorBase;
@@ -203,12 +208,16 @@ public class FirebaseUploadController {
         }).start();
     }
 
-    public void convertToExtraSensory(final String uid, long labelId, Map<Integer, List<LabeledData>> extraSensoryData) {
+    public void convertToExtraSensory(final String uid, long labelId, Map<Integer, List<LabeledData>> extraSensoryData, ByteArrayInputStream audioData) {
 
         new Thread(new Runnable() {
             @Override
             public void run() {
                 try {
+                    if (extraSensoryData == null || extraSensoryData.isEmpty()) {
+                        fireListener(ERROR, mContext.getString(R.string.error_no_data_create_csc));
+                        return;
+                    }
                     long start = System.currentTimeMillis();
                     String innerUid = uid;
 
@@ -233,17 +242,29 @@ public class FirebaseUploadController {
                     }
 
                     fireListener(ON_PROGRESS, mContext.getString(R.string.creating_csv_file));
+                    long timestamp = System.currentTimeMillis();
+                    if (!extraSensoryData.isEmpty()) {
+                        timestamp = extraSensoryData.entrySet().iterator().next().getValue().get(0).getTimestamp();
+                    }
 
-                    ExtraSensoryConverterController esConverter = new ExtraSensoryConverterController();
-                    ExtraSensoryData esData = esConverter.convertData(extraSensoryData);
+                    ExtraSensoryConverterController esConverter = new ExtraSensoryConverterController(timestamp);
+                    ExtraSensoryData esData = esConverter.convertData(extraSensoryData, audioData);
 
-                    File csvFile = csvBuilder.getExtraSensoryCsvFile(extraSensoryData.get(SensorBase.TYPE_ACCELEROMETER).get(0),
+                    File csvFile = csvBuilder.getExtraSensoryCsvFile(extraSensoryData.entrySet().iterator().next().getValue().get(0),
                             innerUid);
                     csvBuilder.appendExtraSensoryData(csvFile, esData, true);
 
                     long end = System.currentTimeMillis();
                     log.d("convertToExtraSensory - Csv file created. Time consumed: " + ((end - start) / 1000) / 60 + "m" + ((end - start) / 1000) % 60 + "s");
 
+                    InferenceService infService = new InferenceService(mContext);
+                    infService.bind();
+                    new Handler(Looper.getMainLooper()).postDelayed(() -> {
+                        if (infService.isBound()) {
+                            log.d("Sending ExtraSensory CSV to inference Service - file: " + csvFile);
+                            infService.runInference(csvFile.getPath());
+                        }
+                    }, 2000);
 
                     fireListener(SUCCESS, mContext.getString(R.string.success_csv_file));
                 } catch(Exception e) {

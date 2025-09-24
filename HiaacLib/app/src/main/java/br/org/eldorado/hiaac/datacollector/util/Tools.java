@@ -20,6 +20,7 @@ import java.util.zip.ZipOutputStream;
 
 import br.org.eldorado.sensoragent.model.Accelerometer;
 import br.org.eldorado.sensoragent.model.AmbientTemperature;
+import br.org.eldorado.sensoragent.model.Audio;
 import br.org.eldorado.sensoragent.model.GPS;
 import br.org.eldorado.sensoragent.model.Gravity;
 import br.org.eldorado.sensoragent.model.Gyroscope;
@@ -126,6 +127,8 @@ public class Tools {
                 return new Gravity();
             case GPS.TAG:
                 return new GPS();
+            case Audio.TAG:
+                return new Audio();
         }
         return null;
     }

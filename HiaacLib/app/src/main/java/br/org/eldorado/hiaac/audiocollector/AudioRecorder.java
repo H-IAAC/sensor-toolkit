@@ -1,12 +1,16 @@
 package br.org.eldorado.hiaac.audiocollector;
 
+import android.Manifest;
 import android.annotation.SuppressLint;
+import android.content.Context;
+import android.content.pm.PackageManager;
 import android.media.AudioFormat;
 import android.media.AudioRecord;
 import android.media.MediaRecorder;
 import android.os.Handler;
 import android.os.Looper;
 
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.FragmentActivity;
 
 import java.io.ByteArrayInputStream;
@@ -29,7 +33,7 @@ public class AudioRecorder {
     private ByteArrayOutputStream outputStream;
     private Handler timeoutHandler;
 
-    private final int sampleRate = 44100;
+    private final int sampleRate = 22050;
     private final int channelConfig = AudioFormat.CHANNEL_IN_MONO;
     private final int audioFormat = AudioFormat.ENCODING_PCM_16BIT;
     private final int bufferSize = AudioRecord.getMinBufferSize(sampleRate, channelConfig, audioFormat);
@@ -47,6 +51,11 @@ public class AudioRecorder {
     public AudioRecorder(FragmentActivity activity) {
         this.activity = activity;
 
+    }
+
+    public AudioRecorder(Context ctx) {
+        isPermissionGranted = hasAudioPermission(ctx);
+        startAfterPermissionGranted();
     }
 
     public void setOnRecordCompleteListener(OnRecordCompleteListener listener) {
@@ -68,6 +77,12 @@ public class AudioRecorder {
                 .beginTransaction()
                 .add(fragment, "PermissionFragment")
                 .commit();
+    }
+
+    private boolean hasAudioPermission(Context ctx) {
+        return ContextCompat.checkSelfPermission(
+                ctx, Manifest.permission.RECORD_AUDIO
+        ) == PackageManager.PERMISSION_GRANTED;
     }
 
     /**

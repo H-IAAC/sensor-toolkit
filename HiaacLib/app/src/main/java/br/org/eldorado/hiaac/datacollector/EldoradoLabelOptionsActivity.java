@@ -68,6 +68,7 @@ import br.org.eldorado.hiaac.datacollector.util.Tools;
 import br.org.eldorado.hiaac.datacollector.view.adapter.SensorFrequencyViewAdapter;
 import br.org.eldorado.sensoragent.model.Accelerometer;
 import br.org.eldorado.sensoragent.model.AmbientTemperature;
+import br.org.eldorado.sensoragent.model.Audio;
 import br.org.eldorado.sensoragent.model.GPS;
 import br.org.eldorado.sensoragent.model.Gravity;
 import br.org.eldorado.sensoragent.model.Gyroscope;
@@ -77,12 +78,6 @@ import br.org.eldorado.sensoragent.model.MagneticField;
 import br.org.eldorado.sensoragent.model.Proximity;
 import br.org.eldorado.sensoragent.model.SensorBase;
 import br.org.eldorado.sensorsdk.SensorSDK;
-import okhttp3.MediaType;
-import okhttp3.MultipartBody;
-import okhttp3.RequestBody;
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
 
 public class EldoradoLabelOptionsActivity extends AppCompatActivity {
     public static final int MINUTE = 60;
@@ -310,6 +305,12 @@ public class EldoradoLabelOptionsActivity extends AppCompatActivity {
             if (grantResults.length > 0) {
                 mSensorFrequencyViewAdapter.updateGPS(grantResults[0]);
             }
+        } else if (105 == requestCode) {
+            log.d("request audio");
+
+            if (grantResults.length > 0) {
+                mSensorFrequencyViewAdapter.updateAudio(grantResults[0]);
+            }
         }
     }
 
@@ -391,40 +392,42 @@ public class EldoradoLabelOptionsActivity extends AppCompatActivity {
         Map<Integer, Integer> sensorTypeFrequencyMap = new HashMap<>();
         if (mSensorFrequencies != null) {
             for (SensorFrequency sensorFrequency : mSensorFrequencies) {
-                sensorTypeFrequencyMap.put(sensorFrequency.sensor.getType(), sensorFrequency.frequency);
+                sensorTypeFrequencyMap.put(sensorFrequency.getSensor().getType(), sensorFrequency.getFrequency());
             }
         }
 
         selectedSensorFrequencies.add(createSelectedSensorFrequency(sensorTypeFrequencyMap,
-                SensorBase.TYPE_LINEAR_ACCELEROMETER, LinearAccelerometer.TAG));
+                SensorBase.TYPE_LINEAR_ACCELEROMETER, LinearAccelerometer.TAG, false));
         selectedSensorFrequencies.add(createSelectedSensorFrequency(sensorTypeFrequencyMap,
-                SensorBase.TYPE_ACCELEROMETER, Accelerometer.TAG));
+                SensorBase.TYPE_ACCELEROMETER, Accelerometer.TAG, false));
         selectedSensorFrequencies.add(createSelectedSensorFrequency(sensorTypeFrequencyMap,
-                SensorBase.TYPE_AMBIENT_TEMPERATURE, AmbientTemperature.TAG));
+                SensorBase.TYPE_AMBIENT_TEMPERATURE, AmbientTemperature.TAG, false));
         selectedSensorFrequencies.add(createSelectedSensorFrequency(sensorTypeFrequencyMap,
-                SensorBase.TYPE_GYROSCOPE, Gyroscope.TAG));
+                SensorBase.TYPE_GYROSCOPE, Gyroscope.TAG, false));
         selectedSensorFrequencies.add(createSelectedSensorFrequency(sensorTypeFrequencyMap,
-                SensorBase.TYPE_LUMINOSITY, Luminosity.TAG));
+                SensorBase.TYPE_LUMINOSITY, Luminosity.TAG, false));
         selectedSensorFrequencies.add(createSelectedSensorFrequency(sensorTypeFrequencyMap,
-                SensorBase.TYPE_PROXIMITY, Proximity.TAG));
+                SensorBase.TYPE_PROXIMITY, Proximity.TAG, false));
         selectedSensorFrequencies.add(createSelectedSensorFrequency(sensorTypeFrequencyMap,
-                SensorBase.TYPE_MAGNETIC_FIELD, MagneticField.TAG));
+                SensorBase.TYPE_MAGNETIC_FIELD, MagneticField.TAG, false));
         selectedSensorFrequencies.add(createSelectedSensorFrequency(sensorTypeFrequencyMap,
-                SensorBase.TYPE_GRAVITY, Gravity.TAG));
+                SensorBase.TYPE_GRAVITY, Gravity.TAG, false));
         selectedSensorFrequencies.add(createSelectedSensorFrequency(sensorTypeFrequencyMap,
-                SensorBase.TYPE_GPS, GPS.TAG));
+                SensorBase.TYPE_GPS, GPS.TAG, false));
+        selectedSensorFrequencies.add(createSelectedSensorFrequency(sensorTypeFrequencyMap,
+                SensorBase.TYPE_AUDIO, Audio.TAG, true));
 
         return selectedSensorFrequencies;
     }
 
     private SensorFrequencyViewAdapter.SelectedSensorFrequency createSelectedSensorFrequency(
-            Map<Integer, Integer> sensorTypeFrequencyMap, int sensorType, String sensorName) {
+            Map<Integer, Integer> sensorTypeFrequencyMap, int sensorType, String sensorName, boolean isAudio) {
         Integer frequency = sensorTypeFrequencyMap.get(sensorType);
 
         return new SensorFrequencyViewAdapter.SelectedSensorFrequency(
                 frequency != null,
                 sensorName,
-                frequency == null ? 40 : frequency.intValue());
+                frequency == null ? 40 : frequency.intValue(), isAudio);
     }
 
     private List<SensorFrequency> getSensorFrequenciesFromSelectedSensorFrequencies(long config_id) {
@@ -434,7 +437,7 @@ public class EldoradoLabelOptionsActivity extends AppCompatActivity {
                 SensorFrequency sensorFrequency = new SensorFrequency(
                         config_id,
                         Tools.getSensorFromTitleName(selectedSensorFrequency.getSensor()),
-                        selectedSensorFrequency.getFrequency());
+                        selectedSensorFrequency.getFrequency(), selectedSensorFrequency.isAudio());
                 sensorFrequencies.add(sensorFrequency);
             }
         }

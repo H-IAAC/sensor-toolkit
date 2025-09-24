@@ -3,6 +3,7 @@ package br.org.eldorado.hiaac.datacollector.data;
 import androidx.room.TypeConverter;
 import br.org.eldorado.sensoragent.model.Accelerometer;
 import br.org.eldorado.sensoragent.model.AmbientTemperature;
+import br.org.eldorado.sensoragent.model.Audio;
 import br.org.eldorado.sensoragent.model.GPS;
 import br.org.eldorado.sensoragent.model.Gravity;
 import br.org.eldorado.sensoragent.model.Gyroscope;
@@ -34,6 +35,9 @@ public class SensorConverters {
                 return new Gravity();
             case "GPS":
                 return new GPS();
+            case "AUDIO":
+            case "Audio":
+                return new Audio();
         }
         return null;
     }

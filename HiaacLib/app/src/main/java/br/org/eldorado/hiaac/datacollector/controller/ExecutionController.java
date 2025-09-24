@@ -4,6 +4,8 @@ import android.os.CountDownTimer;
 
 import androidx.lifecycle.ViewModelProvider;
 
+import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -11,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import br.org.eldorado.hiaac.audiocollector.AudioRecorder;
 import br.org.eldorado.hiaac.datacollector.data.ExperimentStatistics;
 import br.org.eldorado.hiaac.datacollector.data.LabelConfigViewModel;
 import br.org.eldorado.hiaac.datacollector.data.LabeledData;
@@ -59,9 +62,9 @@ public class ExecutionController {
         try {
             if (!isRunning) {
                 for (SensorFrequency sensorFrequency : dataTrack.getSensorList()) {
-                    sensorFrequency.sensor.setFrequency(sensorFrequency.frequency);
-                    sensorFrequency.sensor.registerListener(new MySensorListener(dataTrack));
-                    sensorFrequency.sensor.startSensor();
+                    sensorFrequency.getSensor().setFrequency(sensorFrequency.getFrequency());
+                    sensorFrequency.getSensor().registerListener(new MySensorListener(dataTrack));
+                    sensorFrequency.getSensor().startSensor();
                 }
                 setExecutionTimer(dataTrack);
                 setAsRunning();
@@ -71,6 +74,7 @@ public class ExecutionController {
         } catch (Exception e) {
             setAsNotRunning();
             listener.onError(e.getMessage());
+            e.printStackTrace();
             log.d("startExecution Exception: " + e.getMessage());
         }
     }
@@ -84,28 +88,29 @@ public class ExecutionController {
     private ExperimentStatistics getExperimentStatistics(DataTrack dataTrack, SensorFrequency sensorFrequency) {
         ExperimentStatistics st = new ExperimentStatistics();
         st.setConfigId(dataTrack.getConfigId());
-        st.setSensorName(sensorFrequency.sensor.getName());
-        st.setSensorFrequency(sensorFrequency.sensor.getFrequency());
-        st.setStartTime(((MySensorListener) sensorFrequency.sensor.getListener()).getStartTime());
-        st.setEndTime(((MySensorListener) sensorFrequency.sensor.getListener()).getEndTime());
-        st.setCollectedData(((MySensorListener) sensorFrequency.sensor.getListener()).getCollectedData());
-        st.setInvalidData(((MySensorListener) sensorFrequency.sensor.getListener()).getInvalidData());
-        st.setTimestampAverage(((MySensorListener) sensorFrequency.sensor.getListener()).getTimestampAverage());
-        st.setMaxTimestampDifference(((MySensorListener) sensorFrequency.sensor.getListener()).getMaxTimestampDifference());
-        st.setMinTimestampDifference(((MySensorListener) sensorFrequency.sensor.getListener()).getMinTimestampDifference());
+        st.setSensorName(sensorFrequency.getSensor().getName());
+        st.setSensorFrequency(sensorFrequency.getSensor().getFrequency());
+        st.setStartTime(((MySensorListener) sensorFrequency.getSensor().getListener()).getStartTime());
+        st.setEndTime(((MySensorListener) sensorFrequency.getSensor().getListener()).getEndTime());
+        st.setCollectedData(((MySensorListener) sensorFrequency.getSensor().getListener()).getCollectedData());
+        st.setInvalidData(((MySensorListener) sensorFrequency.getSensor().getListener()).getInvalidData());
+        st.setTimestampAverage(((MySensorListener) sensorFrequency.getSensor().getListener()).getTimestampAverage());
+        st.setMaxTimestampDifference(((MySensorListener) sensorFrequency.getSensor().getListener()).getMaxTimestampDifference());
+        st.setMinTimestampDifference(((MySensorListener) sensorFrequency.getSensor().getListener()).getMinTimestampDifference());
         st.setTimestampStandardVariation(0);
         st.setUsingServerTime(dataTrack.isUsingServerTime());
         st.setServerTimeDiffFromLocal(dataTrack.getHowMuchServerTimeIsDifferentFromLocalTime());
 
-        log.d("Total data collected from " + sensorFrequency.sensor.getName() + ": " + ((MySensorListener) sensorFrequency.sensor.getListener()).getTotalData());
-        log.d("\tValid data from " + sensorFrequency.sensor.getName() + ": " + ((MySensorListener) sensorFrequency.sensor.getListener()).getCollectedData());
-        log.d("\tInvalid data from " + sensorFrequency.sensor.getName() + ": " + ((MySensorListener) sensorFrequency.sensor.getListener()).getInvalidData());
+        log.d("Total data collected from " + sensorFrequency.getSensor().getName() + ": " + ((MySensorListener) sensorFrequency.getSensor().getListener()).getTotalData());
+        log.d("\tValid data from " + sensorFrequency.getSensor().getName() + ": " + ((MySensorListener) sensorFrequency.getSensor().getListener()).getCollectedData());
+        log.d("\tInvalid data from " + sensorFrequency.getSensor().getName() + ": " + ((MySensorListener) sensorFrequency.getSensor().getListener()).getInvalidData());
 
         return st;
     }
 
     public void stopExecution(DataTrack dataTrack) {
         Map<Integer, List<LabeledData>> extraSensoryDataMap=null;
+        ByteArrayInputStream extraSensoryAudioData = null;
         if (isRunning && dataTrack != null) {
             timer.cancel();
             List<ExperimentStatistics> statistics = new ArrayList<ExperimentStatistics>();
@@ -114,14 +119,17 @@ public class ExecutionController {
             extraSensoryDataMap.put(SensorBase.TYPE_GYROSCOPE, null);
             extraSensoryDataMap.put(SensorBase.TYPE_MAGNETIC_FIELD, null);
             for (SensorFrequency sensorFrequency : dataTrack.getSensorList()) {
-                sensorFrequency.sensor.stopSensor();
+                sensorFrequency.getSensor().stopSensor();
 
-                if (sensorFrequency.sensor.getListener() != null) {
-                    MySensorListener sensorListener = (MySensorListener) sensorFrequency.sensor.getListener();
+                if (sensorFrequency.getSensor().getListener() != null) {
+                    MySensorListener sensorListener = (MySensorListener) sensorFrequency.getSensor().getListener();
                     statistics.add(getExperimentStatistics(dataTrack, sensorFrequency));
-                    dbView.insertLabeledData(((MySensorListener) sensorFrequency.sensor.getListener()).getLabeledDataList());
+                    dbView.insertLabeledData(((MySensorListener) sensorFrequency.getSensor().getListener()).getLabeledDataList());
                     if (dataTrack.isEldoradoProfile() ) {
-                        extraSensoryDataMap.compute(sensorFrequency.sensor.getType(), (k,v) -> sensorListener.getExtraSensoryData());
+                        extraSensoryDataMap.compute(sensorFrequency.getSensor().getType(), (k,v) -> sensorListener.getExtraSensoryData());
+                        if (sensorFrequency.isAudio()) {
+                            extraSensoryAudioData = sensorListener.getExtraSensoryAudioData();
+                        }
                     }
                 }
             }
@@ -138,7 +146,7 @@ public class ExecutionController {
         listener.onStopped();
         if (dataTrack!= null && dataTrack.isEldoradoProfile() && extraSensoryDataMap != null) {
             log.d("Collected data will be converted to ExtraSensory format " + extraSensoryDataMap);
-            listener.onExtraSensoryConversion(extraSensoryDataMap);
+            listener.onExtraSensoryConversion(extraSensoryDataMap, extraSensoryAudioData);
         }
 
         setAsNotRunning();
@@ -203,6 +211,9 @@ public class ExecutionController {
         private long totalData = 0;
         private List<LabeledData> extraSensoryData;
 
+        private AudioRecorder audioRecorder;
+        private ByteArrayInputStream audioData;
+
         public MySensorListener(DataTrack data) {
             this.dataTrack = data;
             this.labeledData = new ArrayList<LabeledData>(50000);
@@ -218,6 +229,10 @@ public class ExecutionController {
 
         public List<LabeledData> getExtraSensoryData() {
             return extraSensoryData;
+        }
+
+        public ByteArrayInputStream getExtraSensoryAudioData() {
+            return audioData;
         }
 
         public long getExpectedCollectedData(int frequency) {
@@ -264,12 +279,18 @@ public class ExecutionController {
         @Override
         public void onSensorStarted(SensorBase sensor) {
             log.d(sensor.getName() + " sensor STARTED");
+            if (sensor.getType() == SensorBase.TYPE_AUDIO) {
+                audioRecorder = new AudioRecorder(ExecutionController.getInstance().service);
+            }
         }
         @Override
         public void onSensorStopped(SensorBase sensor) {
             log.d(sensor.getName() + " sensor STOPPED");
             this.endTime = System.currentTimeMillis();
             this.timestampAverage = (collectedData < 2 ? 0 : timestampAverage/(collectedData-1)) ;
+            if (sensor.getType() == SensorBase.TYPE_AUDIO) {
+                audioData = audioRecorder.stopRecord();
+            }
         }
 
         private long calcServerTime(long localTime) {

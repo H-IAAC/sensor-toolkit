@@ -30,6 +30,7 @@
     <string name="add_new_frequency_title">Adicionar Frequência</string>
     <string name="add_new_frequency_msg">Selecione uma nova frequência para ser adicionada</string>
     <string name="gps_permission_description">Para utilizar o GPS, a aplicação precisa da permissão de Background. Se você deseja utilizar o GPS, por favor selecione \"Utilizar Sempre\".</string>
+    <string name="audio_permission_description">Para gravar audio é necessário permissão do microfone.</string>
     <string name="sensor_not_available">Este Sensor (%s) não está disponível neste dispositivo!</string>
     <string name="too_many_sensors_checked">Utilizar muitos sensores ao mesmo tempo pode causar perda de dados devido a limitações do sistema Android.</string>
     <string name="dialog_alert_title">ALERTA!</string>
