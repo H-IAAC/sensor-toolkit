@@ -25,7 +25,7 @@
         tools:ignore="ProtectedPermissions" />
 
     <queries>
-        <package android:name="br.org.eldorado.hiaac.poc.ui.poc2" />
+        <package android:name="br.org.eldorado.hiaac.poc.poc2" />
     </queries>
 
     <application
