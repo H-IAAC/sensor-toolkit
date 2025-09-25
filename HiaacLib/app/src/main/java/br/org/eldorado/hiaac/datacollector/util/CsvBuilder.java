@@ -197,7 +197,7 @@ public class CsvBuilder {
     }
 
     private String composeExtraSensoryFileName(LabeledData data, String timestamp) {
-        return data.getUserId() + "_" +
+        return /*data.getUserId() + "_" +*/
                 data.getExperiment() + "_" +
                 "ExtraSensory_" +
                 data.getTimestamp() + "__" +
