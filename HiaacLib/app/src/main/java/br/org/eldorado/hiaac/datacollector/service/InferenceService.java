@@ -8,7 +8,7 @@ import android.os.IBinder;
 import android.os.RemoteException;
 
 import br.org.eldorado.hiaac.datacollector.util.Log;
-import br.org.eldorado.hiaac.poc.ui.poc2.service.IAidlInferenceService;
+import br.org.eldorado.hiaac.poc.poc2.service.IAidlInferenceService;
 
 public class InferenceService {
 
@@ -40,10 +40,10 @@ public class InferenceService {
         if (bound) return;
 
         Intent intent = new Intent("InferenceService");
-        intent.setPackage("br.org.eldorado.hiaac.poc.ui.poc2");
+        intent.setPackage("br.org.eldorado.hiaac.poc.poc2");
 
         boolean ok = mContext.bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
-        log.d( "Trying to bind service br.org.eldorado.hiaac.poc.ui.poc2=" + ok);
+        log.d( "Trying to bind service br.org.eldorado.hiaac.poc.poc2=" + ok);
     }
 
     public void unbind() {
