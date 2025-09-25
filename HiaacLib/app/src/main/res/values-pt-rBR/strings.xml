@@ -24,6 +24,7 @@
     <string name="error_no_data_create_csc">Nenhum dado encontrado para criar o arquivo CSV!</string>
     <string name="error_no_data_upload_firebase">There was any data to upload to Firebase server!</string>
     <string name="dont_use_gps">Não use o GPS</string>
+    <string name="dont_use_audio">Não use o microfone</string>
     <string name="gps_ok">Ok, Entendo</string>
     <string name="button_ok">OK</string>
     <string name="button_cancel">Cancelar</string>

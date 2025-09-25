@@ -87,9 +87,10 @@ public class EldoradoLabelOptionsActivity extends AppCompatActivity {
     private final int[] stopTimeOptions = {
             5,
             15,
+            20,
             30,
             45,
-            1 * MINUTE,
+            MINUTE,
             2 * MINUTE,
             3 * MINUTE,
             3 * MINUTE + 30,
@@ -397,22 +398,22 @@ public class EldoradoLabelOptionsActivity extends AppCompatActivity {
             }
         }
 
-        selectedSensorFrequencies.add(createSelectedSensorFrequency(sensorTypeFrequencyMap,
-                SensorBase.TYPE_LINEAR_ACCELEROMETER, LinearAccelerometer.TAG, false));
+//        selectedSensorFrequencies.add(createSelectedSensorFrequency(sensorTypeFrequencyMap,
+//                SensorBase.TYPE_LINEAR_ACCELEROMETER, LinearAccelerometer.TAG, false));
         selectedSensorFrequencies.add(createSelectedSensorFrequency(sensorTypeFrequencyMap,
                 SensorBase.TYPE_ACCELEROMETER, Accelerometer.TAG, false));
         selectedSensorFrequencies.add(createSelectedSensorFrequency(sensorTypeFrequencyMap,
-                SensorBase.TYPE_AMBIENT_TEMPERATURE, AmbientTemperature.TAG, false));
-        selectedSensorFrequencies.add(createSelectedSensorFrequency(sensorTypeFrequencyMap,
+//                SensorBase.TYPE_AMBIENT_TEMPERATURE, AmbientTemperature.TAG, false));
+//        selectedSensorFrequencies.add(createSelectedSensorFrequency(sensorTypeFrequencyMap,
                 SensorBase.TYPE_GYROSCOPE, Gyroscope.TAG, false));
-        selectedSensorFrequencies.add(createSelectedSensorFrequency(sensorTypeFrequencyMap,
-                SensorBase.TYPE_LUMINOSITY, Luminosity.TAG, false));
-        selectedSensorFrequencies.add(createSelectedSensorFrequency(sensorTypeFrequencyMap,
-                SensorBase.TYPE_PROXIMITY, Proximity.TAG, false));
+//        selectedSensorFrequencies.add(createSelectedSensorFrequency(sensorTypeFrequencyMap,
+//                SensorBase.TYPE_LUMINOSITY, Luminosity.TAG, false));
+//        selectedSensorFrequencies.add(createSelectedSensorFrequency(sensorTypeFrequencyMap,
+//                SensorBase.TYPE_PROXIMITY, Proximity.TAG, false));
         selectedSensorFrequencies.add(createSelectedSensorFrequency(sensorTypeFrequencyMap,
                 SensorBase.TYPE_MAGNETIC_FIELD, MagneticField.TAG, false));
-        selectedSensorFrequencies.add(createSelectedSensorFrequency(sensorTypeFrequencyMap,
-                SensorBase.TYPE_GRAVITY, Gravity.TAG, false));
+//        selectedSensorFrequencies.add(createSelectedSensorFrequency(sensorTypeFrequencyMap,
+//                SensorBase.TYPE_GRAVITY, Gravity.TAG, false));
         selectedSensorFrequencies.add(createSelectedSensorFrequency(sensorTypeFrequencyMap,
                 SensorBase.TYPE_GPS, GPS.TAG, false));
         selectedSensorFrequencies.add(createSelectedSensorFrequency(sensorTypeFrequencyMap,

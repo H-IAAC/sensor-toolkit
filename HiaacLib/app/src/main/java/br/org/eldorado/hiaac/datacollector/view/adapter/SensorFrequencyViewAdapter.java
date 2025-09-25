@@ -6,6 +6,8 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.pm.PackageManager;
+import android.os.Handler;
+import android.os.Looper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -32,6 +34,8 @@ import br.org.eldorado.sensoragent.model.GPS;
 import br.org.eldorado.sensorsdk.SensorSDK;
 
 public class SensorFrequencyViewAdapter extends RecyclerView.Adapter<SensorFrequencyViewAdapter.ViewHolder> {
+    private boolean permissionRequestInProgress = false;
+    private final Handler handler = new Handler(Looper.getMainLooper());
     private final LayoutInflater mInflater;
     private List<SelectedSensorFrequency> mSelectedSensors;
     private SensorFrequencyChangeListener mListener;
@@ -243,7 +247,14 @@ public class SensorFrequencyViewAdapter extends RecyclerView.Adapter<SensorFrequ
         alert.show();
     }
 
-    public void checkGPSPermission() {
+    public synchronized void checkGPSPermission() {
+        if (isPermissionRequestInProgress()) {
+            log.d("Outra permissão em andamento, aguardando...");
+            // tenta de novo em 300ms
+            handler.postDelayed(this::checkGPSPermission, 300);
+            return;
+        }
+        setPermissionRequestInProgress(true);
         CheckBox gpsCheckBox = gpsHolder.getSelectSensorCheckBox();
         boolean show = ActivityCompat.shouldShowRequestPermissionRationale((Activity)mContext, Manifest.permission.ACCESS_BACKGROUND_LOCATION);
         if (show) {
@@ -267,7 +278,14 @@ public class SensorFrequencyViewAdapter extends RecyclerView.Adapter<SensorFrequ
         }
     }
 
-    public void checkAudioPermission() {
+    public synchronized void checkAudioPermission() {
+        if (isPermissionRequestInProgress()) {
+            log.d("Outra permissão em andamento, aguardando...");
+            // tenta de novo em 300ms
+            handler.postDelayed(this::checkAudioPermission, 300);
+            return;
+        }
+        setPermissionRequestInProgress(true);
         boolean show = ActivityCompat.shouldShowRequestPermissionRationale((Activity)mContext, Manifest.permission.RECORD_AUDIO);
         if (show) {
             AlertDialog alert = new AlertDialog.Builder(mContext).setMessage(mContext.getString(R.string.audio_permission_description))
@@ -277,7 +295,7 @@ public class SensorFrequencyViewAdapter extends RecyclerView.Adapter<SensorFrequ
                         public void onClick(DialogInterface dialog, int which) {
                             requestAudioPermission();
                         }
-                    }).setNegativeButton(mContext.getString(R.string.dont_use_gps), new DialogInterface.OnClickListener() {
+                    }).setNegativeButton(mContext.getString(R.string.dont_use_audio), new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
                             updateAudio(PackageManager.PERMISSION_DENIED);
@@ -323,7 +341,8 @@ public class SensorFrequencyViewAdapter extends RecyclerView.Adapter<SensorFrequ
     private void requestAudioPermission() {
         log.d("requestAudioPermission");
         ActivityCompat.requestPermissions((Activity)mContext, new String[] {
-                        Manifest.permission.RECORD_AUDIO},
+                        Manifest.permission.RECORD_AUDIO,
+                        Manifest.permission.MODIFY_AUDIO_SETTINGS},
                 105);
     }
 
@@ -356,6 +375,7 @@ public class SensorFrequencyViewAdapter extends RecyclerView.Adapter<SensorFrequ
                 gpsHolder.getFrequencyContainer().close();
             }
         }
+        setPermissionRequestInProgress(false);
     }
 
     public void updateAudio(int permission) {
@@ -378,6 +398,15 @@ public class SensorFrequencyViewAdapter extends RecyclerView.Adapter<SensorFrequ
                 audioHolder.getFrequencyContainer().close();
             }
         }
+        setPermissionRequestInProgress(false);
+    }
+
+    public boolean isPermissionRequestInProgress() {
+        return permissionRequestInProgress;
+    }
+
+    public void setPermissionRequestInProgress(boolean bol) {
+        permissionRequestInProgress = bol;
     }
 
     @Override
