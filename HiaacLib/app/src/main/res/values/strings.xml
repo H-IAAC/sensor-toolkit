@@ -25,6 +25,7 @@
     <string name="error_no_data_create_csc">There was any data to create a CSV file!</string>
     <string name="error_no_data_upload_firebase">There was any data to upload to Firebase server!</string>
     <string name="dont_use_gps">Don\'t use GPS</string>
+    <string name="dont_use_audio">Don\'t use MIC</string>
     <string name="gps_ok">Ok, I understand</string>
     <string name="button_ok">OK</string>
     <string name="button_cancel">Cancel</string>

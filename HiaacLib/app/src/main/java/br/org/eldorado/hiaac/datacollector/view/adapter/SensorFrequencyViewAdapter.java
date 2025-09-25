@@ -277,7 +277,7 @@ public class SensorFrequencyViewAdapter extends RecyclerView.Adapter<SensorFrequ
                         public void onClick(DialogInterface dialog, int which) {
                             requestAudioPermission();
                         }
-                    }).setNegativeButton(mContext.getString(R.string.dont_use_gps), new DialogInterface.OnClickListener() {
+                    }).setNegativeButton(mContext.getString(R.string.dont_use_audio), new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
                             updateAudio(PackageManager.PERMISSION_DENIED);
