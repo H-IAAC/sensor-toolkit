@@ -287,10 +287,11 @@ public class EldoradoLabelOptionsActivity extends AppCompatActivity {
 
     private void checkAllSensors() {
         for (SensorFrequencyViewAdapter.SelectedSensorFrequency sensor : mSelectedSensors) {
-            sensor.setSelected(true);
-            sensor.setFrequency(40);
+            if(mSensorFrequencyViewAdapter.checkSensorAvailability(sensor.getSensor())) {
+                sensor.setSelected(true);
+                sensor.setFrequency(40);
+            }
         }
-
     }
 
     @Override
