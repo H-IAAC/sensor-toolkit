@@ -126,9 +126,10 @@ public class ExecutionController {
                     statistics.add(getExperimentStatistics(dataTrack, sensorFrequency));
                     dbView.insertLabeledData(((MySensorListener) sensorFrequency.getSensor().getListener()).getLabeledDataList());
                     if (dataTrack.isEldoradoProfile() ) {
-                        extraSensoryDataMap.compute(sensorFrequency.getSensor().getType(), (k,v) -> sensorListener.getExtraSensoryData());
                         if (sensorFrequency.isAudio()) {
                             extraSensoryAudioData = sensorListener.getExtraSensoryAudioData();
+                        } else {
+                            extraSensoryDataMap.compute(sensorFrequency.getSensor().getType(), (k,v) -> sensorListener.getExtraSensoryData());
                         }
                     }
                 }

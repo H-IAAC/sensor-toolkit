@@ -56,7 +56,7 @@ public class ExtraSensoryData {
         AUDIO_MAX_ABS("audio_properties:max_abs_value"),
         AUDIO_NORMALIZATION_MULTIPLIER("audio_properties:normalization_multiplier"),
         AUDIO_MFCC_MEAN("audio_naive:mfcc%d:mean"),
-        AUDIO_MFCC_STD("audio_naive:mfcc%d:mean");
+        AUDIO_MFCC_STD("audio_naive:mfcc%d:std");
 
 
         private final String value;
