@@ -190,6 +190,7 @@ public class EldoradoLabelOptionsActivity extends AppCompatActivity {
         ArrayAdapter<String> arrayAdapter = new ArrayAdapter(this,
                 R.layout.custom_spinner, list);
         mStopTimeSpinner.setAdapter(arrayAdapter);
+        mStopTimeSpinner.setSelection(2);
 
         final ArrayAdapter<String> deviceLocationAdapter = new ArrayAdapter(this,
                 R.layout.custom_spinner, Preferences.getDeviceLocationsList());
