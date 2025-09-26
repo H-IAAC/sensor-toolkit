@@ -76,6 +76,13 @@ public class CsvFiles {
         if ("csv".equals(Tools.getFileExtension(fileName))) {
             // File name example: user1_experiment1_activity1_Perna_20230626.103628.csv
             String[] fileContent = fileName.split("_");
+            if (fileName.toLowerCase().contains("extrasensory")) {
+                file.experiment = fileContent[0];
+                file.activity = fileContent[1];
+                file.devicePosition = fileContent[2];
+                file.startTime = fileContent[4].substring(0, fileContent[4].lastIndexOf("."));
+                return file;
+            }
             file.user = fileContent[0];
             file.experiment = fileContent[1];
             file.activity = fileContent[2];

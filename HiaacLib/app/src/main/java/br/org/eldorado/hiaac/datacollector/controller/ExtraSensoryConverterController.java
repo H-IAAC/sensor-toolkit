@@ -15,6 +15,7 @@ import java.util.Map;
 import br.org.eldorado.hiaac.datacollector.data.LabeledData;
 import br.org.eldorado.hiaac.datacollector.model.ExtraSensoryData;
 import br.org.eldorado.hiaac.datacollector.util.Log;
+import br.org.eldorado.sensoragent.model.SensorBase;
 
 public class ExtraSensoryConverterController {
 
@@ -37,7 +38,7 @@ public class ExtraSensoryConverterController {
     public ExtraSensoryData convertData(Map<Integer, List<LabeledData>> data, ByteArrayInputStream audioData) {
         for (Integer sensor : data.keySet()) {
             List<LabeledData> sensorData = data.get(sensor);
-            extractFeatures(sensorData);
+            extractFeatures(sensorData, sensor);
         }
         if (audioData != null) {
             AudioFeaturesExtrator audioEx = new AudioFeaturesExtrator(22050);
@@ -50,13 +51,13 @@ public class ExtraSensoryConverterController {
         return esData;
     }
 
-    private void extractFeatures(List<LabeledData> sensorData) {
+    private void extractFeatures(List<LabeledData> sensorData, int sensor) {
         try {
             if (sensorData == null || sensorData.isEmpty()) {
-                throw new IllegalArgumentException("sensorData empty");
+                throw new IllegalArgumentException("sensorData empty - Sensor: " + sensor);
             }
             if (sensorData.get(0).getSensor().getValuesArray().length != 3) {
-                throw new IllegalArgumentException("Waiting 3 axes data (x,y,z).");
+                throw new IllegalArgumentException(sensorData.get(0).getSensor().getName() + " Waiting 3 axes data (x,y,z).");
             }
             currentSensor = sensorData.get(0).getSensor().getType();
             if (!esData.isSensorSupported(currentSensor)) {

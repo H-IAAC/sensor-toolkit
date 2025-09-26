@@ -1033,7 +1033,7 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
                         if (labelConfig.isEldoradoProfile() && !stopButtonClicked) {
                             holder.getLabelTimer().setText(
                                     Tools.getFormatedTime(labelConfigs.get(holder.getAdapterPosition()).stopTime, Tools.CHRONOMETER));
-                            labelConfig.scheduledTime = SensorSDK.getInstance().getRemoteTime() + (1000 * 60);
+                            labelConfig.scheduledTime = SensorSDK.getInstance().getRemoteTime() + (1000 * 40);
                             AlarmConfig.configureScheduler(labelConfig,
                                                                     getHolderKey(
                                                                             labelConfig.experiment,
