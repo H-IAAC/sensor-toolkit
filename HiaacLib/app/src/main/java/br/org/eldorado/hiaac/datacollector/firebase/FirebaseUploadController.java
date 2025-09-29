@@ -261,8 +261,13 @@ public class FirebaseUploadController {
                     infService.bind();
                     new Handler(Looper.getMainLooper()).postDelayed(() -> {
                         if (infService.isBound()) {
-                            log.d("Sending ExtraSensory CSV to inference Service - file: " + csvFile);
-                            infService.runInference(csvFile.getPath());
+                            try {
+                                log.d("Sending ExtraSensory CSV to inference Service - file: " + csvFile);
+                                infService.runInference(csvFile.getPath());
+                            } catch (Exception e) {
+                                log.e("Error sending CSV to inference service");
+                                e.printStackTrace();
+                            }
                         }
                     }, 2000);
 
