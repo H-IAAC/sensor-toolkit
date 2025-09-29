@@ -118,6 +118,7 @@ public class DataTrack {
 
     @Override
     public boolean equals(Object obj) {
+        if (obj == null) return false;
         if (obj instanceof DataTrack) {
             DataTrack dt = (DataTrack) obj;
             if (dt.getLabel().equals(getLabel()) && dt.getConfigId() == getConfigId()) {

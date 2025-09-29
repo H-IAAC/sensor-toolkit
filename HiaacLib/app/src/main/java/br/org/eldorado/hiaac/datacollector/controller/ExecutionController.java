@@ -1,6 +1,7 @@
 package br.org.eldorado.hiaac.datacollector.controller;
 
 import android.os.CountDownTimer;
+import android.os.Handler;
 
 import androidx.lifecycle.ViewModelProvider;
 
@@ -38,12 +39,20 @@ public class ExecutionController {
     private ExecutionService service;
     private CountDownTimer timer;
     private LabelConfigViewModel dbView;
+    private Handler extraSensoryLoopHandler;
 
     public static ExecutionController getInstance() {
         if (inst == null) {
             inst = new ExecutionController();
         }
         return inst;
+    }
+
+    public void setExtraSensoryLoopHandler(Handler h) {
+        if (extraSensoryLoopHandler != null) {
+            extraSensoryLoopHandler.removeCallbacksAndMessages(null);
+        }
+        extraSensoryLoopHandler = h;
     }
 
     public LabelConfigViewModel getDBModel() {
@@ -56,6 +65,10 @@ public class ExecutionController {
 
     public void setListener(ExecutionServiceListener lst) {
         this.listener = lst;
+    }
+
+    public ExecutionServiceListener getListener() {
+        return this.listener;
     }
 
     public void startExecution(DataTrack dataTrack) {

@@ -319,10 +319,13 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
             }
         });
 
-        Date alarmSchedule = AlarmConfig.configureScheduler(labelConfig,
-                                                            getHolderKey(labelConfig.experiment,
-                                                                         labelConfig.activity,
-                                                                         labelConfig.userId));
+        Date alarmSchedule = null;
+        if (!labelConfig.isEldoradoProfile()) {
+            alarmSchedule = AlarmConfig.configureScheduler(labelConfig,
+                    getHolderKey(labelConfig.experiment,
+                            labelConfig.activity,
+                            labelConfig.userId));
+        }
 
         if (alarmSchedule == null) {
             log.d("Scheduler: No alarm configured for [" + labelConfig.experiment + "] id: " + labelConfig.id);
@@ -626,7 +629,7 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
     }
 
     public void startExecution(ViewHolder holder) {
-        if (!labelConfigContains(holder) || holder.isStarted() || (execService != null && execService.isRunning() != null)) {
+        if (!labelConfigContains(holder) || holder.isStarted() || (!getDataTrack(holder).isEldoradoProfile() && execService != null && execService.isRunning() != null)) {
             log.d("startExecution could not start! holder.isStarted() is [" + holder.isStarted() + "]");
             log.d("startExecution could not start! labelConfigContains(holder) is [" + labelConfigContains(holder) + "]");
             log.d("startExecution could not start! (execService != null) is [" + (execService != null) + "]");
@@ -667,7 +670,7 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
             try {
                 dialog.show();
             } catch (Exception e) {
-                log.e("App is not running!");
+                log.e("ShowStartDialog - App is not running!");
                 Toast.makeText(mContext, "App is not running!", Toast.LENGTH_LONG).show();
                 return;
             }
@@ -704,7 +707,7 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
                 try {
                     dialog.dismiss();
                 } catch (IllegalArgumentException e) {
-                    log.e("App is not running");
+                    log.e("DismissDialog - App is not running");
                 }
 
                 if (!isEldoradoProfile) {
@@ -729,24 +732,30 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
 
     private DataTrack getDataTrack(ViewHolder holder) {
         DataTrack dt = new DataTrack();
+        int position = holder.getAdapterPosition() == labelConfigs.size() ? holder.getAdapterPosition() - 1
+                : (holder.getAdapterPosition() == -1 ? 0 :  holder.getAdapterPosition());
+        log.d("getDataTrack - Position: " + position + " LabelConfigs Size: " + labelConfigs.size());
         try {
-            dt.setDeviceLocation(labelConfigs.get(holder.getAdapterPosition()).deviceLocation);
-            dt.setUserId(labelConfigs.get(holder.getAdapterPosition()).userId);
-            dt.setSendFilesToServer(labelConfigs.get(holder.getAdapterPosition()).sendToServer);
-            dt.setActivity(labelConfigs.get(holder.getAdapterPosition()).activity);
-            dt.setConfigId(labelConfigs.get(holder.getAdapterPosition()).id);
-            dt.setStopTime(labelConfigs.get(holder.getAdapterPosition()).stopTime);
-            dt.setLabel(labelConfigs.get(holder.getAdapterPosition()).experiment);
+            dt.setDeviceLocation(labelConfigs.get(position).deviceLocation);
+            dt.setUserId(labelConfigs.get(position).userId);
+            dt.setSendFilesToServer(labelConfigs.get(position).sendToServer);
+            dt.setActivity(labelConfigs.get(position).activity);
+            dt.setConfigId(labelConfigs.get(position).id);
+            dt.setStopTime(labelConfigs.get(position).stopTime);
+            dt.setLabel(labelConfigs.get(position).experiment);
         } catch (Exception e) {
-            log.e("getDataTrack - Failed to get data from ViewHolder: " + e.getMessage());
+            e.printStackTrace();
+            log.e("getDataTrack - Failed to get data from ViewHolder: " + e.getMessage()+ " LabelConfigs: " + labelConfigs.size());
         }
         return dt;
     }
 
     private void checkExecution(ViewHolder holder) {
-
-        if (!Preferences.shouldRunChecking())
+        LabelConfig labelConfig = labelConfigs.get(holder.getAdapterPosition());
+        if (/*!labelConfig.isEldoradoProfile() &&*/ !Preferences.shouldRunChecking()) {
+            log.d("CheckExecution not running because its disabled on preferences");
             return;
+        }
 
         checkingServiceConnection = new ServiceConnection() {
             @Override
@@ -758,8 +767,11 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
 
                 dt.addSensorList(sensorFrequencyMap.get(dt.getLabel()));
 
-                if (dt.equals(execService.isRunning())) {
+                log.d("checkExecution - schedule: " + labelConfig.scheduledTime + " Local: " + dt + " Service: " + execService.isRunning());
+
+                if ((dt.isEldoradoProfile() && labelConfig.scheduledTime > 0) || (execService.isRunning() != null && dt.equals(execService.isRunning()))) {
                     log.d("checkExecution - Experiment already running " + dt.getLabel());
+                    AlarmConfig.setScheduler(new Date(labelConfig.scheduledTime));
                     holder.getEditButton().setEnabled(false);
                     holder.getFilmButton().setEnabled(false);
                     setAsStop(holder.getStartButton(), holder);
@@ -769,21 +781,23 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
                     sendData(holder, CREATE_CSV_FILE, false, "0");
                 }
 
-                ForegroundNotification.updateNotificationText(mContext, "Checking completed (" + Utils.getDate() + ")");
+                if (!labelConfig.isEldoradoProfile()) {
+                    ForegroundNotification.updateNotificationText(mContext, "Checking completed (" + Utils.getDate() + ")");
+                }
             }
 
             @Override
             public void onServiceDisconnected(ComponentName name) { }
         };
 
-        if (!labelConfigs.get(holder.getAdapterPosition()).isEldoradoProfile()) {
+        //if (!labelConfigs.get(holder.getAdapterPosition()).isEldoradoProfile()) {
             Intent execServiceIntent = new Intent(mContext, ExecutionService.class);
             execServiceIntent.setAction(ExecutionService.ACTION_CHECK_FOREGROUND_SERVICE);
             execServiceIntent.putExtra("Title", holder.labelTitle.getText().toString());
             execServiceIntent.putExtra("isEldoradoProfile", labelConfigs.get(holder.getAdapterPosition()).isEldoradoProfile());
             mContext.startForegroundService(execServiceIntent);
             mContext.bindService(execServiceIntent, checkingServiceConnection, Context.BIND_AUTO_CREATE);
-        }
+        //}
         Preferences.setToRunChecking(false);
     }
 
@@ -793,6 +807,12 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
             return labelConfigs.size();
         }
         return 0;
+    }
+
+    @Override
+    public void onDetachedFromRecyclerView(@NonNull RecyclerView recyclerView) {
+        super.onDetachedFromRecyclerView(recyclerView);
+        Preferences.setToRunChecking(true);
     }
 
     private void setAsStop(Button button, LabelRecyclerViewAdapter.ViewHolder holder) {
@@ -1030,18 +1050,20 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
                     public void run() {
                         LabelConfig labelConfig = labelConfigs.get(holder.getAdapterPosition());
                         AlarmConfig.cancelAlarm();
+                        AlarmConfig.setScheduler(null);
                         if (labelConfig.isEldoradoProfile() && !stopButtonClicked) {
                             holder.getLabelTimer().setText(
                                     Tools.getFormatedTime(labelConfigs.get(holder.getAdapterPosition()).stopTime, Tools.CHRONOMETER));
                             labelConfig.scheduledTime = SensorSDK.getInstance().getRemoteTime() + (1000 * 40);
-                            AlarmConfig.configureScheduler(labelConfig,
-                                                                    getHolderKey(
-                                                                            labelConfig.experiment,
-                                                                            labelConfig.activity,
-                                                                            labelConfig.userId));
+//                            AlarmConfig.configureScheduler(labelConfig,
+//                                                                    getHolderKey(
+//                                                                            labelConfig.experiment,
+//                                                                            labelConfig.activity,
+//                                                                            labelConfig.userId));
+                            AlarmConfig.setScheduler(new Date(labelConfig.scheduledTime));
+
 
                             holder.setStarted(false);
-                            Preferences.setToRunChecking(false);
                             return;
                         }
 
@@ -1094,6 +1116,7 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
                 @Override
                 public void run() {
                     log.d("MyExecutionListener - disabling buttons");
+                    AlarmConfig.setScheduler(null);
                     holder.getEditButton().setEnabled(false);
                     holder.getFilmButton().setEnabled(false);
                     setAsStop(holder.getStartButton(), holder);
