@@ -141,7 +141,7 @@ public class AlarmConfig {
         return configuration;
     }
 
-    private static void setScheduler(Date date) {
+    public static void setScheduler(Date date) {
         if (schedulerView == null)
             return;
 

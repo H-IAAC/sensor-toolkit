@@ -180,6 +180,7 @@ public class DataCollectorActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         TimeSync.stopServerTimeUpdates();
+        Preferences.setToRunChecking(true);
 
         super.onDestroy();
     }

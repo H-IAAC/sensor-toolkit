@@ -5,7 +5,9 @@ import android.content.Intent;
 
 import android.os.Binder;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.IBinder;
+import android.os.Looper;
 
 import androidx.annotation.Nullable;
 
@@ -29,6 +31,13 @@ public class ExecutionService extends Service {
     private final Log log = new Log("ExecutionService");
     private final IBinder mBinder = new MyBinder();
     private DataTrack dataTrack;
+    private final Handler nextExtrasensoryExecutionHandler = new Handler(Looper.getMainLooper());
+
+    private final Runnable extraSensoryRunnable = new Runnable() {
+        public void run () {
+            startExecution(ExecutionController.getInstance().getListener());
+        }
+    };
 
     public class MyBinder extends Binder {
         public ExecutionService getServer() {
@@ -103,9 +112,12 @@ public class ExecutionService extends Service {
         WakeLocks.executionAcquire(getApplicationContext());
 
         ExecutionController ctrl = ExecutionController.getInstance();
+        log.d("ExecutionService: startExecution: Listener: " + (l == null ? "NULL" : l.getDataTrack()) + " DataTrack local: " + dataTrack);
         log.d("ExecutionService: startExecution: " + (l.getDataTrack().equals(this.dataTrack)));
-        if (!ctrl.isRunning() || l.getDataTrack().equals(this.dataTrack)) {
-            this.dataTrack = l.getDataTrack();
+        if (!ExecutionController.isRunning() || l.getDataTrack().equals(this.dataTrack)) {
+            if (this.dataTrack == null) {
+                this.dataTrack = l.getDataTrack();
+            }
 
             // Each execution must have an unique identifier
             this.dataTrack.setUid(df.format(new Date(System.currentTimeMillis())));
@@ -134,15 +146,23 @@ public class ExecutionService extends Service {
 
     public void stopExecution(boolean stopBurttonClicked) {
         log.d("ExecutionService: stopExecution " +  (dataTrack == null ? "NULL" : dataTrack.getLabel()));
+        Preferences.setToRunChecking(true);
+        ExecutionController.getInstance().stopExecution(dataTrack);
+
+        nextExtrasensoryExecutionHandler.removeCallbacks(extraSensoryRunnable);
+        nextExtrasensoryExecutionHandler.removeCallbacksAndMessages(null);
+        ExecutionController.getInstance().setExtraSensoryLoopHandler(nextExtrasensoryExecutionHandler);
+
+        if (dataTrack != null && dataTrack.isEldoradoProfile() && !stopBurttonClicked) {
+            nextExtrasensoryExecutionHandler.postDelayed(extraSensoryRunnable, 1000 * 40);
+        }
         if (dataTrack == null || (!dataTrack.isEldoradoProfile() || (dataTrack.isEldoradoProfile() && stopBurttonClicked))) {
             Utils.emitStopBeep();
-            Preferences.setToRunChecking(true);
-        }
-        ExecutionController.getInstance().stopExecution(dataTrack);
-        stopForeground(true);
-        dataTrack = null;
+            stopForeground(true);
+            dataTrack = null;
 
-        WakeLocks.collectRelease();
-        WakeLocks.executionRelease();
+            WakeLocks.collectRelease();
+            WakeLocks.executionRelease();
+        }
     }
 }
