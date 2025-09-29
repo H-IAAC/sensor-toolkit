@@ -826,6 +826,10 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
         holder.deleteButton.setClickable(false);
         holder.deleteButton.setEnabled(false);
         holder.editButton.setClickable(false);
+        if (getDataTrack(holder).isEldoradoProfile()) {
+            button.setClickable(false);
+            button.setEnabled(false);
+        }
     }
 
     private void setAsStart(Button button, LabelRecyclerViewAdapter.ViewHolder holder) {
@@ -1064,6 +1068,8 @@ public class LabelRecyclerViewAdapter extends RecyclerView.Adapter<LabelRecycler
 
 
                             holder.setStarted(false);
+                            holder.getStartButton().setClickable(true);
+                            holder.getStartButton().setEnabled(true);
                             return;
                         }
 
