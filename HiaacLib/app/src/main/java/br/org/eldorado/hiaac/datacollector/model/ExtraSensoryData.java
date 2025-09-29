@@ -106,7 +106,9 @@ public class ExtraSensoryData {
                 continue;
             }
             if (key.equalsIgnoreCase("timestamp")) {
-                values.add(String.valueOf(features.get(key).longValue()));
+                String ts = String.valueOf(features.get(key).longValue());
+                ts = ts.length() > 10 ? ts.substring(0, 10) : ts;
+                values.add(ts);
             } else {
                 values.add(String.valueOf(features.get(key)));
             }
