@@ -25,7 +25,7 @@ public class Permissions {
         this.context = context;
 
         REQUIRED_PERMISSIONS = new String[]{ Manifest.permission.POST_NOTIFICATIONS,
-                                             Manifest.permission.CAMERA};
+                                             Manifest.permission.CAMERA, Manifest.permission.READ_PHONE_STATE};
 
         rpl = activity.registerForActivityResult(new ActivityResultContracts.RequestMultiplePermissions(),
                 new ActivityResultCallback<Map<String, Boolean>>() {
