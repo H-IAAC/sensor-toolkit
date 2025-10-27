@@ -248,7 +248,7 @@ public class FirebaseUploadController {
                     }
 
                     ExtraSensoryConverterController esConverter = new ExtraSensoryConverterController(timestamp);
-                    ExtraSensoryData esData = esConverter.convertData(extraSensoryData, audioData);
+                    ExtraSensoryData esData = esConverter.convertData(extraSensoryData, audioData, mContext);
 
                     File csvFile = csvBuilder.getExtraSensoryCsvFile(extraSensoryData.entrySet().iterator().next().getValue().get(0),
                             innerUid);

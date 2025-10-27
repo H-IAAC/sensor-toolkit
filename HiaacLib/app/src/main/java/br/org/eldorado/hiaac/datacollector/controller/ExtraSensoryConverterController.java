@@ -1,5 +1,7 @@
 package br.org.eldorado.hiaac.datacollector.controller;
 
+import android.content.Context;
+
 import org.apache.commons.math3.stat.StatUtils;
 import org.apache.commons.math3.stat.correlation.PearsonsCorrelation;
 import org.apache.commons.math3.stat.descriptive.moment.StandardDeviation;
@@ -35,7 +37,7 @@ public class ExtraSensoryConverterController {
         this.esData = new ExtraSensoryData(timestamp);
     }
 
-    public ExtraSensoryData convertData(Map<Integer, List<LabeledData>> data, ByteArrayInputStream audioData) {
+    public ExtraSensoryData convertData(Map<Integer, List<LabeledData>> data, ByteArrayInputStream audioData, Context context) {
         for (Integer sensor : data.keySet()) {
             List<LabeledData> sensorData = data.get(sensor);
             extractFeatures(sensorData, sensor);
@@ -48,6 +50,8 @@ public class ExtraSensoryConverterController {
                 e.printStackTrace();
             }
         }
+        DiscreteFeaturesExtractor discrete = new DiscreteFeaturesExtractor();
+        discrete.collectFeatures(context, esData);
         return esData;
     }
 
