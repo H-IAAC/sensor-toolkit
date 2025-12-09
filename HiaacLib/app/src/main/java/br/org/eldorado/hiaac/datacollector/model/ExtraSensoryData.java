@@ -58,6 +58,25 @@ public class ExtraSensoryData {
         AUDIO_MFCC_MEAN("audio_naive:mfcc%d:mean"),
         AUDIO_MFCC_STD("audio_naive:mfcc%d:std"),
 
+        /* Location Features */
+        LOCATION_NUM_VALID_UPDATES("location:num_valid_updates"),
+        LOCATION_LOG_LATITUDE_RANGE("location:log_latitude_range"),
+        LOCATION_LOG_LONGITUDE_RANGE("location:log_longitude_range"),
+        LOCATION_MIN_ALTITUDE("location:min_altitude"),
+        LOCATION_MAX_ALTITUDE("location:max_altitude"),
+        LOCATION_MIN_SPEED("location:min_speed"),
+        LOCATION_MAX_SPEED("location:max_speed"),
+        LOCATION_BEST_HORIZONTAL_ACCURACY("location:best_horizontal_accuracy"),
+        LOCATION_BEST_VERTICAL_ACCURACY("location:best_vertical_accuracy"),
+        LOCATION_DIAMETER("location:diameter"),
+        LOCATION_LOG_DIAMETER("location:log_diameter"),
+        LOCATION_QUICK_FEATURES_STD_LAT("location_quick_features:std_lat"),
+        LOCATION_QUICK_FEATURES_STD_LONG("location_quick_features:std_long"),
+        LOCATION_QUICK_FEATURES_LAT_CHANGE("location_quick_features:lat_change"),
+        LOCATION_QUICK_FEATURES_LONG_CHANGE("location_quick_features:long_change"),
+        LOCATION_QUICK_FEATURES_MEAN_ABS_LAT_DERIV("location_quick_features:mean_abs_lat_deriv"),
+        LOCATION_QUICK_FEATURES_MEAN_ABS_LONG_DERIV("location_quick_features:mean_abs_long_deriv"),
+
         /* Discrete features */
         DISCRETE_APP_STATE_ACTIVE("discrete:app_state:is_active"),
         DISCRETE_APP_STATE_INACTIVE("discrete:app_state:is_inactive"),
@@ -164,6 +183,7 @@ public class ExtraSensoryData {
             case SensorBase.TYPE_MAGNETIC_FIELD:
                 return "raw_magnet";
             case SensorBase.TYPE_AUDIO:
+            case SensorBase.TYPE_GPS:
                 return "";
             default:
                 return "unsupported";

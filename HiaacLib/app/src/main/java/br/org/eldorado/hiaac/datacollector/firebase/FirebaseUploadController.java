@@ -244,14 +244,25 @@ public class FirebaseUploadController {
                     fireListener(ON_PROGRESS, mContext.getString(R.string.creating_csv_file));
                     long timestamp = System.currentTimeMillis();
                     if (!extraSensoryData.isEmpty()) {
-                        timestamp = extraSensoryData.entrySet().iterator().next().getValue().get(0).getTimestamp();
+                        try {
+                            timestamp = extraSensoryData.entrySet().iterator().next().getValue().get(0).getTimestamp();
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
                     }
 
                     ExtraSensoryConverterController esConverter = new ExtraSensoryConverterController(timestamp);
                     ExtraSensoryData esData = esConverter.convertData(extraSensoryData, audioData, mContext);
 
-                    File csvFile = csvBuilder.getExtraSensoryCsvFile(extraSensoryData.entrySet().iterator().next().getValue().get(0),
-                            innerUid);
+                    LabeledData lbData = null;
+                    for (List<LabeledData> list : extraSensoryData.values() ) {
+                        if (list != null) {
+                            lbData = list.get(0);
+                            break;
+                        }
+                    }
+
+                    File csvFile = csvBuilder.getExtraSensoryCsvFile(lbData, innerUid);
                     csvBuilder.appendExtraSensoryData(csvFile, esData, true);
 
                     long end = System.currentTimeMillis();

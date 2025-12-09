@@ -40,7 +40,12 @@ public class ExtraSensoryConverterController {
     public ExtraSensoryData convertData(Map<Integer, List<LabeledData>> data, ByteArrayInputStream audioData, Context context) {
         for (Integer sensor : data.keySet()) {
             List<LabeledData> sensorData = data.get(sensor);
-            extractFeatures(sensorData, sensor);
+            if (sensor == SensorBase.TYPE_GPS) {
+                GPSFeaturesExtractor locExtractor = new GPSFeaturesExtractor(esData);
+                locExtractor.computeFeatures(sensorData);
+            } else {
+                extractFeatures(sensorData, sensor);
+            }
         }
         if (audioData != null) {
             AudioFeaturesExtrator audioEx = new AudioFeaturesExtrator(22050);

@@ -131,6 +131,7 @@ public class ExecutionController {
             extraSensoryDataMap.put(SensorBase.TYPE_ACCELEROMETER, null);
             extraSensoryDataMap.put(SensorBase.TYPE_GYROSCOPE, null);
             extraSensoryDataMap.put(SensorBase.TYPE_MAGNETIC_FIELD, null);
+            extraSensoryDataMap.put(SensorBase.TYPE_GPS, null);
             for (SensorFrequency sensorFrequency : dataTrack.getSensorList()) {
                 sensorFrequency.getSensor().stopSensor();
 

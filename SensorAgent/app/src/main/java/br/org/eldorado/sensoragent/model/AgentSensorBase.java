@@ -176,6 +176,10 @@ public class AgentSensorBase
                     super.onLocationResult(locationResult);
                     values[0] = (float)locationResult.getLastLocation().getLatitude();
                     values[1] = (float)locationResult.getLastLocation().getLongitude();
+                    values[2] = locationResult.getLastLocation().hasAltitude() ? (float)locationResult.getLastLocation().getAltitude() : -1;
+                    values[3] = locationResult.getLastLocation().hasSpeed() ? locationResult.getLastLocation().getSpeed() : -1;
+                    values[4] = locationResult.getLastLocation().hasAccuracy() ? locationResult.getLastLocation().getAccuracy() : -1;
+                    values[5] = locationResult.getLastLocation().hasVerticalAccuracy() ? locationResult.getLastLocation().getVerticalAccuracyMeters() : -1;
                     timestamp = locationResult.getLastLocation().getTime();
                     //timestamp = System.currentTimeMillis();
                     timestamp = RemoteApplicationTime.getCurrentRemoteTimeMillis();
