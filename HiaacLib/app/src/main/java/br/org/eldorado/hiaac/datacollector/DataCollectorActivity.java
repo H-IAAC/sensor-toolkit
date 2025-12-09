@@ -92,6 +92,7 @@ public class DataCollectorActivity extends AppCompatActivity {
                     .getInstance(getApplication())
                     .create(LabelConfigViewModel.class);
         } catch (Exception e){
+            e.printStackTrace();
             Toast.makeText(this, "Need to clean app storage.", Toast.LENGTH_LONG).show();
         }
 
