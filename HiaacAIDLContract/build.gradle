@@ -1,0 +1,16 @@
+plugins {
+    id 'com.android.library'
+}
+
+android {
+    namespace 'br.org.eldorado.hiaac.aidl.hiaacaidlcontract'
+    compileSdk 34
+
+    defaultConfig {
+        minSdk 29
+    }
+}
+
+
+
+
