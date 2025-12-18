@@ -11,4 +11,5 @@ include ':HiaacLib:app'
 include ':SensorSDK:app'
 include ':SensorAgent:app'
 include ':Clients:HIAACApp:app'
+include ':HiaacAIDLContract'
 /*include ':Clients:SensorManager:app'*/

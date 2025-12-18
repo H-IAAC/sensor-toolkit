@@ -51,6 +51,7 @@ dependencies {
     implementation project(path: ':SensorSDK:app')
     //implementation 'com.github.H-IAAC:sensor-toolkit:1.24'
 
+    api project(":HiaacAIDLContract")
     implementation 'com.squareup.okhttp3:logging-interceptor:3.4.2'
     implementation 'com.squareup.retrofit2:retrofit:2.11.0'
     implementation 'com.squareup.retrofit2:converter-gson:2.11.0'
