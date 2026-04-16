@@ -28,7 +28,7 @@
         tools:ignore="ProtectedPermissions" />
 
     <queries>
-        <package android:name="br.org.eldorado.hiaac.poc.poc2" />
+        <package android:name="br.org.eldorado.hiaac.cognitive" />
     </queries>
 
     <application
